@@ -26,7 +26,7 @@
       "@/*": [
         "./src/*"
       ],
-      "@transv2/shared": ["../../shared/dist/index.d.ts"],
+      "@transv2/shared": ["../../shared/dist"],
       "@transv2/shared/*": ["../../shared/dist/*"]
     }
   },
