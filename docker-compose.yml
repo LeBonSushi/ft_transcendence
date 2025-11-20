@@ -1,0 +1,130 @@
+networks:
+  trans:
+    driver: bridge
+
+services:
+  # Infrastructure
+  redis:
+    restart: always
+    image: redis
+    networks:
+      - trans
+    volumes:
+      - redis-data:/data
+
+  # API Gateway / Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - service-auth
+      - service-user
+      - service-chat
+      - service-game
+      - frontend
+    networks:
+      - trans
+
+  # Backend Services
+  service-auth:
+    build:
+      context: .
+      dockerfile: ./backend/service-auth/Dockerfile
+      target: builder
+    restart: always
+    command: npm run start:dev
+    volumes:
+      - ./backend/service-auth/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_USER_URL=http://service-user:3003
+    depends_on:
+      - redis
+    networks:
+      - trans
+
+  service-user:
+    build:
+      context: .
+      dockerfile: ./backend/service-user/Dockerfile
+      target: builder
+    restart: always
+    command: npm run start:dev
+    volumes:
+      - ./backend/service-user/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_AUTH_URL=http://service-auth:3000
+    depends_on:
+      - redis
+    networks:
+      - trans
+
+  service-chat:
+    build:
+      context: .
+      dockerfile: ./backend/service-chat/Dockerfile
+      target: builder
+    restart: always
+    command: npm run start:dev
+    volumes:
+      - ./backend/service-chat/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_AUTH_URL=http://service-auth:3000
+      - SERVICE_USER_URL=http://service-user:3003
+    depends_on:
+      - redis
+      - service-auth
+    networks:
+      - trans
+
+  service-game:
+    build:
+      context: .
+      dockerfile: ./backend/service-game/Dockerfile
+      target: builder
+    restart: always
+    command: npm run start:dev
+    volumes:
+      - ./backend/service-game/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_AUTH_URL=http://service-auth:3000
+      - SERVICE_USER_URL=http://service-user:3003
+    depends_on:
+      - redis
+      - service-auth
+    networks:
+      - trans
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend/web-app
+      dockerfile: ./Dockerfile
+      target: deps
+    restart: always
+    command: npm run dev
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ENV=development
+    networks:
+      - trans
+
+volumes:
+  redis-data:

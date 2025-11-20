@@ -1,0 +1,22 @@
+{
+  "name": "@transv2/shared",
+  "version": "1.0.0",
+  "description": "Shared code for TRANSv2 microservices",
+  "main": "index.ts",
+  "types": "index.ts",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types/index.ts",
+    "./dtos": "./dtos/index.ts",
+    "./utils": "./utils/index.ts",
+    "./constants": "./constants/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  },
+  "keywords": ["shared", "types", "utils"],
+  "author": "",
+  "license": "ISC"
+}
