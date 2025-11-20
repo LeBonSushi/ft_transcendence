@@ -2,21 +2,42 @@
   "name": "@transv2/shared",
   "version": "1.0.0",
   "description": "Shared code for TRANSv2 microservices",
-  "main": "index.ts",
-  "types": "index.ts",
-  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./index.ts",
-    "./types": "./types/index.ts",
-    "./dtos": "./dtos/index.ts",
-    "./utils": "./utils/index.ts",
-    "./constants": "./constants/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./dtos": {
+      "types": "./dist/dtos/index.d.ts",
+      "default": "./dist/dtos/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "default": "./dist/constants/index.js"
+    }
   },
   "scripts": {
     "build": "tsc",
     "lint": "eslint ."
   },
-  "keywords": ["shared", "types", "utils"],
+  "keywords": [
+    "shared",
+    "types",
+    "utils"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.10.1"
+  }
 }

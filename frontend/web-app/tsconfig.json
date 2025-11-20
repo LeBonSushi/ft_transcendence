@@ -25,7 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "@transv2/shared": ["../../shared/dist/index.d.ts"],
+      "@transv2/shared/*": ["../../shared/dist/*"]
     }
   },
   "include": [

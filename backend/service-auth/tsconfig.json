@@ -12,17 +12,17 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@transv2/shared": ["../../shared/dist/index.d.ts"],
+      "@transv2/shared/*": ["../../shared/dist/*"]
+    },
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
   },
-  "paths": {
-      "@/*": ["./src/*"],
-      "@transv2/shared": ["../../shared/index.ts"],
-      "@transv2/shared/*": ["../../shared/*"]
-    },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
