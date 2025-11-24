@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+	"baseUrl": ".",
+	"paths": {
+		"@shared/*": ["src/*"]
+	},
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2020",
+    "declaration": true,
+  },
+  "include": ["src", "prisma"],
+  "exclude": ["node_modules", "dist"]
+}
