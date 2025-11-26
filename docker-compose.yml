@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  service-auth:
+    build: ./backend/service-auth
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./shared:/app/shared
+
+  service-user:
+    build: ./backend/service-user
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./shared:/app/shared
+
+  service-chat:
+    build: ./backend/service-chat
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./shared:/app/shared
+
+  service-game:
+    build: ./backend/service-game
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./shared:/app/shared
+
+  api-gateway:
+    build: ./backend/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./shared:/app/shared
+    depends_on:
+      - service-auth
+      - service-user
+      - service-chat
+      - service-game
