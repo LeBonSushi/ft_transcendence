@@ -24,17 +24,17 @@ export default function RegisterPage() {
 				</div>
 				<div className="md:w-2/3 w-full h-full flex justify-center items-center p-8">
 					<Card elevation={0} className="w-full max-w-md flex flex-col justify-center items-center p-10 gap-6">
-						<h1 className={`text-2xl font-bold ${poppins.className}`}>Login</h1>
+						<h1 className={`text-2xl font-bold ${poppins.className}`}>Register</h1>
 						<TextField label='Email' variant="outlined" fullWidth/>
 
 						<TextField label='Password' type='password' variant="outlined" fullWidth/>
 						<Button color="primary" variant="contained" className={`${poppins.className}`} fullWidth>
-							Login
+							Register
 						</Button>
 						<p className={`text-sm ${poppins.className}`}>
-							Don't have an account?{" "}
-							<Link href="/register" className={`text-blue-500 hover:underline`}>
-								Register
+							Already have an account?{" "}
+							<Link href="/login" className={`text-blue-500 hover:underline`}>
+								Login
 							</Link>
 						</p>
 
