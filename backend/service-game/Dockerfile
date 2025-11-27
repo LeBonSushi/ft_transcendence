@@ -3,6 +3,5 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 COPY . .
-COPY ../../shared ./shared
-EXPOSE 3002
+EXPOSE 4003
 CMD ["npm", "run", "start"]

@@ -6,7 +6,7 @@ async function bootstrap() {
 
   app.enableCors();
 
-  await app.listen(3000);
-  console.log('🚀 API Gateway is running on http://localhost:3000');
+  await app.listen(8080);
+  console.log('🚀 API Gateway is running on http://localhost:8080');
 }
 bootstrap();
