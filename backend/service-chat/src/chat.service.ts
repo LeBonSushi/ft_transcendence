@@ -4,7 +4,7 @@ import { RegisterDto } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
-export class AuthService {
+export class ChatService {
 	constructor(private prisma: PrismaService) {}
 
 	async register({ email, username, password }: RegisterDto): Promise<{message: string, error?: string}> {

@@ -1,7 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY backend/api-gateway/package.json backend/api-gateway/package-lock.json* ./
 RUN npm install
-COPY . .
+COPY backend/api-gateway/ ./
 EXPOSE 8080
 CMD ["npm", "run", "start"]

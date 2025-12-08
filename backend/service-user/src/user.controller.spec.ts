@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChatController } from './chat.controller';
-import { ChatService } from './chat.service';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 import { PrismaService } from './prisma.service';
 
-describe('ChatController', () => {
-	let chatController: ChatController;
-	let chatService: ChatService;
+describe('UserController', () => {
+	let userController: UserController;
+	let userService: UserService;
 
 	// Mock PrismaService simple
 	const mockPrismaService = {
@@ -17,9 +17,9 @@ describe('ChatController', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			controllers: [ChatController],
+			controllers: [UserController],
 			providers: [
-				ChatService,
+				UserService,
 				{
 					provide: PrismaService,
 					useValue: mockPrismaService,
@@ -27,8 +27,7 @@ describe('ChatController', () => {
 			],
 		}).compile();
 
-		chatController = module.get<ChatController>(ChatController);
-		chatService = module.get<ChatService>(ChatService);
+		userController = module.get<UserController>(UserController);
+		userService = module.get<UserService>(UserService);
 	});
-
 });
