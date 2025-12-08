@@ -6,12 +6,12 @@ import { GameGatewayController } from './controllers/game.gateway.controller';
 import { ProxyService } from './services/proxy.service';
 
 @Module({
-  controllers: [
-    AuthGatewayController,
-    UserGatewayController,
-    ChatGatewayController,
-    GameGatewayController,
-  ],
-  providers: [ProxyService],
+	controllers: [
+		AuthGatewayController,
+		UserGatewayController,
+		ChatGatewayController,
+		GameGatewayController,
+	],
+	providers: [ProxyService],
 })
 export class AppModule {}

@@ -1,16 +1,16 @@
 {
-  "compilerOptions": {
-	"baseUrl": ".",
-	"paths": {
-		"@shared/*": ["src/*"]
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@shared/*": ["src/*"]
+		},
+		"outDir": "dist",
+		"rootDir": "src",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"target": "ES2020",
+		"declaration": true
 	},
-    "outDir": "dist",
-    "rootDir": "src",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "target": "ES2020",
-    "declaration": true,
-  },
-  "include": ["src", "prisma"],
-  "exclude": ["node_modules", "dist"]
+	"include": ["src", "prisma"],
+	"exclude": ["node_modules", "dist"]
 }

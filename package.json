@@ -1,25 +1,30 @@
 {
-  "name": "transv3",
-  "private": true,
-  "workspaces": [
-    "backend/api-gateway",
-    "backend/service-auth",
-    "backend/service-user",
-    "backend/service-chat",
-    "backend/service-game",
-    "frontend",
-    "shared"
-  ],
-  "scripts": {
-    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
-    "dev:backend": "npm --workspace backend run dev",
-    "dev:frontend": "npm --workspace frontend run dev"
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1"
-  },
-  "dependencies": {
-    "@prisma/client": "^7.0.1",
-    "prisma": "^7.0.1"
-  }
+	"name": "transv3",
+	"private": true,
+	"workspaces": [
+		"backend/api-gateway",
+		"backend/service-auth",
+		"backend/service-user",
+		"backend/service-chat",
+		"backend/service-game",
+		"frontend",
+		"shared",
+		"database"
+	],
+	"scripts": {
+		"dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
+		"dev:backend": "npm --workspace backend run dev",
+		"dev:frontend": "npm --workspace frontend run dev",
+		"test": "jest"
+	},
+	"devDependencies": {
+		"@types/jest": "^30.0.0",
+		"concurrently": "^9.2.1",
+		"jest": "^30.0.0",
+		"ts-jest": "^29.4.6"
+	},
+	"dependencies": {
+		"@prisma/client": "^7.0.1",
+		"prisma": "^7.0.1"
+	}
 }

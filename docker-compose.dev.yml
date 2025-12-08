@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    command: npm run dev
+
+  service-auth:
+    volumes:
+      - ./backend/service-auth:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+    command: npm run start:dev
+
+  service-chat:
+    volumes:
+      - ./backend/service-chat:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+    command: npm run start:dev
+
+  service-game:
+    volumes:
+      - ./backend/service-game:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+    command: npm run start:dev
+
+  service-user:
+    volumes:
+      - ./backend/service-user:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+    command: npm run start:dev
+
+  api-gateway:
+    volumes:
+      - ./backend/api-gateway:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run start:dev

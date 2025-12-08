@@ -1,5 +1,18 @@
 version: '3.8'
 services:
+  postgres:
+    build: ./database
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U transv2"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   frontend:
     build: ./frontend
     ports:
@@ -14,16 +27,24 @@ services:
       - "4001:4001"
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
     volumes:
       - ./shared:/app/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
   service-chat:
     build: ./backend/service-chat
     ports:
       - "4002:4002"
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
     volumes:
       - ./shared:/app/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   service-game:
     build: ./backend/service-game
@@ -31,8 +52,12 @@ services:
       - "4003:4003"
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
     volumes:
       - ./shared:/app/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   service-user:
     build: ./backend/service-user
@@ -40,8 +65,12 @@ services:
       - "4004:4004"
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
     volumes:
       - ./shared:/app/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   api-gateway:
     build: ./backend/api-gateway
@@ -56,3 +85,6 @@ services:
       - service-user
       - service-chat
       - service-game
+
+volumes:
+  postgres_data:
