@@ -1,4 +1,4 @@
-// Schéma Prisma unifié pour toute l'application TRANSv2
+// Schéma Prisma unifié pour toute l'application TRANS
 // Base de données PostgreSQL centralisée
 
 generator client {

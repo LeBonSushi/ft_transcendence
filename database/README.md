@@ -16,14 +16,14 @@ database/
 ## Connexion
 
 ### Variables d'environnement
-- **POSTGRES_USER**: transv2
-- **POSTGRES_PASSWORD**: transv2_password
-- **POSTGRES_DB**: transv2
+- **POSTGRES_USER**: trans
+- **POSTGRES_PASSWORD**: trans_password
+- **POSTGRES_DB**: trans
 - **PORT**: 5432
 
 ### URL de connexion
 ```
-postgresql://transv2:transv2_password@postgres:5432/transv2
+postgresql://trans:trans_password@postgres:5432/trans
 ```
 
 ## Commandes utiles

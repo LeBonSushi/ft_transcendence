@@ -1,7 +1,7 @@
 {
-  "name": "@transv2/database",
+  "name": "@trans/database",
   "version": "1.0.0",
-  "description": "PostgreSQL database configuration for TRANSv2",
+  "description": "PostgreSQL database configuration for TRANS",
   "private": true,
   "scripts": {
     "prisma:generate": "prisma generate",

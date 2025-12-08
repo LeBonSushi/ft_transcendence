@@ -118,7 +118,7 @@ prisma-reset: ## Reset la base de données (DANGER!)
 
 # PostgreSQL
 postgres-shell: ## Se connecter au shell PostgreSQL
-	$(DC_DEV) exec postgres psql -U transv2 -d transv2
+	$(DC_DEV) exec postgres psql -U trans -d trans
 
 postgres-logs: ## Voir les logs PostgreSQL
 	$(DC_DEV) logs -f postgres

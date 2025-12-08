@@ -8,7 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U transv2"]
+      test: ["CMD-SHELL", "pg_isready -U trans"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
       - "4001:4001"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     volumes:
       - ./shared:/app/shared
     depends_on:
@@ -39,7 +39,7 @@ services:
       - "4002:4002"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     volumes:
       - ./shared:/app/shared
     depends_on:
@@ -52,7 +52,7 @@ services:
       - "4003:4003"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     volumes:
       - ./shared:/app/shared
     depends_on:
@@ -65,7 +65,7 @@ services:
       - "4004:4004"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     volumes:
       - ./shared:/app/shared
     depends_on:

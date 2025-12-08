@@ -17,7 +17,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     command: npm run start:dev
 
   service-chat:
@@ -26,7 +26,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     command: npm run start:dev
 
   service-game:
@@ -35,7 +35,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     command: npm run start:dev
 
   service-user:
@@ -44,7 +44,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://transv2:transv2_password@postgres:5432/transv2
+      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
     command: npm run start:dev
 
   api-gateway:
