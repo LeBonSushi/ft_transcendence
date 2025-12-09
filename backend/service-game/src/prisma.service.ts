@@ -5,12 +5,11 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-	private connexionString: string = `${process.env.DATABASE_URL}`;	
+	connexionString: string = `${process.env.DATABASE_URL}`;	
 
 	
 	constructor() {
-			const adapter = new PrismaPg({ url: this.connexionString });
-			super({ adapter });
+		super({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 	}
 
 	async onModuleInit() {

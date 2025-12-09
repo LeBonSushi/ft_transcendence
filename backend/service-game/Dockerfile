@@ -3,7 +3,7 @@ WORKDIR /app
 COPY backend/service-game/package.json backend/service-game/package-lock.json* ./
 RUN npm install
 COPY backend/service-game/ ./
-COPY database/prisma ./
+COPY database/prisma ./prisma
 RUN npx prisma generate
 EXPOSE 4003
 CMD ["npm", "run", "start"]
