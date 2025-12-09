@@ -13,12 +13,14 @@ import { useState } from 'react';
 
 
 export default function RegisterPage() {
+	const [email, setEmail] = useState('');
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 
 	const handleRegister = () => {
 		const res = callApi('GET', '/auth/register', {
 			email: username,
+			username: username,
 			password: password,
 		});
 		console.log("Register API call response: ", res);
@@ -38,6 +40,11 @@ export default function RegisterPage() {
 						<h1 className={`text-2xl font-bold ${poppins.className}`}>Register</h1>
 						<TextField label="Email" variant="outlined" fullWidth onChange={(e) => {
 								setPassword(e.target.value); console.log("Modified email: ", e.target.value);
+							}
+						}/>
+
+						<TextField label="Username" variant="outlined" fullWidth onChange={(e) => {
+								setUsername(e.target.value); console.log("Modified username: ", e.target.value);
 							}
 						}/>
 
