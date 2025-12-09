@@ -16,9 +16,10 @@ export class AuthController {
 
 	@Post('register')
 	register(@Body() body: RegisterDto) {
-		// Validation auto: username (string), email (format email), password (min 6 chars)
-		// whitelist: true → supprime les champs non définis dans le DTO
-		return { message: 'Register OK', data: body };
+
+		const data = this.authService.register(body);
+
+		return { data };
 	}
 
 	@Get()

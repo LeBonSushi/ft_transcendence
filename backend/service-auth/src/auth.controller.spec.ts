@@ -43,7 +43,7 @@ describe('AuthController', () => {
 		it('should return register response', () => {
 			const body = { email: 'test@test.com', username: "LeBonSushi", password: '1234' };
 			const result = authController.register(body);
-			expect(result).toEqual({ message: 'Register OK', data: body });
+			expect(result).toEqual({ data: authService.register(body) });
 		});
 	});
 });

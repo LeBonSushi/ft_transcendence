@@ -1,8 +1,11 @@
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /
 
-COPY frontend/ .
+COPY shared/ ./shared/
+COPY frontend/ ./app/
+
+WORKDIR /app
 
 RUN npm install 
 

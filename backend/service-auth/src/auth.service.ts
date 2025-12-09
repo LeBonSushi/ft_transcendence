@@ -7,29 +7,29 @@ import * as bcrypt from 'bcrypt'
 export class AuthService {
 	constructor(private prisma: PrismaService) {}
 
-	async register({ email, username, password }: RegisterDto): Promise<{message: string, error?: string}> {
+	async register({ email, username, password }: RegisterDto): Promise<{user?: {email: string, username: string}, message: string, error?: string, status?: number}> {
 
 		if (!email || !username || !password) {
-			return { message: "Missing fields", error: "Email, username and password are required" };
+			return { message: "Missing fields", error: "Email, username and password are required", status: 400 };
 		}
 
 		const email_exist = await this.prisma.user.findUnique({ where: { email } });
 
 		if (email_exist) {
-			return { message: "A user with this email already exists", error: "Invalid credentials" };
+			return { message: "A user with this email already exists", error: "Invalid credentials", status: 400  };
 		}
 
 		const username_exist = await this.prisma.user.findUnique({ where: { username }});
 
 		if (username_exist) {
-			return { message: "A user with this username already exists", error: "Invalid credentials" };
+			return { message: "A user with this username already exists", error: "Invalid credentials" , status: 400  };
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 12);
 
 		await this.prisma.user.create({ data: { email, username, password: hashedPassword }});
 
-		return { message: "User created" };
+		return { user: { email, username }, message: "User created", status: 201 };
 	}
 
 	async validateUser(username: string, password: string): Promise<boolean> {
