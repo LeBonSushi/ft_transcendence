@@ -12,6 +12,7 @@
 		"database"
 	],
 	"scripts": {
+		"postinstall": "cd database && npx prisma generate",
 		"dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
 		"dev:backend": "npm --workspace backend run dev",
 		"dev:frontend": "npm --workspace frontend run dev",
