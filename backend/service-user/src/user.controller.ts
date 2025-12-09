@@ -7,16 +7,16 @@ import { UserService } from './user.service';
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	@Get(':id')
-	async getUserById(@Req() req: GetUserDto) {
-		const user = await this.userService.getUserById(req.id);
-		return user;
-	}
-
-	@Get('coucou')
+	@Get('test')
 	async test() {
 		const user = await this.userService.getUserById(1);
 		console.log(user);
+		return user;
+	}
+
+	@Get(':id')
+	async getUserById(@Req() req: GetUserDto) {
+		const user = await this.userService.getUserById(req.id);
 		return user;
 	}
 
