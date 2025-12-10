@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Get, UsePipes, ValidationPipe, Req } from '@nestjs/common';
-import { GetUserDto } from './dtos/user.dto';
+import { Controller, Post, Body, Get, UsePipes, ValidationPipe, Req, Put, Param } from '@nestjs/common';
+import { GetUserDto, UpdateUserDto } from './dtos/user.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -7,16 +7,9 @@ import { UserService } from './user.service';
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	@Get('test')
-	async test() {
-		const user = await this.userService.getUserById(1);
-		console.log(user);
-		return user;
-	}
-
 	@Get(':id')
-	async getUserById(@Req() req: GetUserDto) {
-		const user = await this.userService.getUserById(req.id);
+	async getUserById(@Param('id') id: string) {
+		const user = await this.userService.getUserById(parseInt(id, 10));
 		return user;
 	}
 
@@ -24,4 +17,9 @@ export class UserController {
 	getStatus() {
 		return { status: 'Auth service is running' };
 	}
+
+	@Put(':id')
+	async modifyUser(@Param('id') id: number, @Body() body: UpdateUserDto) {
+		return await this.userService.modifyUser(id, body);
+	} 
 }

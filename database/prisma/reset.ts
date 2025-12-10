@@ -1,6 +1,9 @@
+import { config } from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+
+config();
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -17,7 +20,17 @@ async function main() {
 	await prisma.profile.deleteMany();
 	await prisma.user.deleteMany();
 
-	console.log('Database cleaned');
+	// Reset sequences to 1
+	await prisma.$executeRawUnsafe(`
+		ALTER SEQUENCE "User_id_seq" RESTART WITH 1;
+		ALTER SEQUENCE "Profile_id_seq" RESTART WITH 1;
+		ALTER SEQUENCE "Message_id_seq" RESTART WITH 1;
+		ALTER SEQUENCE "Room_id_seq" RESTART WITH 1;
+		ALTER SEQUENCE "Game_id_seq" RESTART WITH 1;
+		ALTER SEQUENCE "GameStats_id_seq" RESTART WITH 1;
+	`);
+
+	console.log('Database cleaned and sequences reset');
 }
 
 main()

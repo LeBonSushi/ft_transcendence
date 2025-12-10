@@ -20,8 +20,7 @@ model User {
 
   // Relations
   profile   Profile?
-  messages  Message[]
-  gameStats GameStats[]
+  room  Room[]
 }
 
 model Profile {
@@ -63,43 +62,4 @@ model Room {
   
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-}
-
-// ===== Game Models =====
-model Game {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  maxPlayers  Int         @default(2)
-  status      GameStatus  @default(WAITING)
-  
-  gameStats   GameStats[]
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-}
-
-model GameStats {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gameId    Int
-  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  
-  score     Int      @default(0)
-  wins      Int      @default(0)
-  losses    Int      @default(0)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@unique([userId, gameId])
-  @@index([userId])
-  @@index([gameId])
-}
-
-enum GameStatus {
-  WAITING
-  IN_PROGRESS
-  FINISHED
 }

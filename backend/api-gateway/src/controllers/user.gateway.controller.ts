@@ -12,6 +12,6 @@ export class UserGatewayController {
 		const targetUrl = `http://service-user:4004/user/${path}`;
 
 		const result = await this.proxy.forwardRequest(req.method, targetUrl, req.body, req.headers);
-		res.send(result);
+		res.status(result.status).json(result.data);
 	}
 }
