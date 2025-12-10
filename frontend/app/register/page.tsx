@@ -3,13 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Inter, Poppins } from 'next/font/google';
+import { Card, Button, TextField, Divider, ButtonBase, IconButton } from '@mui/material';
+import { useState } from 'react';
 import { callApi } from '@shared'
 
 const inter = Inter({ subsets: ['latin'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '700'] });
-
-import { Card, Button, TextField, Divider, ButtonBase, IconButton } from '@mui/material';
-import { useState } from 'react';
 
 
 export default function RegisterPage() {
@@ -17,9 +16,10 @@ export default function RegisterPage() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 
-	const handleRegister = () => {
-		const res = callApi('GET', '/auth/register', {
-			email: username,
+	const handleRegister = async (e: React.FormEvent) => {
+		e.preventDefault();
+		const res = await callApi('POST', '/auth/register', {
+			email: email,
 			username: username,
 			password: password,
 		});
@@ -38,29 +38,31 @@ export default function RegisterPage() {
 						className="w-full max-w-md flex flex-col justify-center items-center p-10 gap-6"
 					>
 						<h1 className={`text-2xl font-bold ${poppins.className}`}>Register</h1>
-						<TextField label="Email" variant="outlined" fullWidth onChange={(e) => {
-								setPassword(e.target.value); console.log("Modified email: ", e.target.value);
-							}
-						}/>
+						<form onSubmit={handleRegister} className="w-full flex flex-col gap-6">
+							<TextField label="Email" variant="outlined" fullWidth onChange={(e) => {
+									setEmail(e.target.value); console.log("Modified email: ", e.target.value);
+								}
+							}/>
 
-						<TextField label="Username" variant="outlined" fullWidth onChange={(e) => {
-								setUsername(e.target.value); console.log("Modified username: ", e.target.value);
-							}
-						}/>
+							<TextField label="Username" variant="outlined" fullWidth onChange={(e) => {
+									setUsername(e.target.value); console.log("Modified username: ", e.target.value);
+								}
+							}/>
 
-						<TextField label="Password" type="password" variant="outlined" fullWidth onChange={(e) => {
-								setPassword(e.target.value); console.log("Modified password: ", e.target.value);
-							}
-						}/>
-						<Button
-							color="primary"
-							variant="contained"
-							className={`${poppins.className}`}
-							fullWidth
-							onClick={handleRegister}
-						>
-							Register
-						</Button>
+							<TextField label="Password" type="password" variant="outlined" fullWidth onChange={(e) => {
+									setPassword(e.target.value); console.log("Modified password: ", e.target.value);
+								}
+							}/>
+							<Button
+								color="primary"
+								variant="contained"
+								type='submit'
+								className={`${poppins.className}`}
+								fullWidth
+							>
+								Register
+							</Button>
+						</form>
 						<p className={`text-sm ${poppins.className}`}>
 							Already have an account?{' '}
 							<Link href="/login" className={`text-blue-500 hover:underline`}>

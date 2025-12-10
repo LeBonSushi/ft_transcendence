@@ -8,16 +8,17 @@ export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	@Post('login')
-	login(@Body() body: LoginDto) {
-		// body est validé automatiquement: username (string) et password (min 6 chars)
-		// Si validation échoue → 400 Bad Request avec détails de l'erreur
-		return { message: 'Login OK', data: body };
+	async login(@Body() body: LoginDto) {
+
+		const data = await this.authService.login(body);
+
+		return { data };
 	}
 
 	@Post('register')
-	register(@Body() body: RegisterDto) {
+	async register(@Body() body: RegisterDto) {
 
-		const data = this.authService.register(body);
+		const data = await this.authService.register(body);
 
 		return { data };
 	}
