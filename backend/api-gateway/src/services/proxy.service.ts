@@ -15,12 +15,12 @@ export class ProxyService {
 				url,
 				data,
 				headers: forwardHeaders,
-				validateStatus: () => false, // Don't throw on any status code
+				validateStatus: () => false,
 			});
 
 			return {
-				status: response.status,
-				data: response.data,
+			// 	status: response.status,
+				data: response,
 			};
 		} catch (error) {
 			console.error('[ProxyService] Error forwarding request:', error.message);

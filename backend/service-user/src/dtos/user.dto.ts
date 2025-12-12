@@ -28,14 +28,22 @@ export class UpdateUserDto {
 
 	@IsOptional()
 	@IsString()
-	avatar?: string;
+	profilePicture?: string;
 
 	@IsOptional()
 	@IsString()
-	@MinLength(11)
-	password?: string;
+	@MinLength(10)
+	passwordHash?: string;
 
 	@IsOptional()
 	@IsString()
 	bio?: string;
+
+	@IsOptional()
+	@IsString()
+	location?: string;
+
+	@IsOptional()
+	@IsString()
+	birthdate?: string;
 }

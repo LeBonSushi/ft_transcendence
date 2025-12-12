@@ -18,7 +18,7 @@ async function main() {
 	}
 
 	const user = await prisma.user.delete({
-		where: { id: parseInt(userId) },
+		where: { id: userId },
 	});
 
 	console.log('✅ User deleted:', user);

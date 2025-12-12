@@ -5,13 +5,12 @@ import { ProxyService } from '../services/proxy.service';
 export class UserGatewayController {
 	constructor(private proxy: ProxyService) {}
 
-	@All('*path')
+	@All('*')
 	async handleUserRequests(@Req() req, @Res() res) {
-		// Nouvelle syntaxe path-to-regexp : récupère le wildcard via params.path
-		const path = req.params?.path || '';
-		const targetUrl = `http://service-user:4004/user/${path}`;
-
+		const path = req.url === '/' ? '' : req.url;
+		const targetUrl = `http://service-user:4004${path}`;
+			
 		const result = await this.proxy.forwardRequest(req.method, targetUrl, req.body, req.headers);
-		res.status(result.status).json(result.data);
+		res.send(result);
 	}
 }

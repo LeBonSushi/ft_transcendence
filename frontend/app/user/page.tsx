@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-const USER_ID = 1; // Temporairement hardcodé, à remplacer par l'ID réel
+const USER_ID = "f4b8b186-161c-40d4-91f9-444c2f537575"; // Temporairement hardcodé, à remplacer par l'ID réel
 
 export default function UserPage() {
     const [message, setMessage] = useState<string>("...");
@@ -18,6 +18,7 @@ export default function UserPage() {
     const [firstName, setFirstName] = useState<string>("");
     const [lastName, setLastName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
+    const [profilePicture, setProfilePicture] = useState<string>("");
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -32,13 +33,13 @@ export default function UserPage() {
                 
                 const data = JSON.parse(text);
                 setMessage(JSON.stringify(data));
-                
-                // Remplir les champs avec les données actuelles
+
                 setUsername(data.username || "");
                 setEmail(data.email || "");
                 setFirstName(data.profile?.firstName || "");
                 setLastName(data.profile?.lastName || "");
                 setBio(data.profile?.bio || "");
+                setProfilePicture(data.profile?.profilePicture || "");
             } catch (e: any) {
                 setError(e?.message ?? "Erreur inconnue");
                 console.error("Erreur fetch:", e);
@@ -55,19 +56,24 @@ export default function UserPage() {
         setSuccessMsg("");
 
         try {
+            const updateData: any = {};
+            if (username && username.trim()) updateData.username = username;
+            if (email && email.trim()) updateData.email = email;
+            if (firstName && firstName.trim()) updateData.firstName = firstName;
+            if (lastName && lastName.trim()) updateData.lastName = lastName;
+            if (bio && bio.trim()) updateData.bio = bio;
+            if (profilePicture && profilePicture.trim()) updateData.profilePicture = profilePicture;
+
             const res = await fetch(`${API_URL}/user/${USER_ID}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    firstName,
-                    lastName,
-                    bio,
-                }),
+                body: JSON.stringify(updateData),
             });
 
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`HTTP ${res.status}: ${errorText}`);
+            }
 
             const text = await res.text();
             if (!text) throw new Error("Response vide du serveur");
@@ -86,8 +92,7 @@ export default function UserPage() {
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 20 }}>
-            <h1>User Page</h1>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 10 }}>
             {loading && <p>Chargement...</p>}
             {error && <p style={{ color: "red" }}>Erreur: {error}</p>}
             {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
@@ -98,11 +103,11 @@ export default function UserPage() {
                     return (
                         <div>
                             {/* Affichage du profil */}
-                            <div style={{ marginBottom: 30, padding: 15, backgroundColor: "#f0f0f0", borderRadius: 8 }}>
+                            <div style={{ marginBottom: 15, padding: 15, backgroundColor: "#f0f0f0", borderRadius: 8 }}>
                                 <h2>Profil Actuel</h2>
-                                {user.profile?.avatar && (
+                                {user.profile?.profilePicture && (
                                     <img
-                                        src={user.profile.avatar}
+                                        src={user.profile.profilePicture}
                                         alt="Avatar"
                                         style={{ width: 100, height: 100, borderRadius: "50%", marginBottom: 15 }}
                                     />
@@ -114,7 +119,7 @@ export default function UserPage() {
                                 <p><strong>Bio:</strong> {user.profile?.bio}</p>
                             </div>
 
-                            {/* Formulaire de modification */}
+                            {}
                             <div style={{ padding: 15, backgroundColor: "#fff9e6", borderRadius: 8 }}>
                                 <h2>Modifier le Profil</h2>
 
@@ -167,6 +172,15 @@ export default function UserPage() {
                                     />
                                 </div>
 
+                                <div style={{ marginBottom: 12 }}>
+                                    <label>Porfile picture:</label>
+                                    <input
+                                        value={profilePicture}
+                                        onChange={(e) => setProfilePicture(e.target.value)}
+                                        style={{ width: "100%", padding: 8, marginTop: 4, borderRadius: 4, border: "1px solid #ccc" }}
+                                    />
+                                </div>
+
                                 <button
                                     onClick={handleSave}
                                     disabled={saving}
@@ -186,7 +200,7 @@ export default function UserPage() {
                         </div>
                     );
                 } catch {
-                    return <p style={{ color: "red" }}>❌ Erreur de parsing</p>;
+                    return <p style={{ color: "red" }}>Erreur de parsing</p>;
                 }
             })()}
         </div>
