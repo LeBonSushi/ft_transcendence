@@ -4,6 +4,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AuthModule);
+
 	app.useGlobalFilters(new HttpExceptionFilter());
 	await app.listen(process.env.PORT ?? 4001);
 }

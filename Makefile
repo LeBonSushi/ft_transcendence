@@ -11,10 +11,6 @@ help: ## Afficher l'aide
 # Development
 dev: ## Démarrer en mode développement (hot reload)
 	$(DC_DEV) up -d
-	@echo "⏳ Attente du démarrage (5s)..."
-	@sleep 5
-	@echo "Initialisation de la base de données..."
-	@cd database && npx prisma db push --accept-data-loss && npm run seed
 
 dev-build: ## Build et démarrer en mode dev
 	$(DC_DEV) up --build

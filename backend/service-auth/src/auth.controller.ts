@@ -1,6 +1,8 @@
-import { Controller, Post, Body, Get, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, UsePipes, ValidationPipe, Res } from '@nestjs/common';
 import { LoginDto, RegisterDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
+import { RegisterResponse } from './types/Response';
+import { Response } from 'express';
 
 @Controller('auth')
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
@@ -8,17 +10,28 @@ export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	@Post('login')
-	login(@Body() body: LoginDto) {
-		// body est validé automatiquement: username (string) et password (min 6 chars)
-		// Si validation échoue → 400 Bad Request avec détails de l'erreur
-		return { message: 'Login OK', data: body };
+	async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
+		const result = await this.authService.login(body);
+
+		res.cookie('refreshToken', result.data.refreshToken, {
+			httpOnly: process.env.NODE_ENV === 'production',
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'strict',
+			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+		});
+
+		return {
+			message: result.message,
+			data: {
+				user: result.data.user,
+				accessToken: result.data.accessToken,
+			},
+		}
 	}
 
 	@Post('register')
-	register(@Body() body: RegisterDto) {
-		// Validation auto: username (string), email (format email), password (min 6 chars)
-		// whitelist: true → supprime les champs non définis dans le DTO
-		return { message: 'Register OK', data: body };
+	async register(@Body() body: RegisterDto) {
+		return await this.authService.register(body);
 	}
 
 	@Get()
