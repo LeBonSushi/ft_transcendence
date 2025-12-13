@@ -19,8 +19,8 @@ export class ProxyService {
 			});
 
 			return {
-				status: response.status,
-				data: response.data,
+			// 	status: response.status,
+				data: response,
 			};
 		} catch (error) {
 			console.error('[ProxyService] Error forwarding request:', error.message);

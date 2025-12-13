@@ -60,8 +60,7 @@ Room/:id/message endpoint:
 User endpoint:
 
                     GET    /user/:id                                         // Récupérer les infos d'un utilisateur
-                    PUT    /user/:id/profile                                 // Mettre à jour le profil
-                    PUT    /user/:id/avatar                                  // Upload/modifier l'avatar
+                    PUT    /user/:id/                                        // Mettre à jour le profil
                     GET    /user/:id/rooms                                   // Lister les rooms de l'utilisateur
                     GET    /user/:id/friends                                 // Lister les amis de l'utilisateur
 
