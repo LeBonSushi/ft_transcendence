@@ -10,7 +10,7 @@ help: ## Afficher l'aide
 
 # Development
 dev: ## Démarrer en mode développement (hot reload)
-	$(DC_DEV) up
+	$(DC_DEV) up -d
 
 dev-build: ## Build et démarrer en mode dev
 	$(DC_DEV) up --build

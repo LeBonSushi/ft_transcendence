@@ -1,34 +1,41 @@
-import { IsString, MinLength, IsEmail } from 'class-validator';
+import { IsString, MinLength, IsEmail, IsNumber, IsOptional } from 'class-validator';
 
-export class CreateUserDto {
+export class GetUserDto {
 	@IsString()
 	readonly username: string;
 
-	@IsString()
-	@MinLength(6)
-	readonly password: string;
-
-	@IsEmail()
-	readonly email: string;
+	@IsNumber()
+	readonly id: number;
 }
 
-export class LoginDto {
+export class UpdateUserDto {
+	@IsOptional()
 	@IsString()
-	readonly username: string;
+	@MinLength(3)
+	username?: string;
 
-	@IsString()
-	@MinLength(6)
-	readonly password: string;
-}
-
-export class RegisterDto {
-	@IsString()
-	readonly username: string;
-
+	@IsOptional()
 	@IsEmail()
-	readonly email: string;
+	email?: string;
 
+	@IsOptional()
 	@IsString()
-	@MinLength(6)
-	readonly password: string;
+	firstName?: string;
+
+	@IsOptional()
+	@IsString()
+	lastName?: string;
+
+	@IsOptional()
+	@IsString()
+	avatar?: string;
+
+	@IsOptional()
+	@IsString()
+	@MinLength(11)
+	password?: string;
+
+	@IsOptional()
+	@IsString()
+	bio?: string;
 }

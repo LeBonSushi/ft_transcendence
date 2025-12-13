@@ -2,7 +2,8 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import { defineConfig, env } from 'prisma/config';
 
-// Load .env from project root
+// Load .env from database folder first, fallback to project root
+config({ path: resolve(__dirname, '.env') });
 config({ path: resolve(__dirname, '../.env') });
 
 export default defineConfig({

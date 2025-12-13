@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     build:
@@ -40,6 +39,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
   service-chat:
     build:
       context: .
