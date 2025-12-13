@@ -17,14 +17,20 @@ export class AuthController {
 			httpOnly: process.env.NODE_ENV === 'production',
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'strict',
-			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+		});
+
+		res.cookie('accessToken', result.data.accessToken, {
+			httpOnly: process.env.NODE_ENV === 'production',
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'strict',
+			maxAge: 15 * 60 * 1000,
 		});
 
 		return {
 			message: result.message,
 			data: {
 				user: result.data.user,
-				accessToken: result.data.accessToken,
 			},
 		}
 	}

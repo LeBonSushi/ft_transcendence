@@ -9,7 +9,9 @@ export class ChatGatewayController {
 	async handleAuthRoot(@Req() req, @Res() res) {
 		const targetUrl = `http://service-chat:4002/chat`;
 		const result = await this.proxy.forwardRequest(req.method, targetUrl, req.body, req.headers);
-		res.send(result);
+		res.status(result.status || 200);
+		res.set(result.headers);
+		res.send(result.data);
 	}
 
 	@All('*')
@@ -18,7 +20,8 @@ export class ChatGatewayController {
 		const targetUrl = `http://service-chat:4002/chat${path}`;
 
 		const result = await this.proxy.forwardRequest(req.method, targetUrl, req.body, req.headers);
-
-		res.send(result);
+		res.status(result.status || 200);
+		res.set(result.headers);
+		res.send(result.data);
 	}
 }

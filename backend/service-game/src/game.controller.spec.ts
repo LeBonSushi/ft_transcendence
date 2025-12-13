@@ -30,4 +30,12 @@ describe('GameController', () => {
 		gameController = module.get<GameController>(GameController);
 		gameService = module.get<GameService>(GameService);
 	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	it('should be defined', () => {
+		expect(gameController).toBeDefined();
+	});
 });

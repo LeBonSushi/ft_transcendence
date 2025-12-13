@@ -1,15 +1,17 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { PrismaService } from './services/prisma.service';
 import { LoginDto, RegisterDto } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt'
-import { JwtService } from './services/jwt.service';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { LoginResponse, RegisterResponse } from './types/Response';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private prisma: PrismaService,
-		private jwt: JwtService) {}
+		private jwtService: JwtService,
+		private configService: ConfigService) {}
 
 	async register({ email, username, password }: RegisterDto): Promise<RegisterResponse> {
 		if (!email || !username || !password) {
@@ -36,7 +38,6 @@ export class AuthService {
 			throw new BadRequestException("User could not be created");
 		}
 
-
 		return { message: "User created", user: {
 			id: created.id,
 			email: created.email,
@@ -44,7 +45,7 @@ export class AuthService {
 		}};
 	}
 
-	async validateUser(email: string, password: string): Promise<boolean> {
+	async validateUser(email: string, password: string): Promise<{ valid: boolean; exists: boolean }> {
 		const user = await this.prisma.user.findUnique({ where: { email } });
 
 		if (!user) {
@@ -58,19 +59,35 @@ export class AuthService {
 
 	async login({email, password}: LoginDto): Promise<LoginResponse> {
 
-		const isValid = await this.validateUser(email, password);
+		const {valid, exists} = await this.validateUser(email, password);
 
-		if (!isValid) {
-			throw new UnauthorizedException("Invalid username or password");
+		if (!exists) {
+			throw new UnauthorizedException("Aucun utilisateur ne correspond à cet e-mail");
+		}
+
+		if (!valid) {
+			throw new UnauthorizedException("Mot de passe invalide");
 		}
 
 		const user = await this.prisma.user.findUnique({ where: { email } });
 
 		if (!user) {
-			throw new UnauthorizedException("Invalid username or password");
+			throw new UnauthorizedException("Utilisateur introuvable après validation.");
 		}
 
-		const { accessToken, refreshToken } = await this.jwt.generateTokens({ userId: user.id, username: user.username });
+		const payload = { userId: user.id, username: user.username };
+
+		// Generate access token
+		const accessToken = await this.jwtService.signAsync(payload, {
+			secret: this.configService.get<string>('JWT_SECRET'),
+			expiresIn: '15m',
+		});
+
+		// Generate refresh token
+		const refreshToken = await this.jwtService.signAsync(payload, {
+			secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+			expiresIn: '7d',
+		});
 
 		const publicUser = {
 			id: user.id,

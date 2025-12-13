@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Inter, Poppins } from 'next/font/google';
 import { Card, Button, TextField, Divider, ButtonBase, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { callApi } from '@shared'
+import { apiClient } from '@/lib/api-client';
 
 const inter = Inter({ subsets: ['latin'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '700'] });
@@ -17,11 +17,20 @@ export default function LoginPage() {
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
-		const res = await callApi('POST', '/auth/login', {
-			email: email,
-			password: password,
-		});
-		console.log("Login API call response: ", res);
+
+		try {
+			console.log("Attempting login with email:", email);
+			console.log("Attempting login with password:", password);
+			
+			const res = await apiClient.post('/auth/login', {
+				email: email,
+				password: password,
+			});
+
+			console.log("Login API call response: ", res);
+		} catch (error) {
+			console.error("Login failed:", error);
+		}
 	}
 	
 	return (

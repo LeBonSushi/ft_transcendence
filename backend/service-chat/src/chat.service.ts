@@ -27,7 +27,7 @@ export class ChatService {
 
 		const hashedPassword = await bcrypt.hash(password, 12);
 
-		await this.prisma.user.create({ data: { email, username, password: hashedPassword }});
+		await this.prisma.user.create({ data: { email, username, passwordHash: hashedPassword }});
 
 		return { message: "User created" };
 	}

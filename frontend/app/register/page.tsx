@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Inter, Poppins } from 'next/font/google';
 import { Card, Button, TextField, Divider, ButtonBase, IconButton } from '@mui/material';
 import { useState } from 'react';
-import { callApi } from '@shared'
+import { apiClient } from '@/lib/api-client';
 
 const inter = Inter({ subsets: ['latin'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '700'] });
@@ -18,10 +18,10 @@ export default function RegisterPage() {
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault();
-		const res = await callApi('POST', '/auth/register', {
-			email: email,
-			username: username,
-			password: password,
+		const res = await apiClient.post('/auth/register', {
+			email,
+			username,
+			password,
 		});
 		console.log("Register API call response: ", res);
 	}

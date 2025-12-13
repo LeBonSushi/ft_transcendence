@@ -15,16 +15,25 @@ export class ProxyService {
 				url,
 				data,
 				headers: forwardHeaders,
-				validateStatus: () => false, // Don't throw on any status code
+				validateStatus: () => true,
 			});
 
+			// Manually handle error status codes
+			if (response.status >= 400) {
+				throw new HttpException(
+					response.data,
+					response.status
+				);
+			}
+
 			return {
-			// 	status: response.status,
-				data: response,
+				status: response.status,
+				headers: { ...response.headers },
+				data: response.data,
 			};
 		} catch (error) {
 			console.error('[ProxyService] Error forwarding request:', error.message);
-			
+
 			if (error instanceof AxiosError && error.response) {
 				throw new HttpException(
 					error.response.data,
@@ -42,7 +51,6 @@ export class ProxyService {
 	private filterHeaders(headers: any): any {
 		if (!headers) return {};
 
-		// Remove headers that shouldn't be forwarded
 		const headersToRemove = [
 			'host',
 			'connection',
@@ -55,6 +63,8 @@ export class ProxyService {
 			delete filtered[header];
 			delete filtered[header.toLowerCase()];
 		});
+
+		console.log('[ProxyService] Forwarding headers:', filtered);
 
 		return filtered;
 	}

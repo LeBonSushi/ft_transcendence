@@ -9,7 +9,9 @@ export class GameGatewayController {
 	async handleGameRoot(@Req() req, @Res() res) {
 		const targetUrl = `http://service-game:4003/game`;
 		const result = await this.proxy.forwardRequest(req.method, targetUrl, req.body, req.headers);
-		res.send(result);
+		res.status(result.status || 200);
+		res.set(result.headers);
+		res.send(result.data);
 	}
 
 	@All('*')
@@ -18,7 +20,8 @@ export class GameGatewayController {
 		const targetUrl = `http://service-game:4003/game${path}`;
 
 		const result = await this.proxy.forwardRequest(req.method, targetUrl, req.body, req.headers);
-
-		res.send(result);
+		res.status(result.status || 200);
+		res.set(result.headers);
+		res.send(result.data);
 	}
 }
