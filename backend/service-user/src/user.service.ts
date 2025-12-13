@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { UpdateUserDto } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
@@ -29,6 +29,51 @@ export class UserService {
 			delete userFields.password;
 		}
 
+		let emailWarning: string | null = null;
+		let usernameWarning: string | null = null;
+
+		if (userFields.email && user.email === userFields.email) {
+			delete userFields.email;
+			emailWarning = 'Email unchanged - same as current email';
+		}
+
+		if (userFields.email) {
+			console.log('check email');
+	
+			const existingUsers = await this.prisma.user.findMany({ 
+				where: { 
+					email: userFields.email,
+					id: { not: id }
+				} 
+			});
+			
+			if (existingUsers.length > 0) {
+				console.log('erreur email');
+				throw new ConflictException('Error: email address already used');
+			}
+		}
+
+		if (userFields.username && user.username === userFields.username) {
+			delete userFields.username;
+			usernameWarning = 'username unchanged - same as current username';
+		}
+
+		if (userFields.username) {
+			console.log('check username');
+	
+			const existingUsers = await this.prisma.user.findMany({ 
+				where: { 
+					username: userFields.username,
+					id: { not: id }
+				} 
+			});
+			
+			if (existingUsers.length > 0) {
+				console.log('erreur username');
+				throw new ConflictException('Error: username address already used');
+			}
+		}
+
 		await this.prisma.user.update({
 			where: { id },
 			data: userFields,
@@ -39,12 +84,18 @@ export class UserService {
 			data: { firstName, lastName, bio, profilePicture, location, birthdate },
 		});
 
-		return this.prisma.user.findUnique({
-			where: { id },
-			include: {
-				profile: true,
-			}
-		});
+		const updatedUser = await this.prisma.user.findUnique({
+				where: { id },
+				include: {
+					profile: true,
+				}
+			});
+
+		const warnings: string[] = [];
+		if (emailWarning) warnings.push(emailWarning);
+		if (usernameWarning) warnings.push(usernameWarning);
+
+		return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
 	}
 
 	async getRoomsByUser(id: string) {

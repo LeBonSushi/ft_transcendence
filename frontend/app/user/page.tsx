@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-const USER_ID = "f4b8b186-161c-40d4-91f9-444c2f537575"; // Hardcode pour test
+const USER_ID = "cc828a98-592e-4f12-a20f-e43acecb9669"; // Hardcode pour test
 
 export default function UserPage() {
     const [message, setMessage] = useState<string>("...");
