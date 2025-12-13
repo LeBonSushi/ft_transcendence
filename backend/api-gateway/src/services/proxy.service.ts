@@ -15,7 +15,7 @@ export class ProxyService {
 				url,
 				data,
 				headers: forwardHeaders,
-				validateStatus: () => false,
+				validateStatus: () => false, // Don't throw on any status code
 			});
 
 			return {

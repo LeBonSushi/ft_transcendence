@@ -14,7 +14,7 @@ export class CreateUserDto {
 
 export class LoginDto {
 	@IsString()
-	readonly username: string;
+	readonly email: string;
 
 	@IsString()
 	@MinLength(6)

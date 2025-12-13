@@ -31,19 +31,27 @@ describe('AuthController', () => {
 		authService = module.get<AuthService>(AuthService);
 	});
 
-	describe('login', () => {
-		it('should return login response', () => {
-			const body = { username: 'LeBonSushi', password: '1234' };
-			const result = authController.login(body);
-			expect(result).toEqual({ message: 'Login OK', data: body });
-		});
+	afterEach(() => {
+		jest.clearAllMocks();
 	});
 
 	describe('register', () => {
-		it('should return register response', () => {
-			const body = { email: 'test@test.com', username: "LeBonSushi", password: '1234' };
-			const result = authController.register(body);
-			expect(result).toEqual({ message: 'Register OK', data: body });
+		it('should register a new user', async () => {
+			const registerDto = { email: 'test@example.com', username: 'testuser', password: 'password123' };
+			const result = { user: { email: 'test@example.com', username: 'testuser' }, message: "User created" };
+			jest.spyOn(authService, 'register').mockImplementation(async () => result);
+
+			expect(await authController.register(registerDto)).toEqual({ data: result });
+		});
+	});
+
+	describe('login', () => {
+		it('should login a user', async () => {
+			const loginDto = { email: 'test@example.com', password: 'password123' };
+			const result = { data: { id: 1, email: 'test@example.com', username: 'testuser' }, message: "Login successful" };
+			jest.spyOn(authService, 'login').mockImplementation(async () => result);
+			
+			expect(await authController.login(loginDto)).toEqual({ data: result });
 		});
 	});
 });
