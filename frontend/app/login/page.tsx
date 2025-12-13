@@ -3,13 +3,27 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Inter, Poppins } from 'next/font/google';
+import { Card, Button, TextField, Divider, ButtonBase, IconButton } from '@mui/material';
+import { useState } from 'react';
+import { callApi } from '@shared'
 
 const inter = Inter({ subsets: ['latin'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '700'] });
 
-import { Card, Button, TextField, Divider, ButtonBase, IconButton } from '@mui/material';
 
 export default function LoginPage() {
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+
+	const handleLogin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		const res = await callApi('POST', '/auth/login', {
+			email: email,
+			password: password,
+		});
+		console.log("Login API call response: ", res);
+	}
+	
 	return (
 		<div className="h-screen w-screen bg-gradient-to-br from-sky-500 to-purple-500 justify-center items-center flex p-4">
 			<div className="w-full max-w-4xl h-[600px] flex justify-center items-center bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -22,17 +36,20 @@ export default function LoginPage() {
 						className="w-full max-w-md flex flex-col justify-center items-center p-10 gap-6"
 					>
 						<h1 className={`text-2xl font-bold ${poppins.className}`}>Login</h1>
-						<TextField label="Email" variant="outlined" fullWidth />
+						<form onSubmit={handleLogin} className="w-full flex flex-col gap-6">
+							<TextField label="Email" variant="outlined" fullWidth onChange={(e) => setEmail(e.target.value)} />
 
-						<TextField label="Password" type="password" variant="outlined" fullWidth />
-						<Button
-							color="primary"
-							variant="contained"
-							className={`${poppins.className}`}
-							fullWidth
-						>
-							Login
-						</Button>
+							<TextField label="Password" type="password" variant="outlined" fullWidth onChange={(e) => setPassword(e.target.value)} />
+							<Button
+								color="primary"
+								type='submit'
+								variant="contained"
+								className={`${poppins.className}`}
+								fullWidth
+							>
+								Login
+							</Button>
+						</form>
 						<p className={`text-sm ${poppins.className}`}>
 							Don't have an account?{' '}
 							<Link href="/register" className={`text-blue-500 hover:underline`}>

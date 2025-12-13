@@ -69,6 +69,18 @@ restart-api: ## Redémarrer l'API Gateway
 restart-auth: ## Redémarrer le service auth
 	$(DC_DEV) restart service-auth
 
+restart-user: ## Redémarrer le service user
+	$(DC_DEV) restart service-user
+
+restart-chat: ## Redémarrer le service chat
+	$(DC_DEV) restart service-chat
+
+restart-game: ## Redémarrer le service game
+	$(DC_DEV) restart service-game
+
+restart-front: ## Redémarrer le frontend
+	$(DC_DEV) restart frontend
+
 clean: ## Nettoyer containers, volumes et images
 	$(DC_DEV) down -v --remove-orphans
 	docker system prune -f

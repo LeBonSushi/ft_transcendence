@@ -19,13 +19,13 @@ export class AuthService {
 		const email_exist = await this.prisma.user.findUnique({ where: { email } });
 
 		if (email_exist) {
-			throw new BadRequestException("A user with this email already exists");
+			throw new ConflictException("A user with this email already exists");
 		}
 
 		const username_exist = await this.prisma.user.findUnique({ where: { username }});
 
 		if (username_exist) {
-			throw new BadRequestException("A user with this username already exists");
+			throw new ConflictException("A user with this username already exists");
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 12);
@@ -48,12 +48,12 @@ export class AuthService {
 		const user = await this.prisma.user.findUnique({ where: { email } });
 
 		if (!user) {
-			return false;
+			return { valid: false, exists: false };
 		}
 
 		const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
-		return isPasswordValid;
+		return { valid: isPasswordValid, exists: true };
 	}
 
 	async login({email, password}: LoginDto): Promise<LoginResponse> {
