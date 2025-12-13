@@ -19,7 +19,8 @@ export class UserService {
 
 	async modifyUser(id: string, body: UpdateUserDto) {
 		const user = await this.prisma.user.findUnique({ where: { id } });
-		if (!user) throw new BadRequestException('User not found');
+		if (!user)
+			throw new BadRequestException('User not found');
 
 		const { firstName, lastName, bio, profilePicture, location, birthdate, ...userFields } = body as any;
 
@@ -54,6 +55,7 @@ export class UserService {
 				roomMemberships: { include: { room: true } },
 			},
 		});
+
 		if (!user)
 			throw new BadRequestException('User not found');
 

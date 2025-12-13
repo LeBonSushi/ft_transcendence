@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-const USER_ID = "f4b8b186-161c-40d4-91f9-444c2f537575"; // Temporairement hardcodé, à remplacer par l'ID réel
+const USER_ID = "f4b8b186-161c-40d4-91f9-444c2f537575"; // Hardcode pour test
 
 export default function UserPage() {
     const [message, setMessage] = useState<string>("...");
@@ -12,7 +12,6 @@ export default function UserPage() {
     const [saving, setSaving] = useState<boolean>(false);
     const [successMsg, setSuccessMsg] = useState<string>("");
 
-    // État pour les champs modifiables
     const [username, setUsername] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [firstName, setFirstName] = useState<string>("");
@@ -26,10 +25,12 @@ export default function UserPage() {
             setError("");
             try {
                 const res = await fetch(`${API_URL}/user/${USER_ID}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (!res.ok)
+                    throw new Error(`HTTP ${res.status}`);
                 
                 const text = await res.text();
-                if (!text) throw new Error("Response vide du serveur");
+                if (!text)
+                    throw new Error("Response vide du serveur");
                 
                 const data = JSON.parse(text);
                 setMessage(JSON.stringify(data));
@@ -76,7 +77,8 @@ export default function UserPage() {
             }
 
             const text = await res.text();
-            if (!text) throw new Error("Response vide du serveur");
+            if (!text)
+                throw new Error("Response vide du serveur");
 
             const updatedUser = JSON.parse(text);
             setMessage(JSON.stringify(updatedUser));
@@ -119,7 +121,7 @@ export default function UserPage() {
                                 <p><strong>Bio:</strong> {user.profile?.bio}</p>
                             </div>
 
-                            {}
+                            {/* modification des champs */}
                             <div style={{ padding: 15, backgroundColor: "#fff9e6", borderRadius: 8 }}>
                                 <h2>Modifier le Profil</h2>
 
