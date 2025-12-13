@@ -7,8 +7,11 @@ help:
 	@echo "Commandes disponibles:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-dev: 
+dev: ## Lancer l'environnement de développement avec migration auto
+	@echo "🚀 Démarrage de l'environnement de développement..."
 	$(DC_DEV) up -d
+	@./scripts/db-migrate.sh
+	@echo "✨ Environnement prêt!"
 
 dev-build:
 	$(DC_DEV) up --build
