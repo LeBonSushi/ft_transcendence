@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+  // Prisma 7 preview features
+  previewFeatures = ["typedSql"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String?
+  oauthProvider String?
+  oauthId       String?
+
+  // Relations
+  profile                Profile?
+  sentFriendRequests     Friendship[]         @relation("SentRequests")
+  receivedFriendRequests Friendship[]         @relation("ReceivedRequests")
+  roomMemberships        RoomMember[]
+  sentMessages           Message[]
+  availabilities         UserAvailability[]
+  votes                  TripVote[]
+  suggestedActivities    ActivitySuggestion[]
+  createdRooms           Room[]               @relation("RoomCreator")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([username])
+}
+
+model Profile {
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String
+  lastName       String
+  profilePicture String?
+  bio            String?
+  location       String?
+  birthdate      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Friendship {
+  id       String           @id @default(uuid())
+  userId   String
+  friendId String
+  user     User             @relation("SentRequests", fields: [userId], references: [id], onDelete: Cascade)
+  friend   User             @relation("ReceivedRequests", fields: [friendId], references: [id], onDelete: Cascade)
+  status   FriendshipStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+model Room {
+  id          String     @id @default(uuid())
+  name        String
+  creatorId   String
+  creator     User       @relation("RoomCreator", fields: [creatorId], references: [id])
+  description String?
+  status      RoomStatus @default(PLANNING)
+
+  // Relations
+  members        RoomMember[]
+  availabilities UserAvailability[]
+  tripProposals  TripProposal[]
+  messages       Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([creatorId])
+}
+
+enum RoomStatus {
+  PLANNING
+  CONFIRMED
+  COMPLETED
+}
+
+model RoomMember {
+  id       String     @id @default(uuid())
+  roomId   String
+  userId   String
+  room     Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     MemberRole @default(MEMBER)
+  joinedAt DateTime   @default(now())
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
+}
+
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+model UserAvailability {
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roomId])
+  @@index([userId])
+}
+
+model TripProposal {
+  id             String     @id @default(uuid())
+  roomId         String
+  room           Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  destination    String
+  startDate      DateTime   @db.Date
+  endDate        DateTime   @db.Date
+  budgetEstimate Decimal?   @db.Decimal(10, 2)
+  description    String
+  imageUrl       String?
+  isSelected     Boolean    @default(false)
+
+  // Relations
+  votes      TripVote[]
+  activities ActivitySuggestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roomId])
+}
+
+model TripVote {
+  id             String       @id @default(uuid())
+  tripProposalId String
+  userId         String
+  tripProposal   TripProposal @relation(fields: [tripProposalId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vote           VoteType
+  createdAt      DateTime     @default(now())
+
+  @@unique([tripProposalId, userId])
+  @@index([tripProposalId])
+  @@index([userId])
+}
+
+enum VoteType {
+  YES
+  NO
+  MAYBE
+}
+
+model ActivitySuggestion {
+  id             String           @id @default(uuid())
+  tripProposalId String
+  suggestedById  String?
+  tripProposal   TripProposal     @relation(fields: [tripProposalId], references: [id], onDelete: Cascade)
+  suggestedBy    User?            @relation(fields: [suggestedById], references: [id], onDelete: SetNull)
+  title          String
+  description    String
+  category       ActivityCategory
+  estimatedPrice Decimal?         @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([tripProposalId])
+}
+
+enum ActivityCategory {
+  RESTAURANT
+  MUSEUM
+  NIGHTLIFE
+  OUTDOOR
+  OTHER
+}
+
+model Message {
+  id            String      @id @default(uuid())
+  roomId        String
+  senderId      String
+  room          Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender        User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content       String
+  type          MessageType @default(TEXT)
+  attachmentUrl String?
+
+  createdAt DateTime @default(now())
+
+  @@index([roomId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
+}

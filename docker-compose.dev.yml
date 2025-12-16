@@ -1,55 +1,60 @@
+version: '3.9'
+
 services:
-  frontend:
-    volumes:
-      - ./frontend:/app
-      - ./shared:/app/shared
-      - /app/node_modules
-      - /app/.next
+  postgres:
+    image: postgres:16-alpine
+    container_name: travel-planner-postgres-dev
+    restart: unless-stopped
     environment:
-      - NODE_ENV=development
-      - WATCHPACK_POLLING=true
-    command: npm run dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: travel_planner
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  service-auth:
+  redis:
+    image: redis:7-alpine
+    container_name: travel-planner-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
     volumes:
-      - ./backend/service-auth:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
-    command: npm run start:dev
+      - redis_dev_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
-  service-chat:
-    volumes:
-      - ./backend/service-chat:/app
-      - /app/node_modules
+  minio:
+    image: minio/minio:latest
+    container_name: travel-planner-minio-dev
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
-    command: npm run start:dev
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_dev_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
-  service-game:
-    volumes:
-      - ./backend/service-game:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
-    command: npm run start:dev
-
-  service-user:
-    volumes:
-      - ./backend/service-user:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://trans:trans_password@postgres:5432/trans
-    command: npm run start:dev
-
-  api-gateway:
-    volumes:
-      - ./backend/api-gateway:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-    command: npm run start:dev
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  minio_dev_data:

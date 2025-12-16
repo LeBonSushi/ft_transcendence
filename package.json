@@ -1,31 +1,30 @@
 {
-	"name": "transv3",
-	"private": true,
-	"workspaces": [
-		"backend/api-gateway",
-		"backend/service-auth",
-		"backend/service-user",
-		"backend/service-chat",
-		"backend/service-game",
-		"frontend",
-		"shared",
-		"database"
-	],
-	"scripts": {
-		"postinstall": "cd database && npx prisma generate",
-		"dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
-		"dev:backend": "npm --workspace backend run dev",
-		"dev:frontend": "npm --workspace frontend run dev",
-		"test": "jest"
-	},
-	"devDependencies": {
-		"@types/jest": "^30.0.0",
-		"concurrently": "^9.2.1",
-		"jest": "^30.0.0",
-		"ts-jest": "^29.4.6"
-	},
-	"dependencies": {
-		"@prisma/client": "^7.0.1",
-		"prisma": "^7.0.1"
-	}
+  "name": "travel-planner",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter web dev\"",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm --filter backend build && pnpm --filter web build",
+    "build:backend": "pnpm --filter backend build",
+    "build:web": "pnpm --filter web build",
+    "db:generate": "pnpm --filter database generate",
+    "db:migrate": "pnpm --filter database migrate",
+    "db:push": "pnpm --filter database push",
+    "db:seed": "pnpm --filter database seed",
+    "db:studio": "pnpm --filter database studio",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.1.0",
+    "prisma": "^7.1.0"
+  }
 }
