@@ -15,16 +15,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  rewrites: async () => {
-    // Use environment variable for backend URL (supports Docker)
-    const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://localhost:4000';
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`, // Proxy to Backend
-      },
-    ];
-  }
 };
 
 export default nextConfig;

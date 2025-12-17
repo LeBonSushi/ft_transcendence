@@ -22,6 +22,10 @@ export default function login() {
       }}>Login</Button>
 
       <Button onClick={async () => {
+        authApi.loginWithGoogle();
+      }}>Login with Google</Button>
+
+      <Button onClick={async () => {
         console.log('Cookies before /me:', document.cookie);
         try {
           const res = await authApi.getCurrentUser();

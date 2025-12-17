@@ -36,6 +36,7 @@ export function getLucia(): Lucia {
       sessionCookie: {
         attributes: {
           secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'none',
         },
       },
       getUserAttributes: (attributes) => {

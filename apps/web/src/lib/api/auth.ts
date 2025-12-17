@@ -38,14 +38,14 @@ export const authApi = {
 
   // OAuth login methods
   loginWithGoogle: () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}${API_ROUTES.AUTH.GOOGLE}`;
+    window.location.href = 'http://localhost:4000/api/auth/google';
   },
 
   loginWithGithub: () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}${API_ROUTES.AUTH.GITHUB}`;
+    window.location.href = 'http://localhost:4000/api/auth/github';
   },
 
   loginWith42: () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}${API_ROUTES.AUTH.FORTY_TWO}`;
+    window.location.href = 'http://localhost:4000/api/auth/42';
   },
 };

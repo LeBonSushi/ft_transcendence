@@ -3,13 +3,13 @@ import { Google, GitHub } from 'arctic';
 export const google = new Google(
   process.env.GOOGLE_CLIENT_ID!,
   process.env.GOOGLE_CLIENT_SECRET!,
-  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/auth/google/callback'
+  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:4000/api/auth/google/callback'
 );
 
 export const github = new GitHub(
   process.env.GITHUB_CLIENT_ID!,
   process.env.GITHUB_CLIENT_SECRET!,
-  process.env.GITHUB_REDIRECT_URI || 'http://localhost:3001/auth/github/callback'
+  process.env.GITHUB_REDIRECT_URI || 'http://localhost:4000/api/auth/github/callback'
 );
 
 // Note: Arctic doesn't have built-in support for 42, you'll need to use a generic OAuth2 provider
@@ -57,7 +57,7 @@ export class FortyTwo {
 export const fortyTwo = new FortyTwo(
   process.env.FORTYTWO_CLIENT_ID!,
   process.env.FORTYTWO_CLIENT_SECRET!,
-  process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:3001/auth/42/callback'
+  process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:4000/api/auth/42/callback'
 );
 
 interface FortyTwoTokens {

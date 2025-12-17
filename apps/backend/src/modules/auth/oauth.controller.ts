@@ -86,8 +86,7 @@ export class OAuthController {
       res.clearCookie('oauth_state');
       res.clearCookie('oauth_code_verifier');
 
-      // Redirect to frontend
-      res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+      res.redirect(process.env.LOGIN_REDIRECT || 'http://localhost:3000');
     } catch (error) {
       console.error('Google OAuth error:', error);
       throw new HttpException('Authentication failed', HttpStatus.UNAUTHORIZED);
@@ -162,7 +161,7 @@ export class OAuthController {
       });
 
       res.clearCookie('oauth_state');
-      res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+      res.redirect(process.env.LOGIN_REDIRECT || 'http://localhost:3000');
     } catch (error) {
       console.error('GitHub OAuth error:', error);
       throw new HttpException('Authentication failed', HttpStatus.UNAUTHORIZED);
@@ -227,7 +226,7 @@ export class OAuthController {
       });
 
       res.clearCookie('oauth_state');
-      res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+      res.redirect(process.env.LOGIN_REDIRECT || 'http://localhost:3000');
     } catch (error) {
       console.error('42 OAuth error:', error);
       throw new HttpException('Authentication failed', HttpStatus.UNAUTHORIZED);
