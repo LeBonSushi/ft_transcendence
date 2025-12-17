@@ -13,11 +13,11 @@ model User {
   username      String   @unique
   email         String   @unique
   passwordHash  String?
-  oauthProvider String?
-  oauthId       String?
 
   // Relations
   profile                Profile?
+  sessions               Session[]
+  oauthAccounts          OAuthAccount[]
   sentFriendRequests     Friendship[]         @relation("SentRequests")
   receivedFriendRequests Friendship[]         @relation("ReceivedRequests")
   roomMemberships        RoomMember[]
@@ -32,6 +32,29 @@ model User {
 
   @@index([email])
   @@index([username])
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OAuthAccount {
+  id           String @id @default(uuid())
+  userId       String
+  provider     String
+  providerUserId String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
 }
 
 model Profile {

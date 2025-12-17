@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { toast } from 'sonner';
 
 // Use proxy in browser, direct URL on server-side
 const API_URL = typeof window !== 'undefined'
@@ -16,6 +17,23 @@ class ApiClient {
         'Content-Type': 'application/json',
       },
     });
+
+    this.client.interceptors.response.use(
+      (response: AxiosResponse) => response,
+      (error: AxiosError) => {
+        if (error.response) {
+          const msg = (error.response.data as any)?.message || 'Une erreur est survenue';
+          toast.error(msg);
+        }
+        else if (error.request) {
+          toast.error('Erreur de connexion au serveur');
+        }
+        else {
+          toast.error('Une erreur inattendue est survenue');
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   // Generic HTTP methods

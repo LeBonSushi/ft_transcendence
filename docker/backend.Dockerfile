@@ -50,4 +50,4 @@ RUN cd packages/database && pnpm prisma generate
 
 EXPOSE 4000
 
-CMD ["node", "apps/backend/dist/apps/backend/src/main.js"]
+CMD ["node", "apps/backend/dist/main.js"]

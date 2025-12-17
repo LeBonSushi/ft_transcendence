@@ -1,62 +1,47 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { lucia } from '@/lib/lucia';
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
-  constructor(
-    private jwtService: JwtService,
-    private config: ConfigService,
-    private prisma: PrismaService
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const client: Socket = context.switchToWs().getClient<Socket>();
       const cookies = this.parseCookies(client.handshake.headers.cookie || '');
 
-      // Try access_token first
-      let token = cookies.access_token;
-      let payload: any;
+      const sessionId = cookies.auth_session;
 
-      try {
-        if (token) {
-          payload = await this.jwtService.verifyAsync(token, {
-            secret: this.config.get<string>('JWT_SECRET', 'default_jwt_secret'),
-          });
-        }
-      } catch (error) {
-        // Access token invalid or expired, try refresh token
-        token = cookies.refresh_token;
-        if (!token) {
-          throw new UnauthorizedException('No valid token provided');
-        }
-
-        payload = await this.jwtService.verifyAsync(token, {
-          secret: this.config.get<string>('JWT_SECRET', 'default_jwt_secret'),
-        });
+      if (!sessionId) {
+        throw new UnauthorizedException('No session provided');
       }
 
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
+      const { session, user } = await lucia.validateSession(sessionId);
+
+      if (!session || !user) {
+        throw new UnauthorizedException('Invalid or expired session');
+      }
+
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
         include: {
           profile: true,
         },
       });
 
-      if (!user) {
+      if (!dbUser) {
         throw new UnauthorizedException('User not found');
       }
 
       // Attach user to socket data
-      const { passwordHash, ...sanitizedUser } = user;
+      const { passwordHash, ...sanitizedUser } = dbUser;
       client.data.user = sanitizedUser;
 
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid session');
     }
   }
 

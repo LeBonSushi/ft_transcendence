@@ -1,18 +1,13 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { lucia } from '@/lib/lucia';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 
 @Injectable()
 export class GatewayGuard implements CanActivate {
-  constructor(
-    private jwtService: JwtService,
-    private reflector: Reflector,
-    private configService: ConfigService,
-  ) {}
+  constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if route is public
@@ -26,37 +21,40 @@ export class GatewayGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
-    const token = this.extractTokenFromRequest(request);
+    const sessionId = this.extractSessionFromRequest(request);
 
-    if (!token) {
-      throw new UnauthorizedException('No authentication token provided');
+    if (!sessionId) {
+      throw new UnauthorizedException('No authentication session provided');
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-      });
+      const { session, user } = await lucia.validateSession(sessionId);
+
+      if (!session || !user) {
+        throw new UnauthorizedException('Invalid or expired session');
+      }
 
       // Attach user to request
-      request['user'] = payload;
+      (request as any)['user'] = user;
+      (request as any)['session'] = session;
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException('Invalid or expired session');
     }
 
     return true;
   }
 
-  private extractTokenFromRequest(request: Request): string | undefined {
-    // Check Authorization header (Bearer token)
+  private extractSessionFromRequest(request: Request): string | undefined {
+    // Check Authorization header (Bearer token for API)
     const authHeader = request.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
 
-    // Check cookies (for session-based auth)
-    const cookieToken = request.cookies?.['access_token'];
-    if (cookieToken) {
-      return cookieToken;
+    // Check cookies (for browser-based auth)
+    const sessionCookie = request.cookies?.['auth_session'];
+    if (sessionCookie) {
+      return sessionCookie;
     }
 
     return undefined;

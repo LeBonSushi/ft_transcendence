@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { lucia } from '@/lib/lucia';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -9,9 +8,7 @@ import { LoginDto } from './dto/login.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private config: ConfigService
+    private prisma: PrismaService
   ) {}
 
   async register(dto: RegisterDto) {
@@ -47,11 +44,13 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const session = await lucia.createSession(user.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
 
     return {
       user: this.sanitizeUser(user),
-      ...tokens,
+      sessionId: session.id,
+      sessionCookie,
     };
   }
 
@@ -74,97 +73,112 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const session = await lucia.createSession(user.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
 
     return {
       user: this.sanitizeUser(user),
-      ...tokens,
+      sessionId: session.id,
+      sessionCookie,
     };
   }
 
-  async validateOAuthUser(
+  async validateSession(sessionId: string) {
+    const result = await lucia.validateSession(sessionId);
+
+    if (!result.session || !result.user) {
+      throw new UnauthorizedException('Invalid session');
+    }
+
+    return result;
+  }
+
+  async invalidateSession(sessionId: string) {
+    await lucia.invalidateSession(sessionId);
+  }
+
+  async getOrCreateOAuthUser(
     provider: string,
-    oauthId: string,
+    providerUserId: string,
     email: string,
     firstName: string,
     lastName: string,
     profilePicture?: string
   ) {
-    // Try to find existing user by OAuth credentials
-    let user = await this.prisma.user.findFirst({
+    // Try to find existing OAuth account
+    const existingOAuthAccount = await this.prisma.oAuthAccount.findUnique({
       where: {
-        oauthProvider: provider,
-        oauthId: oauthId,
+        provider_providerUserId: {
+          provider,
+          providerUserId,
+        },
+      },
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+
+    if (existingOAuthAccount) {
+      return existingOAuthAccount.user;
+    }
+
+    // Try to find user by email
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+      include: { profile: true },
+    });
+
+    // Link OAuth account to existing user
+    if (existingUser) {
+      await this.prisma.oAuthAccount.create({
+        data: {
+          userId: existingUser.id,
+          provider,
+          providerUserId,
+        },
+      });
+      return existingUser;
+    }
+
+    // Create new user with OAuth account
+    const username = email.split('@')[0] + Math.random().toString(36).substring(2, 6);
+    const newUser = await this.prisma.user.create({
+      data: {
+        email,
+        username,
+        profile: {
+          create: {
+            firstName,
+            lastName,
+            profilePicture,
+          },
+        },
       },
       include: {
         profile: true,
       },
     });
 
-    // If not found, try to find by email
-    if (!user && email) {
-      user = await this.prisma.user.findUnique({
-        where: { email },
-        include: { profile: true },
-      });
+    // Create OAuth account separately
+    await this.prisma.oAuthAccount.create({
+      data: {
+        userId: newUser.id,
+        provider,
+        providerUserId,
+      },
+    });
 
-      // Update existing user with OAuth credentials
-      if (user) {
-        user = await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            oauthProvider: provider,
-            oauthId: oauthId,
-          },
-          include: {
-            profile: true,
-          },
-        });
-      }
-    }
-
-    // Create new user if not found
-    if (!user) {
-      const username = email.split('@')[0] + Math.random().toString(36).substr(2, 4);
-      user = await this.prisma.user.create({
-        data: {
-          email,
-          username,
-          oauthProvider: provider,
-          oauthId: oauthId,
-          profile: {
-            create: {
-              firstName,
-              lastName,
-              profilePicture,
-            },
-          },
-        },
-        include: {
-          profile: true,
-        },
-      });
-    }
-
-    return user;
+    return newUser;
   }
 
-  async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-
-	const accessToken = await this.jwtService.signAsync(payload, {
-		expiresIn: parseInt(this.config.get<string>('JWT_EXPIRES_IN_SECOND', '900'), 10),
-	});
-
-	const refreshToken = await this.jwtService.signAsync(payload, {
-		expiresIn: parseInt(this.config.get<string>('JWT_REFRESH_TIME_SECOND', '604800'), 10),
-	});
-
-    return {
-      accessToken,
-      refreshToken,
-      expiresIn: parseInt(this.config.get<string>('JWT_EXPIRES_IN_SECOND', '900'), 10),
-    };
+  async createSessionForUser(userId: string) {
+    const session = await lucia.createSession(userId, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    return { session, sessionCookie };
   }
 
   async validateUser(userId: string) {

@@ -16,6 +16,10 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/packages ./packages
 COPY . .
 
+# Set build-time environment variable with a default
+ARG BACKEND_INTERNAL_URL=http://backend:4000
+ENV BACKEND_INTERNAL_URL=${BACKEND_INTERNAL_URL}
+
 # Build Next.js app
 RUN pnpm --filter web build
 
@@ -25,6 +29,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV BACKEND_INTERNAL_URL=http://backend:4000
 
 # Copy built assets
 COPY --from=builder /app/apps/web/.next/standalone ./

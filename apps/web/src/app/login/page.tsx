@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { authApi } from '@/lib/api/auth';
+import { toast } from 'sonner';
 
 export default function login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('alice');
@@ -17,6 +18,7 @@ export default function login() {
 
         console.log('Login response:', res);
         console.log('Cookies after login:', document.cookie);
+        toast.success('Logged in successfully!');
       }}>Login</Button>
 
       <Button onClick={async () => {
@@ -29,6 +31,13 @@ export default function login() {
           console.error('Error getting user:', error);
         }
       }}>Get Current User</Button>
+
+      <Button onClick={async () => {
+        await authApi.logout();
+        setUser(null);
+        toast.success('Logged out successfully!');
+        console.log('Logged out. Cookies after logout:', document.cookie);
+      }}>Logout</Button>
 
       {user &&
       <div>
