@@ -55,9 +55,9 @@ export class FortyTwo {
 }
 
 export const fortyTwo = new FortyTwo(
-  process.env.FORTYTWO_CLIENT_ID!,
-  process.env.FORTYTWO_CLIENT_SECRET!,
-  process.env.FORTYTWO_REDIRECT_URI || 'http://localhost:4000/api/auth/42/callback'
+  process.env.FORTY_TWO_CLIENT_ID!,
+  process.env.FORTY_TWO_CLIENT_SECRET!,
+  process.env.FORTY_TWO_CALLBACK_URL || 'http://localhost:4000/api/auth/42/callback'
 );
 
 interface FortyTwoTokens {

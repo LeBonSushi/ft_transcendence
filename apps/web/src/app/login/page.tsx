@@ -11,46 +11,34 @@ export default function login() {
   const [password, setPassword] = useState<string>('password123');
   const [user, setUser] = useState<any>(null);
 
-  const handleOAuthSuccess = async () => {
-    toast.success('Logged in with Google!');
-    const userData = await authApi.getCurrentUser();
-    setUser(userData);
-  };
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Vérifier que le message vient bien du backend
-      if (event.origin !== 'http://localhost:4000') return;
-      if (event.data.type === 'oauth-success') {
-        handleOAuthSuccess();
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
   return (
     <div className='flex '>
       <Button onClick={ async () => {
         const res = await authApi.login({ usernameOrEmail, password });
-
-        console.log('Login response:', res);
-        console.log('Cookies after login:', document.cookie);
+        setUser(res.user);
         toast.success('Logged in successfully!');
       }}>Login</Button>
 
       <Button onClick={async (e) => {
         e.preventDefault();
-        authApi.loginWithGoogle();
+        const user = await authApi.loginWithGoogle();
+        setUser(user);
+        toast.success('Logged in with Google!');
       }}>Login with Google</Button>
 
       <Button onClick={async (e) => {
         e.preventDefault();
-        authApi.loginWithGithub();
+        const user = await authApi.loginWithGithub();
+        setUser(user);
+        toast.success('Logged in with Github!');
       }}>Login with Github</Button>
 
-      
+      <Button onClick={async (e) => {
+        e.preventDefault();
+        const user = await authApi.loginWith42();
+        setUser(user);
+        toast.success('Logged in with 42!');
+      }}>Login with 42</Button>
 
       <Button onClick={async () => {
         console.log('Cookies before /me:', document.cookie);

@@ -24,7 +24,7 @@ export default function RootLayout({
           richColors
           closeButton
           duration={4000}
-          theme='system'/>
+          theme='light'/>
       </body>
     </html>
   );
