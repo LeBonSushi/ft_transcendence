@@ -1,6 +1,8 @@
 import { apiClient } from './client';
 import { API_ROUTES } from '@travel-planner/shared';
 import type { User } from '@travel-planner/shared';
+import React from 'react';
+import { getApiBaseUrl } from '../config';
 
 export interface RegisterDto {
   email: string;
@@ -38,14 +40,20 @@ export const authApi = {
 
   // OAuth login methods
   loginWithGoogle: () => {
-    window.location.href = 'http://localhost:4000/api/auth/google';
+    const url = `${getApiBaseUrl()}${API_ROUTES.AUTH.GOOGLE}`;
+
+    window.open(url, '_blank', 'width=500,height=600');
   },
 
   loginWithGithub: () => {
-    window.location.href = 'http://localhost:4000/api/auth/github';
+    const url = `${getApiBaseUrl()}${API_ROUTES.AUTH.GITHUB}`;
+
+    window.open(url, '_blank', 'width=500,height=600');
   },
 
   loginWith42: () => {
-    window.location.href = 'http://localhost:4000/api/auth/42';
+    const url = `${getApiBaseUrl()}${API_ROUTES.AUTH.FORTY_TWO}`;
+
+    window.open(url, '_blank', 'width=500,height=600');
   },
 };

@@ -1,15 +1,13 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
-
-// Direct connection to backend
-const API_URL = 'http://localhost:4000/api';
+import { config } from '../config';
 
 class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
     this.client = axios.create({
-      baseURL: `${API_URL}`,
+      baseURL: config.apiUrl,
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json',

@@ -23,7 +23,9 @@ export class OAuthController {
   async googleLogin(@Res() res: Response) {
     const state = generateState();
     const codeVerifier = generateCodeVerifier();
-    const url = await google.createAuthorizationURL(state, codeVerifier, ['profile', 'email']);
+    const url = google.createAuthorizationURL(state, codeVerifier, ['profile', 'email']);
+    
+    url.searchParams.set('prompt', 'select_account');
 
     res.cookie('oauth_state', state, {
       httpOnly: true,
@@ -86,7 +88,16 @@ export class OAuthController {
       res.clearCookie('oauth_state');
       res.clearCookie('oauth_code_verifier');
 
-      res.redirect(process.env.LOGIN_REDIRECT || 'http://localhost:3000');
+      res.send(`
+        <script>
+          if (window.opener) {
+            window.opener.postMessage({ type: 'oauth-success' }, '${process.env.CORS_ORIGIN}');
+            window.close();
+          } else {
+            window.location.href = '${process.env.LOGIN_REDIRECT || 'http://localhost:3000'}';
+          }
+        </script>
+      `);
     } catch (error) {
       console.error('Google OAuth error:', error);
       throw new HttpException('Authentication failed', HttpStatus.UNAUTHORIZED);
@@ -159,9 +170,18 @@ export class OAuthController {
         ...sessionCookie.attributes,
         path: '/',
       });
-
       res.clearCookie('oauth_state');
-      res.redirect(process.env.LOGIN_REDIRECT || 'http://localhost:3000');
+
+      res.send(`
+        <script>
+          if (window.opener) {
+            window.opener.postMessage({ type: 'oauth-success' }, '${process.env.CORS_ORIGIN}');
+            window.close();
+          } else {
+            window.location.href = '${process.env.LOGIN_REDIRECT || 'http://localhost:3000'}';
+          }
+        </script>
+      `);
     } catch (error) {
       console.error('GitHub OAuth error:', error);
       throw new HttpException('Authentication failed', HttpStatus.UNAUTHORIZED);

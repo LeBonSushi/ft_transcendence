@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { authApi } from '@/lib/api/auth';
@@ -10,6 +10,25 @@ export default function login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('alice');
   const [password, setPassword] = useState<string>('password123');
   const [user, setUser] = useState<any>(null);
+
+  const handleOAuthSuccess = async () => {
+    toast.success('Logged in with Google!');
+    const userData = await authApi.getCurrentUser();
+    setUser(userData);
+  };
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Vérifier que le message vient bien du backend
+      if (event.origin !== 'http://localhost:4000') return;
+      if (event.data.type === 'oauth-success') {
+        handleOAuthSuccess();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   return (
     <div className='flex '>
@@ -21,9 +40,17 @@ export default function login() {
         toast.success('Logged in successfully!');
       }}>Login</Button>
 
-      <Button onClick={async () => {
+      <Button onClick={async (e) => {
+        e.preventDefault();
         authApi.loginWithGoogle();
       }}>Login with Google</Button>
+
+      <Button onClick={async (e) => {
+        e.preventDefault();
+        authApi.loginWithGithub();
+      }}>Login with Github</Button>
+
+      
 
       <Button onClick={async () => {
         console.log('Cookies before /me:', document.cookie);
