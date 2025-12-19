@@ -1,69 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { authApi } from '@/lib/api/auth';
-import { toast } from 'sonner';
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('alice');
   const [password, setPassword] = useState<string>('password123');
-  const [user, setUser] = useState<any>(null);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [register, setRegister] = useState<boolean>(false);
 
   return (
-    <div className='flex '>
-      <Button onClick={ async () => {
-        const res = await authApi.login({ usernameOrEmail, password });
-        setUser(res.user);
-        toast.success('Logged in successfully!');
-      }}>Login</Button>
-
-      <Button onClick={async (e) => {
-        e.preventDefault();
-        const user = await authApi.loginWithGoogle();
-        setUser(user);
-        toast.success('Logged in with Google!');
-      }}>Login with Google</Button>
-
-      <Button onClick={async (e) => {
-        e.preventDefault();
-        const user = await authApi.loginWithGithub();
-        setUser(user);
-        toast.success('Logged in with Github!');
-      }}>Login with Github</Button>
-
-      <Button onClick={async (e) => {
-        e.preventDefault();
-        const user = await authApi.loginWith42();
-        setUser(user);
-        toast.success('Logged in with 42!');
-      }}>Login with 42</Button>
-
-      <Button onClick={async () => {
-        console.log('Cookies before /me:', document.cookie);
-        try {
-          const res = await authApi.getCurrentUser();
-          console.log('User data:', res);
-          setUser(res);
-        } catch (error) {
-          console.error('Error getting user:', error);
-        }
-      }}>Get Current User</Button>
-
-      <Button onClick={async () => {
-        await authApi.logout();
-        setUser(null);
-        toast.success('Logged out successfully!');
-        console.log('Logged out. Cookies after logout:', document.cookie);
-      }}>Logout</Button>
-
-      {user &&
-      <div>
-        <h2>User Info:</h2>
-        <pre>{JSON.stringify(user, null, 2)}</pre>
-      </div>
-      }
-	  </div>
+    <div className='w-screen h-screen bg-white flex flex-col items-center justify-center'>
+      <Card className='flex min-w-2/3 min-h-3/4 bg-gray-100 shadow-md overflow-hidden items-center justify-center'>
+        {/* <Card>
+        </Card> */}
+        <div className='w-2/5 h-full hidden md:inline relative'>
+          <Image src={'/login.jpg'} alt="Login Image" className='object-cover' priority fill/>
+        </div>
+        <div className='w-full md:w-3/5 h-full p-12 flex flex-col items-center'> {/* Login Form */ }
+          <h2 className='text-[clamp(1.125rem,1.25rem+0.25vw,2.5rem)] text-nowrap font-bold mb-8'>Login to Your Account</h2>
+        </div>
+      </Card>
+    </div>
   )
 }

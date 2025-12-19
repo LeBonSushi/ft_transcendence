@@ -10,11 +10,7 @@ export const metadata: Metadata = {
   description: 'Collaborative travel planning platform',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -24,7 +20,8 @@ export default function RootLayout({
           richColors
           closeButton
           duration={4000}
-          theme='light'/>
+          theme='light'
+        />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* Theme variables */
   --color-background: 0 0% 100%;
   --color-foreground: 0 0% 3.9%;
   --color-card: 0 0% 100%;
@@ -21,6 +22,19 @@
   --color-input: 0 0% 89.8%;
   --color-ring: 0 0% 3.9%;
   --radius: 0.5rem;
+
+  /* Dusk Blue color palette */
+  --color-dusk-blue-50: 0.97 0.01 250;
+  --color-dusk-blue-100: 0.93 0.02 250;
+  --color-dusk-blue-200: 0.84 0.04 250;
+  --color-dusk-blue-300: 0.75 0.06 250;
+  --color-dusk-blue-400: 0.65 0.08 250;
+  --color-dusk-blue-500: 0.55 0.10 250;
+  --color-dusk-blue-600: 0.45 0.09 250;
+  --color-dusk-blue-700: 0.35 0.07 250;
+  --color-dusk-blue-800: 0.25 0.05 250;
+  --color-dusk-blue-900: 0.15 0.03 250;
+  --color-dusk-blue-950: 0.10 0.02 250;
 }
 
 @layer base {
