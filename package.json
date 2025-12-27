@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter web dev\"",
+    "dev": "concurrently -n \"backend,web,ngrok\" -c \"blue,magenta,green\" \"pnpm --filter backend dev\" \"pnpm --filter web dev\" \"ngrok http 4000\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:web": "pnpm --filter web dev",
+    "dev:ngrok": "ngrok http 4000",
     "build": "pnpm --filter backend build && pnpm --filter web build",
     "build:backend": "pnpm --filter backend build",
     "build:web": "pnpm --filter web build",
