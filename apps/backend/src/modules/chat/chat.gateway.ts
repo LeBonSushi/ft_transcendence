@@ -7,7 +7,7 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
+import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
 
 @WebSocketGateway({
   cors: {
@@ -15,7 +15,7 @@ import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
     credentials: true,
   },
 })
-@UseGuards(WsJwtGuard)
+@UseGuards(WsClerkGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -23,7 +23,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private chatService: ChatService) {}
 
   async handleConnection(client: Socket) {
-    // L'utilisateur est disponible dans client.data.user grâce au WsJwtGuard
+    // L'utilisateur est disponible dans client.data.user grâce au WsClerkGuard
     const user = client.data.user;
     console.log(`User ${user.username} connected to chat`);
   }

@@ -1,6 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 
+interface CreateFromClerkDto {
+  clerkId: string;
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  profilePicture?: string;
+}
+
+interface UpdateFromClerkDto {
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  profilePicture?: string;
+}
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -21,10 +38,78 @@ export class UsersService {
     return sanitized;
   }
 
+  async findByClerkId(clerkId: string) {
+    return this.prisma.user.findUnique({
+      where: { clerkId },
+      include: { profile: true },
+    });
+  }
+
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
       include: { profile: true },
+    });
+  }
+
+  async createFromClerk(data: CreateFromClerkDto) {
+    return this.prisma.user.create({
+      data: {
+        clerkId: data.clerkId,
+        email: data.email,
+        username: data.username,
+        oauthProvider: 'clerk',
+        oauthId: data.clerkId,
+        profile: data.firstName && data.lastName ? {
+          create: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            profilePicture: data.profilePicture,
+          },
+        } : undefined,
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
+
+  async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
+    const user = await this.findByClerkId(clerkId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { clerkId },
+      data: {
+        email: data.email,
+        username: data.username,
+        profile: data.firstName && data.lastName ? {
+          upsert: {
+            create: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              profilePicture: data.profilePicture,
+            },
+            update: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              profilePicture: data.profilePicture,
+            },
+          },
+        } : undefined,
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
+
+  async deleteByClerkId(clerkId: string) {
+    return this.prisma.user.delete({
+      where: { clerkId },
     });
   }
 

@@ -1,20 +1,23 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
 import { createClerkClient, verifyToken } from '@clerk/backend';
-
-export const IS_PUBLIC_KEY = 'isPublic';
+import { ConfigService } from '@nestjs/config';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
-export class GatewayGuard implements CanActivate {
+export class ClerkAuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private configService: ConfigService,
+    private config: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Check if route is public
+    // Vérifier si la route est publique
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -24,21 +27,22 @@ export class GatewayGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
-    const token = this.extractTokenFromRequest(request);
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('No authentication token provided');
+      throw new UnauthorizedException('No token provided');
     }
 
     try {
-      const clerkSecretKey = this.configService.get<string>('CLERK_SECRET_KEY');
+      // Vérifier le token avec Clerk
+      const clerkSecretKey = this.config.get<string>('CLERK_SECRET_KEY');
 
       if (!clerkSecretKey) {
         throw new UnauthorizedException('Clerk is not configured');
       }
 
-      // Vérifier le token avec Clerk
+      // Vérifier le token JWT de Clerk
       const verified = await verifyToken(token, {
         secretKey: clerkSecretKey,
       });
@@ -52,33 +56,27 @@ export class GatewayGuard implements CanActivate {
       const clerkUser = await clerkClient.users.getUser(verified.sub);
 
       // Attacher les infos utilisateur à la requête
-      request['user'] = {
+      request.user = {
         id: clerkUser.id,
         email: clerkUser.emailAddresses[0]?.emailAddress,
         username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress,
         clerkId: clerkUser.id,
       };
+
+      return true;
     } catch (error) {
       console.error('Clerk token verification failed:', error);
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException('Invalid token');
     }
-
-    return true;
   }
 
-  private extractTokenFromRequest(request: Request): string | undefined {
-    // Check Authorization header (Bearer token)
+  private extractTokenFromHeader(request: any): string | undefined {
     const authHeader = request.headers.authorization;
-    if (authHeader?.startsWith('Bearer ')) {
-      return authHeader.substring(7);
+    if (!authHeader) {
+      return undefined;
     }
 
-    // Check cookies (for session-based auth)
-    const cookieToken = request.cookies?.['access_token'];
-    if (cookieToken) {
-      return cookieToken;
-    }
-
-    return undefined;
+    const [type, token] = authHeader.split(' ');
+    return type === 'Bearer' ? token : undefined;
   }
 }

@@ -1,31 +1,15 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
+import { Socket } from 'socket.io';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 
-export const IS_PUBLIC_KEY = 'isPublic';
-
 @Injectable()
-export class GatewayGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private configService: ConfigService,
-  ) {}
+export class WsClerkGuard implements CanActivate {
+  constructor(private configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Check if route is public
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (isPublic) {
-      return true;
-    }
-
-    const request = context.switchToHttp().getRequest<Request>();
-    const token = this.extractTokenFromRequest(request);
+    const client: Socket = context.switchToWs().getClient();
+    const token = this.extractTokenFromSocket(client);
 
     if (!token) {
       throw new UnauthorizedException('No authentication token provided');
@@ -51,32 +35,32 @@ export class GatewayGuard implements CanActivate {
       // Récupérer les informations utilisateur de Clerk
       const clerkUser = await clerkClient.users.getUser(verified.sub);
 
-      // Attacher les infos utilisateur à la requête
-      request['user'] = {
+      // Attacher les infos utilisateur au socket
+      client.data.user = {
         id: clerkUser.id,
         email: clerkUser.emailAddresses[0]?.emailAddress,
         username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress,
         clerkId: clerkUser.id,
       };
+
+      return true;
     } catch (error) {
-      console.error('Clerk token verification failed:', error);
+      console.error('WebSocket Clerk token verification failed:', error);
       throw new UnauthorizedException('Invalid or expired token');
     }
-
-    return true;
   }
 
-  private extractTokenFromRequest(request: Request): string | undefined {
-    // Check Authorization header (Bearer token)
-    const authHeader = request.headers.authorization;
+  private extractTokenFromSocket(client: Socket): string | undefined {
+    // Essayer d'extraire le token depuis les headers d'authentification
+    const authHeader = client.handshake.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
 
-    // Check cookies (for session-based auth)
-    const cookieToken = request.cookies?.['access_token'];
-    if (cookieToken) {
-      return cookieToken;
+    // Essayer d'extraire le token depuis les query params (fallback)
+    const tokenFromQuery = client.handshake.auth?.token || client.handshake.query?.token;
+    if (typeof tokenFromQuery === 'string') {
+      return tokenFromQuery;
     }
 
     return undefined;

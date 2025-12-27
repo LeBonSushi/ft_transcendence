@@ -3,6 +3,7 @@ packages:
   - packages/*
 
 onlyBuiltDependencies:
+  - '@clerk/shared'
   - '@nestjs/core'
   - '@prisma/engines'
   - bcrypt

@@ -1,9 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-// Use proxy in browser, direct URL on server-side
-const API_URL = typeof window !== 'undefined'
-  ? '/api'  // Client-side: use Next.js proxy
-  : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'; // Server-side
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -16,6 +13,31 @@ class ApiClient {
         'Content-Type': 'application/json',
       },
     });
+
+    // Intercepteur pour ajouter le token Clerk à chaque requête (client-side only)
+    this.client.interceptors.request.use(
+      async (config) => {
+        // Seulement côté client
+        if (typeof window !== 'undefined') {
+          try {
+            // Utiliser l'API Clerk côté client
+            const clerk = (window as any).Clerk;
+            if (clerk && clerk.session) {
+              const token = await clerk.session.getToken();
+              if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+              }
+            }
+          } catch (error) {
+            console.error('Error getting Clerk token:', error);
+          }
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
   }
 
   // Generic HTTP methods
