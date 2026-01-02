@@ -1,10 +1,10 @@
 'use client'
 
-import { SignIn } from '@clerk/nextjs';
+import { SignIn } from "@clerk/nextjs"
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex justify-center items-center h-full">
       <SignIn />
     </div>
   )

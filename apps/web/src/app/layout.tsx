@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider, SignedIn, SignedOut, UserAvatar, UserButton, UserProfile } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/ui/theme-provider';
+import Header from '@/components/ui/header';
+import { Toaster } from 'react-hot-toast';
 import './globals.css';
+
+import { shadcn } from '@clerk/themes';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,14 +21,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider appearance={{ theme: shadcn }}>
       <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
+        <body className={`${inter.className}`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
+            <div className="h-screen flex flex-col">
+              <Header />
+              <main className="flex-1 overflow-auto">
+                {children}
+              </main>
+            </div >
+            <Toaster position="top-right" />
           </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
   );
 }
+
