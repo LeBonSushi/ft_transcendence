@@ -2,19 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Container, Box, Button, Alert, Typography, useTheme } from "@mui/material";
+import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 import RoomCard from "../../components/RoomCard";
 import ProfileField from "../../components/ProfileField";
 import ProfileDisplay from "../../components/ProfileDisplay";
 import { usersApi } from "@/lib/api/users";
-import { useAuthStore } from "@/store/authStore";
-import { authApi } from "@/lib/api/auth";
 import type { User, RoomSummary } from "@travel-planner/shared";
 
 export default function UserPage() {
 	const router = useRouter();
-	const { user: authUser } = useAuthStore();
-	const userId = authUser?.id;
+	const { user: clerkUser } = useUser();
+	const userId = clerkUser?.id;
 	const [userData, setUserData] = useState<User | null>(null);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string>("");
@@ -34,14 +33,13 @@ export default function UserPage() {
 			setLoading(true);
 			setError("");
 			try {
-				let currentUser = authUser;
-				if (!currentUser) {
-					currentUser = await authApi.getCurrentUser();
-					useAuthStore.setState({ user: currentUser });
+				if (!clerkUser?.id) {
+					setError("Utilisateur non connecté");
+					return;
 				}
 
-				const userDetails = await usersApi.getUser(currentUser?.id);
-				const userRooms = await usersApi.getUserRooms(currentUser?.id);
+				const userDetails = await usersApi.getUser(clerkUser.id);
+				const userRooms = await usersApi.getUserRooms(clerkUser.id);
 
 				setUserData(userDetails);
 				setRooms(userRooms ?? []);
@@ -60,7 +58,7 @@ export default function UserPage() {
 			}
 		};
 		fetchUser();
-	}, [authUser]);
+	}, [clerkUser]);
 
 	const handleSave = async () => {
 		setSaving(true);
@@ -72,7 +70,6 @@ export default function UserPage() {
 
 			const updateData: Record<string, string> = {};
 			
-			// Envoyer seulement les champs modifiés
 			if (username?.trim() && username !== userData.username)
 				updateData.username = username.trim();
 			if (email?.trim() && email !== userData.email)
@@ -88,25 +85,21 @@ export default function UserPage() {
 			if (profilePicture?.trim() && profilePicture !== (userData.profile?.profilePicture || ""))
 				updateData.profilePicture = profilePicture.trim();
 
-			// Ne rien envoyer si aucun changement
 			if (Object.keys(updateData).length === 0) {
 				setSuccessMsg("Aucune modification détectée");
-				// setSaving(false);
 				return;
 			}
 
-			let currentUser = authUser;
-			if (!currentUser) {
-				currentUser = await authApi.getCurrentUser();
-				useAuthStore.setState({ user: currentUser });
+			if (!clerkUser?.id) {
+				setError("Utilisateur non connecté");
+				return;
 			}
 
 			console.log("infos send", updateData);
-			const response = await usersApi.updateUser(currentUser.id, updateData);
+			const response = await usersApi.updateUser(clerkUser.id, updateData);
 
 			const updatedUser = response.user;
 			setUserData(updatedUser);
-			useAuthStore.setState({ user: updatedUser });
 
 			if (response.warnings && response.warnings.length > 0) {
 				console.log('Warnings:', response.warnings);
@@ -122,12 +115,23 @@ export default function UserPage() {
 		}
 	};
 
-	const theme = useTheme();
 	return (
-		<Container maxWidth="lg" sx={{ py: 4 }}>
-			{loading && <Alert severity="info">Chargement...</Alert>}
-			{error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-			{successMsg && <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>}
+		<div className="container max-w-7xl mx-auto py-8 px-4">
+			{loading && (
+				<div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded-lg">
+					Chargement...
+				</div>
+			)}
+			{error && (
+				<div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg">
+					{error}
+				</div>
+			)}
+			{successMsg && (
+				<div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-lg">
+					{successMsg}
+				</div>
+			)}
 
 			{!loading && !error && userData && (() => {
 				try {
@@ -135,53 +139,45 @@ export default function UserPage() {
 					return (
 						<>
 							{/* Main Grid: Left (Profile + Edit) + Right (Messages full height) */}
-							<Box sx={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 3, minHeight: "70vh" }}>
+							<div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-6 min-h-[70vh]">
 								{/* Left Column: Profile + Edit */}
-								<Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+								<div className="flex flex-col gap-6">
 									{/* Profile Display */}
-									<Box>
-										<ProfileDisplay
-											username={user.username}
-											email={user.email}
+									<ProfileDisplay
+										username={user.username}
+										email={user.email}
 										firstName={user.profile?.firstName}
 										lastName={user.profile?.lastName}
 										bio={user.profile?.bio}
 										profilePicture={user.profile?.profilePicture}
 									/>
-								</Box>
+
 
 									{/* Edit Profile Form */}
-									<Box sx={{ mb: 3, backgroundColor: theme.palette.primary.main, borderRadius: 3, padding: 2 }}>
-										<Box sx={{ mb: 2 }}>
-											<h3>Modifier le Profil</h3>
-										</Box>
+									<div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+										<h3 className="text-xl font-bold mb-4">Modifier le Profil</h3>
 										<ProfileField
 											label="Username"
-											// value={''}
 											onChange={setUsername}
 											type="text"
 										/>
 										<ProfileField
 											label="Email"
-											// value={''}
 											onChange={setEmail}
 											type="email"
 										/>
 										<ProfileField
 											label="Prénom"
-											// value={''}
 											onChange={setFirstName}
 											type="text"
 										/>
 										<ProfileField
 											label="Nom"
-											// value={''}
 											onChange={setLastName}
 											type="text"
 										/>
 										<ProfileField
 											label="Bio"
-											// value={}
 											onChange={setBio}
 											type="textarea"
 											multiline
@@ -189,44 +185,31 @@ export default function UserPage() {
 										/>
 										<ProfileField
 											label="Photo de profil (URL)"
-											// value={profilePicture}
 											onChange={setProfilePicture}
 											type="text"
 											placeholder="https://exemple.com/image.jpg"
 										/>
 										<Button
-											variant="contained"
 											onClick={handleSave}
 											disabled={saving}
-											fullWidth
-											sx={{ mt: 2, backgroundColor: theme.palette.primary.dark }}
+											className="w-full mt-4"
 										>
 											{saving ? "Enregistrement..." : "Enregistrer"}
 										</Button>
-									</Box>
-								</Box>
+									</div>
+								</div>
 
 								{/* Right Column: Messages (full height) */}
-								<Box
-									sx={{
-										backgroundColor: "#f9f9f9",
-										borderRadius: 2,
-										padding: 2,
-										display: "flex",
-										flexDirection: "column",
-									}}
-								>
-									<Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-										Mes Conversations
-									</Typography>
+								<div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 flex flex-col">
+									<h2 className="text-xl font-bold mb-4">Mes Conversations</h2>
 									{rooms.length === 0 ? (
-										<Typography sx={{ color: "#999" }}>
+										<p className="text-gray-500 dark:text-gray-400">
 											Aucune conversation pour le moment
-										</Typography>
+										</p>
 									) : (
-										<Box sx={{ flex: 1, overflowY: "auto" }}>
+										<div className="flex-1 overflow-y-auto">
 											{rooms.map((room, idx) => (
-												<div key={idx} style={{ marginBottom: 12 }}>
+												<div key={idx} className="mb-3">
 													<RoomCard
 														name={room.name}
 														lastMessage={room.lastMessage}
@@ -237,16 +220,16 @@ export default function UserPage() {
 													/>
 												</div>
 											))}
-										</Box>
+										</div>
 									)}
-								</Box>
-							</Box>
+								</div>
+							</div>
 						</>
 					);
 				} catch {
-					return <Typography sx={{ color: "red" }}>Erreur de parsing</Typography>;
+					return <p className="text-red-600">Erreur de parsing</p>;
 				}
 			})()}
-		</Container>
+		</div>
 	);
 }
