@@ -1,5 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { UpdateUserDto } from './dto/user.dto';
+import * as bcrypt from 'bcrypt';
 
 interface CreateFromClerkDto {
   clerkId: string;
@@ -20,158 +22,241 @@ interface UpdateFromClerkDto {
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+	constructor(private prisma: PrismaService) {}
 
-  async findById(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        profile: true,
-      },
-    });
+	async getUserById(id: string) {
+		return this.prisma.user.findUnique({
+			where: { id },
+			include: {
+				profile: true,
+			},
+		});
+	}
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+	async findByClerkId(clerkId: string) {
+		return this.prisma.user.findUnique({
+			where: { clerkId },
+			include: { profile: true },
+		});
+	}
 
-    const { passwordHash, ...sanitized } = user;
-    return sanitized;
-  }
+	async findByEmail(email: string) {
+		return this.prisma.user.findUnique({
+			where: { email },
+			include: { profile: true },
+		});
+	}
 
-  async findByClerkId(clerkId: string) {
-    return this.prisma.user.findUnique({
-      where: { clerkId },
-      include: { profile: true },
-    });
-  }
+	async createFromClerk(data: CreateFromClerkDto) {
+		return this.prisma.user.create({
+			data: {
+				clerkId: data.clerkId,
+				email: data.email,
+				username: data.username,
+				oauthProvider: 'clerk',
+				oauthId: data.clerkId,
+				profile: data.firstName && data.lastName ? {
+					create: {
+						firstName: data.firstName,
+						lastName: data.lastName,
+						profilePicture: data.profilePicture,
+					},
+				} : undefined,
+			},
+			include: {
+				profile: true,
+			},
+		});
+	}
 
-  async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email },
-      include: { profile: true },
-    });
-  }
+	async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
+		const user = await this.findByClerkId(clerkId);
 
-  async createFromClerk(data: CreateFromClerkDto) {
-    return this.prisma.user.create({
-      data: {
-        clerkId: data.clerkId,
-        email: data.email,
-        username: data.username,
-        oauthProvider: 'clerk',
-        oauthId: data.clerkId,
-        profile: data.firstName && data.lastName ? {
-          create: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            profilePicture: data.profilePicture,
-          },
-        } : undefined,
-      },
-      include: {
-        profile: true,
-      },
-    });
-  }
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
 
-  async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
-    const user = await this.findByClerkId(clerkId);
+		return this.prisma.user.update({
+			where: { clerkId },
+			data: {
+				email: data.email,
+				username: data.username,
+				profile: data.firstName && data.lastName ? {
+					upsert: {
+						create: {
+							firstName: data.firstName,
+							lastName: data.lastName,
+							profilePicture: data.profilePicture,
+						},
+						update: {
+							firstName: data.firstName,
+							lastName: data.lastName,
+							profilePicture: data.profilePicture,
+						},
+					},
+				} : undefined,
+			},
+			include: {
+				profile: true,
+			},
+		});
+	}
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+	async deleteByClerkId(clerkId: string) {
+		return this.prisma.user.delete({
+			where: { clerkId },
+		});
+	}
 
-    return this.prisma.user.update({
-      where: { clerkId },
-      data: {
-        email: data.email,
-        username: data.username,
-        profile: data.firstName && data.lastName ? {
-          upsert: {
-            create: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              profilePicture: data.profilePicture,
-            },
-            update: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              profilePicture: data.profilePicture,
-            },
-          },
-        } : undefined,
-      },
-      include: {
-        profile: true,
-      },
-    });
-  }
+	async updateProfile(userId: string, data: any) {
+		return this.prisma.profile.update({
+			where: { userId },
+			data,
+		});
+	}
 
-  async deleteByClerkId(clerkId: string) {
-    return this.prisma.user.delete({
-      where: { clerkId },
-    });
-  }
+	async modifyUser(id: string, body: UpdateUserDto) {
+		const user = await this.prisma.user.findUnique({ where: { id } });
+		if (!user)
+			throw new BadRequestException('User not found');
 
-  async updateProfile(userId: string, data: any) {
-    return this.prisma.profile.update({
-      where: { userId },
-      data,
-    });
-  }
+		const { firstName, lastName, bio, profilePicture, location, birthdate, ...userFields } = body as any;
 
-  async getUserRooms(userId: string) {
-    return this.prisma.room.findMany({
-      where: {
-        members: {
-          some: {
-            userId,
-          },
-        },
-      },
-      include: {
-        creator: {
-          include: {
-            profile: true,
-          },
-        },
-        members: {
-          include: {
-            user: {
-              include: {
-                profile: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+		if (userFields.password) {
+			userFields.passwordHash = await bcrypt.hash(userFields.password, 10);
+			delete userFields.password;
+		}
 
-  async getUserFriends(userId: string) {
-    const friendships = await this.prisma.friendship.findMany({
-      where: {
-        OR: [{ userId }, { friendId: userId }],
-        status: 'ACCEPTED',
-      },
-      include: {
-        user: {
-          include: {
-            profile: true,
-          },
-        },
-        friend: {
-          include: {
-            profile: true,
-          },
-        },
-      },
-    });
+		let emailWarning: string | null = null;
+		let usernameWarning: string | null = null;
 
-    return friendships.map((f) => {
-      const friend = f.userId === userId ? f.friend : f.user;
-      const { passwordHash, ...sanitized } = friend;
-      return sanitized;
-    });
-  }
+		if (userFields.email && user.email === userFields.email) {
+			delete userFields.email;
+			emailWarning = 'Email unchanged - same as current email';
+		}
+
+		if (userFields.email) {
+			console.log('check email');
+	
+			const existingUsers = await this.prisma.user.findMany({ 
+				where: { 
+					email: userFields.email,
+					id: { not: id }
+				} 
+			});
+			
+			if (existingUsers.length > 0) {
+				console.log('erreur email');
+				throw new ConflictException('Error: email address already used');
+			}
+		}
+
+		if (userFields.username && user.username === userFields.username) {
+			delete userFields.username;
+			usernameWarning = 'username unchanged - same as current username';
+		}
+
+		if (userFields.username) {
+			console.log('check username');
+	
+			const existingUsers = await this.prisma.user.findMany({ 
+				where: { 
+					username: userFields.username,
+					id: { not: id }
+				} 
+			});
+			
+			if (existingUsers.length > 0) {
+				console.log('erreur username');
+				throw new ConflictException('Error: username address already used');
+			}
+		}
+
+		await this.prisma.user.update({
+			where: { id },
+			data: userFields,
+		});
+
+		await this.prisma.profile.update({
+			where: { userId: id },
+			data: { firstName, lastName, bio, profilePicture, location, birthdate },
+		});
+
+		const updatedUser = await this.prisma.user.findUnique({
+				where: { id },
+				include: {
+					profile: true,
+				}
+			});
+
+		const warnings: string[] = [];
+		if (emailWarning) warnings.push(emailWarning);
+		if (usernameWarning) warnings.push(usernameWarning);
+
+		return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
+	}
+
+	async getRoomsByUser(id: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			select: {
+				roomMemberships: {
+					select: {
+						room: {
+							select: {
+								name: true,
+								messages: {
+									orderBy: { createdAt: 'desc' },
+									take: 1,
+									select: {
+										content: true,
+										createdAt: true,
+										sender: {
+											select: {
+												username: true,
+												profile: {
+													select: {
+														profilePicture: true,
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+
+		if (!user)
+			throw new BadRequestException('User not found');
+
+		return user.roomMemberships
+			.map(m => ({
+				name: m.room.name,
+				lastMessage: m.room.messages[0]?.content || null,
+				lastMessageDate: m.room.messages[0]?.createdAt || null,
+				senderUsername: m.room.messages[0]?.sender.username || null,
+				senderPicture: m.room.messages[0]?.sender.profile?.profilePicture || null,
+			}))
+			.sort((a, b) => 
+				new Date(b.lastMessageDate || 0).getTime() - new Date(a.lastMessageDate || 0).getTime()
+			)
+	}
+
+	async getFriendById(id: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			include: {
+				sentFriendRequests: true,
+				receivedFriendRequests: true,
+			}
+		});
+		if (!user)
+			throw new BadRequestException('User not found');
+		console.log(user);
+		return { user };
+	}
 }
