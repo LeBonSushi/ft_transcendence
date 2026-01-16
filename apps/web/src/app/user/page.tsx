@@ -29,6 +29,7 @@ export default function UserPage() {
 	const [rooms, setRooms] = useState<RoomSummary[]>([]);
 
 	useEffect(() => {
+    console.log(userId);
 		const fetchUser = async () => {
 			setLoading(true);
 			setError("");
@@ -44,6 +45,8 @@ export default function UserPage() {
 				setUserData(userDetails);
 				setRooms(userRooms ?? []);
 
+
+        console.log("userDetails", userDetails);
 				setUsername(userDetails.username || "");
 				setEmail(userDetails.email || "");
 				setFirstName(userDetails.profile?.firstName || "");

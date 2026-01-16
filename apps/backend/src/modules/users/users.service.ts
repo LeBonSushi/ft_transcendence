@@ -26,7 +26,7 @@ export class UsersService {
 
 	async getUserById(id: string) {
 		return this.prisma.user.findUnique({
-			where: { id },
+			where: { clerkId: id },
 			include: {
 				profile: true,
 			},
@@ -198,7 +198,7 @@ export class UsersService {
 
 	async getRoomsByUser(id: string) {
 		const user = await this.prisma.user.findUnique({
-			where: { id },
+			where: { clerkId: id },
 			select: {
 				roomMemberships: {
 					select: {
