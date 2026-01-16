@@ -1,6 +1,6 @@
 "use client";
 
-import { formatTimeAgo } from "../app/utils/formatTimeAgo";
+import { formatTimeAgo } from "../../../app/utils/formatTimeAgo";
 
 interface RoomCardProps {
 	name: string;

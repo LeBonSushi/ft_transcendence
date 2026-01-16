@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import RoomCard from "../../components/RoomCard";
-import ProfileField from "../../components/ProfileField";
-import ProfileDisplay from "../../components/ProfileDisplay";
+import RoomCard from "../../components/ui/userUi/RoomCard";
+import ProfileField from "../../components/ui/userUi/ProfileField";
+import ProfileDisplay from "../../components/ui/userUi/ProfileDisplay";
 import { usersApi } from "@/lib/api/users";
 import type { User, RoomSummary } from "@travel-planner/shared";
 

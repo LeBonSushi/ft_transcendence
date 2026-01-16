@@ -24,25 +24,9 @@ interface UpdateFromClerkDto {
 export class UsersService {
 	constructor(private prisma: PrismaService) {}
 
-	async getUserById(id: string) {
-		return this.prisma.user.findUnique({
-			where: { clerkId: id },
-			include: {
-				profile: true,
-			},
-		});
-	}
-
-	async findByClerkId(clerkId: string) {
+	async getUserById(clerkId: string) {
 		return this.prisma.user.findUnique({
 			where: { clerkId },
-			include: { profile: true },
-		});
-	}
-
-	async findByEmail(email: string) {
-		return this.prisma.user.findUnique({
-			where: { email },
 			include: { profile: true },
 		});
 	}
@@ -70,7 +54,7 @@ export class UsersService {
 	}
 
 	async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
-		const user = await this.findByClerkId(clerkId);
+		const user = await this.getUserById(clerkId);
 
 		if (!user) {
 			throw new NotFoundException('User not found');
@@ -196,27 +180,33 @@ export class UsersService {
 		return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
 	}
 
-	async getRoomsByUser(id: string) {
-		const user = await this.prisma.user.findUnique({
-			where: { clerkId: id },
-			select: {
-				roomMemberships: {
-					select: {
-						room: {
-							select: {
-								name: true,
-								messages: {
-									orderBy: { createdAt: 'desc' },
-									take: 1,
-									select: {
-										content: true,
-										createdAt: true,
-										sender: {
-											select: {
-												username: true,
-												profile: {
-													select: {
-														profilePicture: true,
+	async getRoomsByUser(clerkId: string) {
+		const user = this.getUserById(clerkId);
+
+		if (!user)
+			throw new BadRequestException('User not found');
+
+		const userWithRooms = await this.prisma.user.findUnique({
+				where: { clerkId: clerkId },
+				select: {
+					roomMemberships: {
+						select: {
+							room: {
+								select: {
+									name: true,
+									messages: {
+										orderBy: { createdAt: 'desc' },
+										take: 1,
+										select: {
+											content: true,
+											createdAt: true,
+											sender: {
+												select: {
+													username: true,
+													profile: {
+														select: {
+															profilePicture: true,
+														}
 													}
 												}
 											}
@@ -227,13 +217,12 @@ export class UsersService {
 						}
 					}
 				}
-			}
-		});
+			});
 
-		if (!user)
-			throw new BadRequestException('User not found');
+		if (!userWithRooms)
+			return { message: 'no room join'};
 
-		return user.roomMemberships
+		return userWithRooms.roomMemberships
 			.map(m => ({
 				name: m.room.name,
 				lastMessage: m.room.messages[0]?.content || null,
@@ -246,9 +235,9 @@ export class UsersService {
 			)
 	}
 
-	async getFriendById(id: string) {
+	async getFriendById(clerkId: string) {
 		const user = await this.prisma.user.findUnique({
-			where: { id },
+			where: { clerkId: clerkId },
 			include: {
 				sentFriendRequests: true,
 				receivedFriendRequests: true,
