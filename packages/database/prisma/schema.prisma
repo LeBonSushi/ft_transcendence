@@ -9,13 +9,9 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
+  id            String   @id // Clerk ID used as primary key
   username      String   @unique
   email         String   @unique
-  passwordHash  String?
-  oauthProvider String?
-  oauthId       String?
-  clerkId       String?  @unique
 
   // Relations
   profile                Profile?
@@ -33,7 +29,6 @@ model User {
 
   @@index([email])
   @@index([username])
-  @@index([clerkId])
 }
 
 model Profile {
