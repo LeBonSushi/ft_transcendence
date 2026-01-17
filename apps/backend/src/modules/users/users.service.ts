@@ -26,7 +26,7 @@ export class UsersService {
 
 	async getUserById(clerkId: string) {
 		return this.prisma.user.findUnique({
-			where: { clerkId },
+			where: { id: clerkId },
 			include: { profile: true },
 		});
 	}
@@ -34,11 +34,9 @@ export class UsersService {
 	async createFromClerk(data: CreateFromClerkDto) {
 		return this.prisma.user.create({
 			data: {
-				clerkId: data.clerkId,
+				id: data.clerkId,
 				email: data.email,
 				username: data.username,
-				oauthProvider: 'clerk',
-				oauthId: data.clerkId,
 				profile: data.firstName && data.lastName ? {
 					create: {
 						firstName: data.firstName,
@@ -61,7 +59,7 @@ export class UsersService {
 		}
 
 		return this.prisma.user.update({
-			where: { clerkId },
+			where: { id: clerkId },
 			data: {
 				email: data.email,
 				username: data.username,
@@ -88,7 +86,7 @@ export class UsersService {
 
 	async deleteByClerkId(clerkId: string) {
 		return this.prisma.user.delete({
-			where: { clerkId },
+			where: { id: clerkId },
 		});
 	}
 
@@ -187,7 +185,7 @@ export class UsersService {
 			throw new BadRequestException('User not found');
 
 		const userWithRooms = await this.prisma.user.findUnique({
-				where: { clerkId: clerkId },
+				where: { id: clerkId },
 				select: {
 					roomMemberships: {
 						select: {
@@ -237,7 +235,7 @@ export class UsersService {
 
 	async getFriendById(clerkId: string) {
 		const user = await this.prisma.user.findUnique({
-			where: { clerkId: clerkId },
+			where: { id: clerkId },
 			include: {
 				sentFriendRequests: true,
 				receivedFriendRequests: true,

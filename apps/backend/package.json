@@ -26,7 +26,7 @@
     "@nestjs/throttler": "^6.2.1",
     "@nestjs/websockets": "^11.1.9",
     "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/client": "^7.2.0",
     "@travel-planner/database": "workspace:*",
     "@travel-planner/shared": "workspace:*",
     "class-transformer": "^0.5.1",
