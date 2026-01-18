@@ -191,25 +191,13 @@ export class UsersService {
 						select: {
 							room: {
 								select: {
+									id: true,
 									name: true,
-									messages: {
-										orderBy: { createdAt: 'desc' },
-										take: 1,
-										select: {
-											content: true,
-											createdAt: true,
-											sender: {
-												select: {
-													username: true,
-													profile: {
-														select: {
-															profilePicture: true,
-														}
-													}
-												}
-											}
-										}
-									}
+									description: true,
+									status: true,
+									creatorId: true,
+									createdAt: true,
+									updatedAt: true,
 								}
 							}
 						}
@@ -218,19 +206,9 @@ export class UsersService {
 			});
 
 		if (!userWithRooms)
-			return { message: 'no room join'};
+			return [];
 
-		return userWithRooms.roomMemberships
-			.map(m => ({
-				name: m.room.name,
-				lastMessage: m.room.messages[0]?.content || null,
-				lastMessageDate: m.room.messages[0]?.createdAt || null,
-				senderUsername: m.room.messages[0]?.sender.username || null,
-				senderPicture: m.room.messages[0]?.sender.profile?.profilePicture || null,
-			}))
-			.sort((a, b) => 
-				new Date(b.lastMessageDate || 0).getTime() - new Date(a.lastMessageDate || 0).getTime()
-			)
+		return userWithRooms.roomMemberships.map(m => m.room);
 	}
 
 	async getFriendById(clerkId: string) {

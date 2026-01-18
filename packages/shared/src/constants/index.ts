@@ -29,6 +29,9 @@ export const API_ROUTES = {
   },
 
   USERS: {
+    ME: '/users/me',
+    ME_ROOMS: '/users/me/rooms',
+    GET_CURRENT: '/users/me',
     GET: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
     ROOMS: (id: string) => `/users/${id}/rooms`,

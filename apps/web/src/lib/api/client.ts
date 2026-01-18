@@ -4,6 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 class ApiClient {
   private client: AxiosInstance;
+  private clerkReady: Promise<void> | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -14,13 +15,46 @@ class ApiClient {
       },
     });
 
-    // Intercepteur pour ajouter le token Clerk à chaque requête (client-side only)
+    // Créer une promise qui se résout quand Clerk est prêt
+    if (typeof window !== 'undefined') {
+      this.clerkReady = new Promise((resolve) => {
+        const checkClerk = () => {
+          const clerk = (window as any).Clerk;
+          if (clerk && clerk.loaded) {
+            resolve();
+          } else {
+            // Attendre que Clerk soit chargé
+            window.addEventListener('clerk:loaded', () => resolve(), { once: true });
+            // Fallback: vérifier toutes les 100ms
+            const interval = setInterval(() => {
+              const clerk = (window as any).Clerk;
+              if (clerk && clerk.loaded) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, 100);
+            // Timeout après 10 secondes
+            setTimeout(() => {
+              clearInterval(interval);
+              resolve(); // Résoudre quand même pour éviter de bloquer indéfiniment
+            }, 10000);
+          }
+        };
+        checkClerk();
+      });
+    }
+
+    // Intercepteur pour ajouter le token Clerk à chaque requête
     this.client.interceptors.request.use(
       async (config) => {
+        // Attendre que Clerk soit prêt avant chaque requête
+        if (this.clerkReady) {
+          await this.clerkReady;
+        }
+
         // Seulement côté client
         if (typeof window !== 'undefined') {
           try {
-            // Utiliser l'API Clerk côté client
             const clerk = (window as any).Clerk;
             if (clerk && clerk.session) {
               const token = await clerk.session.getToken();
