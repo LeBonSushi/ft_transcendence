@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { ClerkProvider, SignedIn, SignedOut, UserAvatar, UserButton, UserProfile } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import Header from '@/components/ui/header';
-import { Toaster } from 'react-hot-toast';
+import DismissableToast from '@/components/DismissableToast';
 import './globals.css';
 
 import { shadcn } from '@clerk/themes';
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: 'Travel Planner - Plan Your Perfect Trip',
   description: 'Collaborative travel planning platform',
 };
+
 
 export default function RootLayout({
   children,
@@ -29,9 +30,9 @@ export default function RootLayout({
             <div className='flex flex-col h-screen'>
               <Header />
               {children}
+              <Footer />
             </div>
-            <Toaster position="top-right" />
-            <Footer />
+            <DismissableToast/>
           </ThemeProvider>
         </body>
       </html>
