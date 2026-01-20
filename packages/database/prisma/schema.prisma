@@ -23,6 +23,7 @@ model User {
   votes                  TripVote[]
   suggestedActivities    ActivitySuggestion[]
   createdRooms           Room[]               @relation("RoomCreator")
+  notifications          Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -222,3 +223,24 @@ enum MessageType {
   IMAGE
   SYSTEM
 }
+
+enum NotificationType {
+  IDK_YET
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean   @default(false)
+
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+}
+// les @@ servent a ne pas tout parcourir quand on cherche avec where
