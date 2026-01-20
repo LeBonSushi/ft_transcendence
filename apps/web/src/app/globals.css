@@ -34,9 +34,9 @@
   --sidebar-accent-foreground: oklch(0.3353 0.0132 2.7676);
   --sidebar-border: oklch(0.9296 0.0370 38.6868);
   --sidebar-ring: oklch(0.7357 0.1641 34.7091);
-  --font-sans: Montserrat, sans-serif;
-  --font-serif: Merriweather, serif;
-  --font-mono: Ubuntu Mono, monospace;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --radius: 0.625rem;
   --shadow-x: 0px;
   --shadow-y: 6px;
@@ -89,9 +89,9 @@
   --sidebar-accent-foreground: oklch(0.2569 0.0169 352.4042);
   --sidebar-border: oklch(0.3637 0.0203 342.2664);
   --sidebar-ring: oklch(0.7357 0.1641 34.7091);
-  --font-sans: Montserrat, sans-serif;
-  --font-serif: Merriweather, serif;
-  --font-mono: Ubuntu Mono, monospace;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --radius: 0.625rem;
   --shadow-x: 0px;
   --shadow-y: 6px;

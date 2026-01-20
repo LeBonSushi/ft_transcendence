@@ -1,7 +1,6 @@
 import { serverUsersApi } from "@/lib/api/users.server";
 import RoomClient from "./room-client";
 
-// Server Component - Utilise serverUsersApi (version server-only)
 export default async function RoomPage() {
   const rooms = await serverUsersApi.getMyRooms().catch(() => []);
   
@@ -16,6 +15,5 @@ export default async function RoomPage() {
     return acc;
   }, {});
 
-  // Passer les données au Client Component
   return <RoomClient initialRooms={rooms} usernameMap={usernameMap} />;
 }
