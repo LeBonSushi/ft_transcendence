@@ -2,7 +2,8 @@ import axios, { AxiosInstance } from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-class ApiClient {
+// Client navigateur avec Axios et Clerk - UNIQUEMENT pour Client Components
+class BrowserApiClient {
   private client: AxiosInstance;
   private clerkReady: Promise<void> | null = null;
 
@@ -15,66 +16,53 @@ class ApiClient {
       },
     });
 
-    // Créer une promise qui se résout quand Clerk est prêt
-    if (typeof window !== 'undefined') {
-      this.clerkReady = new Promise((resolve) => {
-        const checkClerk = () => {
-          const clerk = (window as any).Clerk;
-          if (clerk && clerk.loaded) {
-            resolve();
-          } else {
-            // Attendre que Clerk soit chargé
-            window.addEventListener('clerk:loaded', () => resolve(), { once: true });
-            // Fallback: vérifier toutes les 100ms
-            const interval = setInterval(() => {
-              const clerk = (window as any).Clerk;
-              if (clerk && clerk.loaded) {
-                clearInterval(interval);
-                resolve();
-              }
-            }, 100);
-            // Timeout après 10 secondes
-            setTimeout(() => {
+    // Setup Clerk
+    this.clerkReady = new Promise((resolve) => {
+      const checkClerk = () => {
+        const clerk = (window as any).Clerk;
+        if (clerk && clerk.loaded) {
+          resolve();
+        } else {
+          window.addEventListener('clerk:loaded', () => resolve(), { once: true });
+          const interval = setInterval(() => {
+            const clerk = (window as any).Clerk;
+            if (clerk && clerk.loaded) {
               clearInterval(interval);
-              resolve(); // Résoudre quand même pour éviter de bloquer indéfiniment
-            }, 10000);
-          }
-        };
-        checkClerk();
-      });
-    }
+              resolve();
+            }
+          }, 100);
+          setTimeout(() => {
+            clearInterval(interval);
+            resolve();
+          }, 10000);
+        }
+      };
+      checkClerk();
+    });
 
-    // Intercepteur pour ajouter le token Clerk à chaque requête
+    // Intercepteur Axios pour Clerk
     this.client.interceptors.request.use(
       async (config) => {
-        // Attendre que Clerk soit prêt avant chaque requête
         if (this.clerkReady) {
           await this.clerkReady;
         }
-
-        // Seulement côté client
-        if (typeof window !== 'undefined') {
-          try {
-            const clerk = (window as any).Clerk;
-            if (clerk && clerk.session) {
-              const token = await clerk.session.getToken();
-              if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-              }
+        try {
+          const clerk = (window as any).Clerk;
+          if (clerk && clerk.session) {
+            const token = await clerk.session.getToken();
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`;
             }
-          } catch (error) {
-            console.error('Error getting Clerk token:', error);
           }
+        } catch (error) {
+          console.error('Error getting Clerk token:', error);
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
   }
 
-  // Generic HTTP methods
   async get<T>(url: string, config = {}) {
     const response = await this.client.get<T>(url, config);
     return response.data;
@@ -100,11 +88,10 @@ class ApiClient {
     return response.data;
   }
 
-  // Get the raw axios instance if needed
   getInstance(): AxiosInstance {
     return this.client;
   }
 }
 
-// Export a singleton instance
-export const apiClient = new ApiClient();
+// Export le client navigateur - pour Client Components UNIQUEMENT
+export const apiClient = new BrowserApiClient();
