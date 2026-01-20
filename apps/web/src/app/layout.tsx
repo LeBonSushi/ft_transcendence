@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 import { shadcn } from '@clerk/themes';
+import Footer from '@/components/ui/footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
               </main>
             </div >
             <Toaster position="top-right" />
+            <Footer />
           </ThemeProvider>
         </body>
       </html>
