@@ -96,7 +96,6 @@ export class RoomsService {
     }
 
     if (member.role === 'ADMIN') {
-      // Transfer admin or handle accordingly
       throw new ForbiddenException('Admin must transfer role before leaving');
     }
 
@@ -108,7 +107,6 @@ export class RoomsService {
   }
 
   async createProposal(roomId: string, userId: string, data: any) {
-    // Check if user is member
     await this.checkMembership(roomId, userId);
 
     return this.prisma.tripProposal.create({

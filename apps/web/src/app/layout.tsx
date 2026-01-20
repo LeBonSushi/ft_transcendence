@@ -26,12 +26,10 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className}`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="h-screen flex flex-col">
+            <div className='flex flex-col h-screen'>
               <Header />
-              <main className="flex-1 overflow-auto">
-                {children}
-              </main>
-            </div >
+              {children}
+            </div>
             <Toaster position="top-right" />
             <Footer />
           </ThemeProvider>
@@ -40,4 +38,3 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
-

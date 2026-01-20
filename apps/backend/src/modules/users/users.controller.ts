@@ -1,10 +1,27 @@
 import { UsersService } from './users.service';
 import { Controller, Body, Get, Put, Param } from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { User } from '@clerk/backend';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Get('me')
+  async getMe(@GetUser('clerkId') clerkId: string) {
+    return await this.usersService.getUserById(clerkId);
+  }
+
+  @Get('me/rooms')
+  async getMyRooms(@GetUser('clerkId') clerkId: string) {
+    return await this.usersService.getRoomsByUser(clerkId);
+  }
+
+  @Put('me')
+  async updateMe(@GetUser('clerkId') clerkId: string, @Body() body: UpdateUserDto) {
+    return await this.usersService.modifyUser(clerkId, body);
+  }
 
 	@Get(':id')
 	async getUserById(@Param('id') id: string) {
