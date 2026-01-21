@@ -32,6 +32,7 @@ export class UsersService {
 	}
 
 	async createFromClerk(data: CreateFromClerkDto) {
+    console.log('createFromClerk', data);
 		return this.prisma.user.create({
 			data: {
 				id: data.clerkId,
@@ -52,11 +53,16 @@ export class UsersService {
 	}
 
 	async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
+    console.log('updateFromClerk', clerkId, data);
 		const user = await this.getUserById(clerkId);
+
+    //user_38ZDYpdMvIAflhNM2UgzqxSvcV6
 
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
+
+    console.log('updating user...');
 
 		return this.prisma.user.update({
 			where: { id: clerkId },
@@ -85,6 +91,34 @@ export class UsersService {
 	}
 
 	async deleteByClerkId(clerkId: string) {
+		// Transférer les rooms créées par l'utilisateur au membre le plus ancien
+		const roomsCreated = await this.prisma.room.findMany({
+			where: { creatorId: clerkId },
+			include: {
+				members: {
+					where: { userId: { not: clerkId } },
+					orderBy: { joinedAt: 'asc' },
+					take: 1,
+				},
+			},
+		});
+
+		for (const room of roomsCreated) {
+			if (room.members.length > 0) {
+				// Transférer au membre le plus ancien
+				await this.prisma.room.update({
+					where: { id: room.id },
+					data: { creatorId: room.members[0].userId },
+				});
+			} else {
+				// Aucun autre membre, supprimer la room
+				await this.prisma.room.delete({
+					where: { id: room.id },
+				});
+			}
+		}
+
+		// Supprimer l'utilisateur
 		return this.prisma.user.delete({
 			where: { id: clerkId },
 		});

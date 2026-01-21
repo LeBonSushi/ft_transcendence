@@ -4,7 +4,7 @@ import { SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen w-full flex">
+    <div className="h-screen w-full flex overflow-hidden">
       {/* Left side - Immersive visual */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Background image with overlay */}
@@ -104,34 +104,34 @@ export default function SignUpPage() {
 
         <div className="relative z-10 w-full max-w-md">
           {/* Mobile header */}
-          <div className="lg:hidden mb-10 text-center">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary to-accent/80 flex items-center justify-center shadow-lg shadow-primary/25">
-                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <div className="lg:hidden mb-6 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-accent/80 flex items-center justify-center shadow-lg shadow-primary/25">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM4 12C4 11.39 4.08 10.79 4.21 10.22L8 14V15C8 16.1 8.9 17 10 17V19.93C6.61 19.44 4 16.07 4 12ZM17.89 17.4C17.64 16.59 16.9 16 16 16H15V13C15 12.45 14.55 12 14 12H8V10H10C10.55 10 11 9.55 11 9V7H13C14.1 7 15 6.1 15 5V4.59C17.93 5.78 20 8.65 20 12C20 14.08 19.19 15.98 17.89 17.4Z"/>
                 </svg>
               </div>
-              <span className="font-serif text-2xl tracking-wide">Voyageur</span>
+              <span className="font-serif text-xl tracking-wide">Voyageur</span>
             </div>
-            <h1 className="font-serif text-3xl font-medium mb-2">Créer un compte</h1>
-            <p className="text-muted-foreground">Rejoignez la communauté des voyageurs</p>
+            <h1 className="font-serif text-2xl font-medium mb-1">Créer un compte</h1>
+            <p className="text-muted-foreground text-sm">Rejoignez la communauté des voyageurs</p>
           </div>
 
           {/* Card container */}
-          <div className="bg-card rounded-3xl p-8 sm:p-10 shadow-2xl border border-border/50">
+          <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-2xl border border-border/50">
             {/* Desktop header inside card */}
-            <div className="hidden lg:block mb-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary to-accent/80 flex items-center justify-center shadow-lg shadow-primary/25">
-                  <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <div className="hidden lg:block mb-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-accent/80 flex items-center justify-center shadow-lg shadow-primary/25">
+                  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM4 12C4 11.39 4.08 10.79 4.21 10.22L8 14V15C8 16.1 8.9 17 10 17V19.93C6.61 19.44 4 16.07 4 12ZM17.89 17.4C17.64 16.59 16.9 16 16 16H15V13C15 12.45 14.55 12 14 12H8V10H10C10.55 10 11 9.55 11 9V7H13C14.1 7 15 6.1 15 5V4.59C17.93 5.78 20 8.65 20 12C20 14.08 19.19 15.98 17.89 17.4Z"/>
                   </svg>
                 </div>
               </div>
-              <h2 className="font-serif text-3xl font-medium mb-2">
+              <h2 className="font-serif text-2xl font-medium mb-1">
                 Créer un compte
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Rejoignez des milliers de voyageurs
               </p>
             </div>
@@ -145,24 +145,24 @@ export default function SignUpPage() {
                   header: "hidden",
                   headerTitle: "hidden",
                   headerSubtitle: "hidden",
-                  main: "gap-4",
-                  form: "gap-4",
-                  socialButtons: "gap-3",
+                  main: "gap-2",
+                  form: "gap-2",
+                  socialButtons: "gap-2",
                   socialButtonsBlockButton:
-                    "h-12 bg-background/50 !border !border-border/50 hover:!border-primary/50 hover:bg-primary/5 transition-all duration-300 font-medium !rounded-xl",
-                  socialButtonsBlockButtonText: "font-medium",
-                  dividerRow: "my-6",
+                    "h-10 bg-background/50 !border !border-border/50 hover:!border-primary/50 hover:bg-primary/5 transition-all duration-300 font-medium !rounded-xl",
+                  socialButtonsBlockButtonText: "font-medium text-sm hidden sm:inline",
+                  dividerRow: "my-3",
                   dividerLine: "bg-border/50",
                   dividerText: "text-muted-foreground text-sm px-4 bg-transparent",
-                  formFieldRow: "mb-4",
-                  formFieldLabel: "text-foreground font-medium text-sm mb-2",
+                  formFieldRow: "mb-2",
+                  formFieldLabel: "text-foreground font-medium text-sm mb-1",
                   formFieldInput:
-                    "h-12 bg-background/50 !border !border-border/50 focus:!border-primary focus:!ring-2 focus:!ring-primary/20 !rounded-xl transition-all duration-300 px-4",
+                    "!h-auto !py-3 bg-background/50 !border !border-border/50 focus:!border-primary focus:!ring-2 focus:!ring-primary/20 !rounded-xl transition-all duration-300 px-4",
                   formButtonPrimary:
-                    "h-12 text-base font-semibold !bg-primary hover:!bg-primary/90 !rounded-xl transition-all duration-300 !shadow-lg !shadow-primary/25 mt-2",
+                    "h-10 text-sm font-semibold !bg-primary hover:!bg-primary/90 !rounded-xl transition-all duration-300 !shadow-lg !shadow-primary/25 mt-1",
                   footer: "hidden",
                   footerAction: "hidden",
-                  identityPreview: "bg-background/50 !border !border-border/50 !rounded-xl p-4",
+                  identityPreview: "bg-background/50 !border !border-border/50 !rounded-xl p-3",
                   identityPreviewEditButton: "text-primary",
                   formResendCodeLink: "text-primary font-medium",
                   otpCodeFieldInput: "!border !border-border/50 !rounded-xl bg-background/50",
@@ -179,7 +179,7 @@ export default function SignUpPage() {
             />
 
             {/* Custom footer */}
-            <div className="mt-8 pt-6 border-t border-border/50 text-center">
+            <div className="mt-4 pt-4 border-t border-border/50 text-center">
               <p className="text-muted-foreground text-sm">
                 Déjà un compte ?{" "}
                 <a href="/sign-in" className="text-primary font-semibold hover:text-primary/80 transition-colors">
@@ -190,7 +190,7 @@ export default function SignUpPage() {
           </div>
 
           {/* Footer */}
-          <p className="text-center text-xs text-muted-foreground mt-6">
+          <p className="text-center text-xs text-muted-foreground mt-3">
             En créant un compte, vous acceptez nos{" "}
             <a href="#" className="underline hover:text-foreground transition-colors">
               Conditions

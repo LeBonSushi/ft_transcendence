@@ -128,13 +128,13 @@ export default function SignInPage() {
                   socialButtonsBlockButton:
                     "h-12 bg-background/50 !border !border-border/50 hover:!border-primary/50 hover:bg-primary/5 transition-all duration-300 font-medium !rounded-xl",
                   socialButtonsBlockButtonText: "font-medium",
-                  dividerRow: "my-6",
+                  dividerRow: "my-3",
                   dividerLine: "bg-border/50",
                   dividerText: "text-muted-foreground text-sm px-4 bg-transparent",
                   formFieldRow: "mb-4",
                   formFieldLabel: "text-foreground font-medium text-sm mb-2",
                   formFieldInput:
-                    "h-12 bg-background/50 !border !border-border/50 focus:!border-primary focus:!ring-2 focus:!ring-primary/20 !rounded-xl transition-all duration-300 px-4",
+                    "!h-auto !py-3 bg-background/50 !border !border-border/50 focus:!border-primary focus:!ring-2 focus:!ring-primary/20 !rounded-xl transition-all duration-300 px-4",
                   formButtonPrimary:
                     "h-12 text-base font-semibold !bg-primary hover:!bg-primary/90 !rounded-xl transition-all duration-300 !shadow-lg !shadow-primary/25 mt-2",
                   footer: "hidden",
