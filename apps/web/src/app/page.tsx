@@ -1,10 +1,14 @@
 // import { }
 
+import {NotificationPannel} from "@/components/ui/notificationPannel"
+
 export default function Home() {
 
 //   const users = [];
   return (
+    <>
     <div className="flex h-full flex-col items-center justify-center p-24">
+      <NotificationPannel/>
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">🌍 Travel Planner</h1>
         <p className="text-xl text-muted-foreground mb-8">
@@ -26,5 +30,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </>
   );
 }

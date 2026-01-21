@@ -225,7 +225,7 @@ enum MessageType {
 }
 
 enum NotificationType {
-  IDK_YET
+  TEXT_EXEMPLE
 }
 
 model Notification {
@@ -243,4 +243,3 @@ model Notification {
   @@index([userId, read])
   @@index([createdAt])
 }
-// les @@ servent a ne pas tout parcourir quand on cherche avec where
