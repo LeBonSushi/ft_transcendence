@@ -6,6 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 class BrowserApiClient {
   private client: AxiosInstance;
   private clerkReady: Promise<void> | null = null;
+  private initialized = false;
 
   constructor() {
     this.client = axios.create({
@@ -16,7 +17,40 @@ class BrowserApiClient {
       },
     });
 
-    // Setup Clerk
+    // Intercepteur Axios pour Clerk
+    this.client.interceptors.request.use(
+      async (config) => {
+        // Initialiser Clerk seulement côté client
+        if (typeof window !== 'undefined' && !this.initialized) {
+          this.initClerk();
+          this.initialized = true;
+        }
+
+        if (this.clerkReady) {
+          await this.clerkReady;
+        }
+        try {
+          if (typeof window !== 'undefined') {
+            const clerk = (window as any).Clerk;
+            if (clerk && clerk.session) {
+              const token = await clerk.session.getToken();
+              if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error getting Clerk token:', error);
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+  }
+
+  private initClerk() {
+    if (typeof window === 'undefined') return;
+
     this.clerkReady = new Promise((resolve) => {
       const checkClerk = () => {
         const clerk = (window as any).Clerk;
@@ -39,28 +73,6 @@ class BrowserApiClient {
       };
       checkClerk();
     });
-
-    // Intercepteur Axios pour Clerk
-    this.client.interceptors.request.use(
-      async (config) => {
-        if (this.clerkReady) {
-          await this.clerkReady;
-        }
-        try {
-          const clerk = (window as any).Clerk;
-          if (clerk && clerk.session) {
-            const token = await clerk.session.getToken();
-            if (token) {
-              config.headers.Authorization = `Bearer ${token}`;
-            }
-          }
-        } catch (error) {
-          console.error('Error getting Clerk token:', error);
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
   }
 
   async get<T>(url: string, config = {}) {

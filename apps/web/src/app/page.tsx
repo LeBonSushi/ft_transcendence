@@ -1,5 +1,7 @@
 // import { }
 
+import { Profile } from "@/components/ui/userUi/Profile";
+
 export default function Home() {
 
 //   const users = [];
