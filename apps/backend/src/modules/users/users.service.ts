@@ -32,6 +32,7 @@ export class UsersService {
 	}
 
 	async createFromClerk(data: CreateFromClerkDto) {
+    console.log('createFromClerk', data);
 		return this.prisma.user.create({
 			data: {
 				id: data.clerkId,
@@ -52,11 +53,16 @@ export class UsersService {
 	}
 
 	async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
+    console.log('updateFromClerk', clerkId, data);
 		const user = await this.getUserById(clerkId);
+
+    //user_38ZDYpdMvIAflhNM2UgzqxSvcV6
 
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
+
+    console.log('updating user...');
 
 		return this.prisma.user.update({
 			where: { id: clerkId },
@@ -85,6 +91,34 @@ export class UsersService {
 	}
 
 	async deleteByClerkId(clerkId: string) {
+		// Transférer les rooms créées par l'utilisateur au membre le plus ancien
+		const roomsCreated = await this.prisma.room.findMany({
+			where: { creatorId: clerkId },
+			include: {
+				members: {
+					where: { userId: { not: clerkId } },
+					orderBy: { joinedAt: 'asc' },
+					take: 1,
+				},
+			},
+		});
+
+		for (const room of roomsCreated) {
+			if (room.members.length > 0) {
+				// Transférer au membre le plus ancien
+				await this.prisma.room.update({
+					where: { id: room.id },
+					data: { creatorId: room.members[0].userId },
+				});
+			} else {
+				// Aucun autre membre, supprimer la room
+				await this.prisma.room.delete({
+					where: { id: room.id },
+				});
+			}
+		}
+
+		// Supprimer l'utilisateur
 		return this.prisma.user.delete({
 			where: { id: clerkId },
 		});
@@ -191,25 +225,13 @@ export class UsersService {
 						select: {
 							room: {
 								select: {
+									id: true,
 									name: true,
-									messages: {
-										orderBy: { createdAt: 'desc' },
-										take: 1,
-										select: {
-											content: true,
-											createdAt: true,
-											sender: {
-												select: {
-													username: true,
-													profile: {
-														select: {
-															profilePicture: true,
-														}
-													}
-												}
-											}
-										}
-									}
+									description: true,
+									status: true,
+									creatorId: true,
+									createdAt: true,
+									updatedAt: true,
 								}
 							}
 						}
@@ -218,19 +240,9 @@ export class UsersService {
 			});
 
 		if (!userWithRooms)
-			return { message: 'no room join'};
+			return [];
 
-		return userWithRooms.roomMemberships
-			.map(m => ({
-				name: m.room.name,
-				lastMessage: m.room.messages[0]?.content || null,
-				lastMessageDate: m.room.messages[0]?.createdAt || null,
-				senderUsername: m.room.messages[0]?.sender.username || null,
-				senderPicture: m.room.messages[0]?.sender.profile?.profilePicture || null,
-			}))
-			.sort((a, b) => 
-				new Date(b.lastMessageDate || 0).getTime() - new Date(a.lastMessageDate || 0).getTime()
-			)
+		return userWithRooms.roomMemberships.map(m => m.room);
 	}
 
 	async getFriendById(clerkId: string) {

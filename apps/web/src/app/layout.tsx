@@ -1,18 +1,27 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { ClerkProvider, SignedIn, SignedOut, UserAvatar, UserButton, UserProfile } from '@clerk/nextjs';
+import { Playfair_Display, DM_Sans } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/ui/theme-provider';
-import Header from '@/components/ui/header';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 import { shadcn } from '@clerk/themes';
 
-const inter = Inter({ subsets: ['latin'] });
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Travel Planner - Plan Your Perfect Trip',
-  description: 'Collaborative travel planning platform',
+  title: 'Voyageur - Planifiez vos aventures',
+  description: 'Plateforme collaborative de planification de voyages',
 };
 
 export default function RootLayout({
@@ -21,16 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider appearance={{ theme: shadcn }}>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.className}`}>
+    <ClerkProvider appearance={{ baseTheme: shadcn }}>
+      <html lang="fr" suppressHydrationWarning>
+        <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="h-screen flex flex-col">
-              <Header />
-              <main className="flex-1 overflow-auto">
-                {children}
-              </main>
-            </div >
+            <div className='flex flex-col h-screen justify-center items-center'>
+              {/* <Header /> */}
+              {children}
+            </div>
             <Toaster position="top-right" />
           </ThemeProvider>
         </body>
@@ -38,4 +45,3 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
-
