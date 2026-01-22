@@ -1,0 +1,157 @@
+# Test CREATE (creer une room)
+## === ROOMS ===
+POST http://localhost:4000/api/rooms
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "name": "Trip to Tokyo 2025",
+  "description": "Planning our summer trip to Japan"
+}
+
+###
+# Test GET (recup une room)
+
+GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da
+x-mock-user-id: user_test_jane_001
+
+###
+# Test PUT (modifier une room)
+
+PUT http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "name": "Trip to Tokyo & Kyoto 2025",
+  "description": "Updated: Now visiting Kyoto too!"
+}
+
+###
+# Test PUT (modifier une room quand on est pas admin, erreur attendu)
+
+PUT http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da
+Content-Type: application/json
+x-mock-user-id: user_test_bob_002
+
+{
+  "name": "Trip to Tokyo & Kyoto 2025",
+  "description": "Updated: Now visiting Kyoto too!"
+}
+
+###
+# Test (join une room)
+
+POST http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/join
+x-mock-user-id: user_test_bob_002
+
+###
+# Test (lister les membres)
+
+GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/members
+x-mock-user-id: user_test_jane_001
+
+###
+# Test (mettre un membre ADMIN, seul un ADMIN peut faire ça)
+
+PUT http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/members/user_test_bob_002/role
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "role": "ADMIN"
+}
+
+###
+## === AVAILABILITY ===
+# Test (ajoute une disponibilité)
+
+POST http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/availability
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "startDate": "2025-07-01",
+  "endDate": "2025-07-15",
+  "notes": "Flexible on exact dates"
+}
+
+###
+# Test (Liste les disponibilité)
+
+GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/availability
+x-mock-user-id: user_test_jane_001
+
+###
+## === PROPOSALS ===
+# Test (Créer une proposal)
+POST http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "destination": "Tokyo, Japan",
+  "startDate": "2025-07-10",
+  "endDate": "2025-07-17",
+  "description": "One week exploring Tokyo culture and food",
+  "budgetEstimate": 2500,
+  "imageUrl": "https://example.com/tokyo.jpg"
+}
+
+###
+# Test (Lister les proposals)
+GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals
+Authorization: Bearer TON_TOKEN_CLERK
+x-mock-user-id: user_test_jane_001
+
+###
+## === Tests Votes ===
+# Voter sur une proposal
+POST http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals/6facf792-c195-4d76-9432-521564aea03c/vote
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "vote": "YES"
+}
+
+###
+# Modifier son vote
+PUT http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals/6facf792-c195-4d76-9432-521564aea03c/vote
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "vote": "MAYBE"
+}
+
+###
+# Lister les votes
+GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals/6facf792-c195-4d76-9432-521564aea03c/votes
+x-mock-user-id: user_test_jane_001
+
+###
+## === Tests Activities ===
+# Créer une activité
+POST http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals/6facf792-c195-4d76-9432-521564aea03c/activities
+Content-Type: application/json
+x-mock-user-id: user_test_jane_001
+
+{
+  "title": "Visit Senso-ji Temple",
+  "description": "Ancient Buddhist temple in Asakusa",
+  "category": "MUSEUM",
+  "estimatedPrice": 0
+}
+
+###
+# Lister les activités
+GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals/6facf792-c195-4d76-9432-521564aea03c/activities
+x-mock-user-id: user_test_jane_001
+
+###
+## === Test de la sélection de proposal ===
+# Sélectionner la proposal gagnante
+POST http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals/6facf792-c195-4d76-9432-521564aea03c/select
+x-mock-user-id: user_test_jane_001
+

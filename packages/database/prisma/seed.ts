@@ -28,17 +28,14 @@ const prisma = new PrismaClient({
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create test users
-  const password = await bcrypt.hash('password123', 10);
-
+  // Create test users - id is required (Clerk ID as primary key)
   const user1 = await prisma.user.upsert({
     where: { email: 'jane+clerk_test@example.com' },
     update: {},
     create: {
+      id: 'user_test_jane_001', // Clerk ID simulé
       email: 'jane+clerk_test@example.com',
       username: 'jane',
-      passwordHash: password,
-      clerkId: 'user_38ClRPXR4Jhwvx1c5ZuomEKADRe',
       profile: {
         create: {
           firstName: 'Jane',
@@ -54,9 +51,9 @@ async function main() {
     where: { email: 'bob@example.com' },
     update: {},
     create: {
+      id: 'user_test_bob_002', // Clerk ID simulé
       email: 'bob@example.com',
       username: 'bob',
-      passwordHash: password,
       profile: {
         create: {
           firstName: 'Bob',
@@ -72,9 +69,9 @@ async function main() {
     where: { email: 'charlie@example.com' },
     update: {},
     create: {
+      id: 'user_test_charlie_003', // Clerk ID simulé
       email: 'charlie@example.com',
       username: 'charlie',
-      passwordHash: password,
       profile: {
         create: {
           firstName: 'Charlie',

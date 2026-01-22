@@ -25,14 +25,11 @@ import {
   UpdateActivityDto
 } from './dto/rooms.dto'
 
-import { Public } from '@/common/decorators/public.decorator';
-
 @Controller('rooms')
 export class RoomsController {
   constructor(private roomsService: RoomsService) {}
 
   // CRUD ROOMS
-  @Public()
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createRoom(

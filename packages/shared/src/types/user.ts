@@ -42,11 +42,11 @@ export interface Friendship {
   updatedAt: Date;
 }
 
-export interface RoomSummary {
-	name: string;
-	lastMessage: string;
-	senderUsername: string;
-	senderPicture: string;
-	lastMessageDate: string;
-	createdAt?: Date;
-}
+// export interface RoomSummary {
+// 	name: string;
+// 	lastMessage: string;
+// 	senderUsername: string;
+// 	senderPicture: string;
+// 	lastMessageDate: string;
+// 	createdAt?: Date;
+// }
