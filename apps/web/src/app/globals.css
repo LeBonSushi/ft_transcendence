@@ -56,6 +56,21 @@
   --spacing: 0.25rem;
 }
 
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 6px;
+  border: 3px solid var(--muted);
+}
+
 .dark {
   --background: oklch(0.2569 0.0169 352.4042);
   --foreground: oklch(0.9397 0.0119 51.3156);

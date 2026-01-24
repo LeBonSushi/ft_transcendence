@@ -1,6 +1,6 @@
 // import { }
 
-import { Profile } from "@/components/ui/userUi/Profile";
+import { Profile } from "@/components/ui/user/Profile";
 
 export default function Home() {
 
