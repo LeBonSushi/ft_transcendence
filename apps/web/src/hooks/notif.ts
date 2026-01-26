@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
 
 export function useNotifications() {
-    const { user } = useUser(); 
+    const { user } = useUser();
     const [socket, setSocket] = useState<Socket | null>(null)
     const [notifications, setNotifications] = useState<any[]>([])
     const [isConnected, setIsConnected] = useState(false)
@@ -21,26 +21,31 @@ export function useNotifications() {
         console.log('Utilisateur trouver');
         const newSocket = io("http://localhost:4000", {
             withCredentials: true,
-            autoConnect:true
+            autoConnect: true
         })
         setSocket(newSocket)
         newSocket.on('connect', () => {
             setIsConnected(true)
-            newSocket.emit('getNotifications', {userId: user?.id})
+            newSocket.emit('subscribetToNotifications', { userId: user?.id })
+            newSocket.emit('getNotifications', { userId: user?.id })
         })
 
         newSocket.on('disconnect', () => {
             setIsConnected(false)
         })
 
-        newSocket.on('notifications', (notifs)=>{
+        newSocket.on('notifications', (notifs) => {
             setNotifications(notifs)
+            setLoading(false)
+        })
+        newSocket.on('newNotifications', (notifs) => {
+            setNotifications(prev => [notifs, ...prev])
             setLoading(false)
         })
         return () => {
             newSocket.disconnect()
-        } 
-    },[user?.id])
+        }
+    }, [user?.id])
 
     // const refreshNotifications = () => {
     //     if (socket && isConnected && user?.id)
@@ -49,10 +54,18 @@ export function useNotifications() {
     //         socket.emit('getNotifications', { userId: user?.id });
     //     }
     // }
+    const sendNotif = (notifToSend:any) => {
+        if (socket && isConnected &&user?.id)
+        {
+            setLoading(true)
+            socket.emit('sendNotif', {userId : user?.id, notification:notifToSend })
+        }
+    }
     return {
         notifications,
         loading,
         isConnected,
+        sendNotif,
         // refreshNotifications
     }
 }

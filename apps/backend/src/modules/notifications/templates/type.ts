@@ -1,6 +1,6 @@
 import { NotificationType  } from "@prisma/client";
 
-export interface NotificationTemplate {
+export interface NotificationModel {
     message:string,
     title:string,
     type :NotificationType,

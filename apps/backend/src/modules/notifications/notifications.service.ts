@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '@/common/redis/redis.service';
-import {NotificationTemplate} from "./templates/type"
+import {NotificationModel} from "./templates/type"
 import { PrismaService } from '@/common/prisma/prisma.service';
 
 
@@ -15,7 +15,7 @@ export class NotificationsService {
   //   );
   // }
 
-  async createNotification(userId: string, notificationtemplate:NotificationTemplate ) {
+  async createNotification(userId: string, notificationtemplate:NotificationModel ) {
     const notif = await this.Prisma.notification.create({
       data : {
         userId,
