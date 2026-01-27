@@ -129,11 +129,11 @@ export function AuthLayout({
           {/* Footer */}
           <p className="text-center text-xs text-muted-foreground mt-6">
             En vous connectant, vous acceptez nos{" "}
-            <a href="#" className="underline hover:text-foreground transition-colors">
+            <a href="/terms" className="underline hover:text-foreground transition-colors">
               Conditions
             </a>
             {" "}et{" "}
-            <a href="#" className="underline hover:text-foreground transition-colors">
+            <a href="/privacy" className="underline hover:text-foreground transition-colors">
               Confidentialité
             </a>
           </p>

@@ -34,6 +34,8 @@ import { Input } from "@/components/ui/input";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { useClickOutside, useProfileEdit, useSessions, useDeleteAccount } from "@/hooks";
 import { Separator } from "@radix-ui/react-separator";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
@@ -398,12 +400,10 @@ function TwoFaVerif({
     }
   };
 
-  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newCode = e.target.value.replace(/\D/g, '').slice(0, 6);
+  const handleCodeChange = (newCode: string) => {
     setCode(newCode);
     setError(null);
 
-    // Auto-submit quand 6 chiffres sont entrés
     if (newCode.length === 6 && !isVerifying) {
       handleVerify(newCode);
     }
@@ -435,18 +435,28 @@ function TwoFaVerif({
         </div>
 
         {/* Code input */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-foreground mb-2">
+        <div className="flex flex-col items-center m-8">
+          <h1 className="block text-sm font-medium text-foreground mb-2">
             Entrez le code à 6 chiffres de votre app :
-          </label>
-          <Input
+          </h1>
+
+          <InputOTP
+            maxLength={6}
             value={code}
             onChange={handleCodeChange}
-            placeholder="000000"
             autoFocus
+            pattern={REGEXP_ONLY_DIGITS}
             disabled={isVerifying}
-            className="text-center text-lg tracking-widest font-mono"
-          />
+            className="text-center text-lg tracking-widest font-mono">
+            <InputOTPGroup>
+              <InputOTPSlot index={0}/>
+              <InputOTPSlot index={1}/>
+              <InputOTPSlot index={2}/>
+              <InputOTPSlot index={3}/>
+              <InputOTPSlot index={4}/>
+              <InputOTPSlot index={5}/>
+            </InputOTPGroup>
+          </InputOTP>
         </div>
 
         {error && (
@@ -604,18 +614,11 @@ function SecuritySection({
           {showBackupCodes && user.backupCodeEnabled && (
             <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
               <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                Conservez ces codes en lieu sûr. Chaque code ne peut être utilisé qu'une seule fois.
+                Les codes de récupération doivent être générés via l&apos;API Clerk.
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {['••••••••', '••••••••', '••••••••', '••••••••'].map((code, i) => (
-                  <code key={i} className="p-2 text-center bg-background rounded text-xs sm:text-sm font-mono">
-                    {code}
-                  </code>
-                ))}
-              </div>
-              <Button size="sm" variant="outline" className="mt-3 w-full sm:w-auto">
-                <RefreshCw className="h-4 w-4 mr-1" /> Régénérer
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                TODO: Implement user.createBackupCode() to generate/fetch real backup codes
+              </p>
             </div>
           )}
         </div>
@@ -687,24 +690,8 @@ function SecuritySection({
         description="Dernières activités de sécurité sur votre compte."
       >
         <div className="space-y-2 sm:space-y-3">
-          <ActivityItem
-            icon={<LogOut className="h-4 w-4" />}
-            title="Connexion réussie"
-            description="Depuis Chrome sur Windows"
-            time="Aujourd'hui"
-          />
-          <ActivityItem
-            icon={<Key className="h-4 w-4" />}
-            title="Mot de passe modifié"
-            description="Changement effectué"
-            time="Il y a 3j"
-          />
-          <ActivityItem
-            icon={<Mail className="h-4 w-4" />}
-            title="Email vérifié"
-            description={user.primaryEmailAddress?.emailAddress || ''}
-            time="Il y a 1 sem"
-          />
+          <p className="text-sm text-muted-foreground">L&apos;historique d&apos;activité sera disponible prochainement.</p>
+          {/* TODO: Fetch real activity data from Clerk audit/events API */}
         </div>
       </SectionCard>
 

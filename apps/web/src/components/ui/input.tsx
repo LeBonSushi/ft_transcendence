@@ -12,11 +12,13 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, prefix, suffix, ...props }, ref) => {
+  ({ className, type, label, error, prefix, suffix, id: propId, ...props }, ref) => {
+    const generatedId = React.useId();
+    const id = propId || generatedId;
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor={id} className="block text-sm font-medium text-foreground mb-2">
             {label}
           </label>
         )}
@@ -27,6 +29,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </span>
           )}
           <input
+            id={id}
             type={type}
             className={cn(
               "flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm ring-offset-background",
@@ -65,15 +68,18 @@ export interface TextareaProps
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, ...props }, ref) => {
+  ({ className, label, error, id: propId, ...props }, ref) => {
+    const generatedId = React.useId();
+    const id = propId || generatedId;
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor={id} className="block text-sm font-medium text-foreground mb-2">
             {label}
           </label>
         )}
         <textarea
+          id={id}
           className={cn(
             "flex min-h-[80px] w-full rounded-xl border border-border bg-background px-3 py-2 text-sm ring-offset-background",
             "placeholder:text-muted-foreground",

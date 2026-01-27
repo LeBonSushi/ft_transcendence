@@ -44,7 +44,7 @@ export function TabNavigation({
           >
             {Icon && <Icon className="h-4 w-4" />}
             {tab.label}
-            <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 ${isActive ? 'h-0.75' : 'h-0.5'} bg-border rounded-xl`} />
+            <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 ${isActive ? 'h-[0.75rem]' : 'h-0.5'} bg-border rounded-xl`} />
           </button>
         );
       })}

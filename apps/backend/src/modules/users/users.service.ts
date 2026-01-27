@@ -194,9 +194,10 @@ export class UsersService {
       data: userFields,
     });
 
-    await this.prisma.profile.update({
+    await this.prisma.profile.upsert({
       where: { userId: id },
-      data: { firstName, lastName, bio, profilePicture, location, birthdate },
+      update: { firstName, lastName, bio, profilePicture, location, birthdate },
+      create: { userId: id, firstName, lastName, bio, profilePicture, location, birthdate },
     });
 
     const updatedUser = await this.prisma.user.findUnique({

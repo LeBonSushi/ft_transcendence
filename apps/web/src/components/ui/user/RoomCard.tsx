@@ -23,13 +23,24 @@ export default function RoomCard({
   onClick,
   className,
 }: RoomCardProps) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={cn(
         "mb-4 bg-card rounded-xl border border-border shadow-sm transition-all hover:shadow-md hover:border-primary/20 cursor-pointer",
         className
       )}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      aria-label={`Open room ${name}`}
     >
       <div className="p-3">
         <div className="flex gap-3 items-center">
@@ -45,7 +56,7 @@ export default function RoomCard({
               <h3 className="text-base font-semibold text-foreground flex-1 truncate">
                 {name}
               </h3>
-              {lastMessageDate && (
+              {lastMessageDate != null && (
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
                   {formatTimeAgo(lastMessageDate)}
                 </span>
@@ -88,8 +99,17 @@ export function RoomCardCompact({
   isActive,
   className,
 }: RoomCardCompactProps) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={cn(
         "p-3 rounded-lg border transition-all cursor-pointer",
         isActive
@@ -98,6 +118,8 @@ export function RoomCardCompact({
         className
       )}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      aria-label={`Open room ${name}`}
     >
       <div className="flex justify-between items-start gap-2">
         <div className="flex-1 min-w-0">

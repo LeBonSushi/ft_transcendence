@@ -48,7 +48,7 @@ export function Logo({
         )}
       >
         <svg
-          className={cn(config.icon, isWhite ? "text-white" : "text-white")}
+          className={cn(config.icon, isWhite ? "text-white" : "text-black")}
           viewBox="0 0 24 24"
           fill="currentColor"
         >

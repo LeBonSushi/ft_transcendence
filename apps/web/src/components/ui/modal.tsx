@@ -70,6 +70,8 @@ export function Modal({
 
       {/* Modal */}
       <div
+        role="dialog"
+        aria-modal="true"
         className={cn(
           "relative w-full mx-0 sm:mx-4 overflow-y-auto bg-background sm:rounded-2xl shadow-2xl",
           sizeClasses[size],
@@ -79,6 +81,7 @@ export function Modal({
         {showCloseButton && (
           <button
             onClick={onClose}
+            aria-label="Close"
             className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-full hover:bg-muted transition-colors z-10"
           >
             <X className="h-5 w-5 text-muted-foreground" />

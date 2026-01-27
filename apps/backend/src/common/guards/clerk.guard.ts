@@ -67,12 +67,12 @@ export class ClerkAuthGuard implements CanActivate {
 
       return true;
     } catch (error: any) {
-      if (error.reason === 'token-expired') {
+      if (error.reason === 'TokenExpired') {
         this.logger.debug('Token expired');
         throw new UnauthorizedException('Token expired');
       }
 
-      if (error.reason === 'token-invalid') {
+      if (error.reason === 'TokenInvalid') {
         this.logger.debug('Invalid token format');
         throw new UnauthorizedException('Invalid token');
       }

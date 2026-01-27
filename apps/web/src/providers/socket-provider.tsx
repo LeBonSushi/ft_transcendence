@@ -25,32 +25,48 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
 
     const initSocket = async () => {
-      const token = await getToken();
-      const newSocket = io(process.env.NEXT_PUBLIC_API_URL!, {
-        auth: { token },
-      });
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl) {
+          console.error('NEXT_PUBLIC_API_URL is not defined');
+          return;
+        }
 
-      newSocket.on('connect', () => {
-        console.log("Socket Connected.");
-        setIsConnected(true);
-      });
+        const token = await getToken();
+        const newSocket = io(apiUrl, {
+          auth: { token },
+        });
 
-      newSocket.on('disconnect', () => {
-        console.log("Socket Disconnected");
-        setIsConnected(false);
-      });
+        const onConnect = () => {
+          console.log("Socket Connected.");
+          setIsConnected(true);
+        };
 
-      socketRef.current = newSocket;
-      setSocket(newSocket);
+        const onDisconnect = () => {
+          console.log("Socket Disconnected");
+          setIsConnected(false);
+        };
 
+        newSocket.on('connect', onConnect);
+        newSocket.on('disconnect', onDisconnect);
+
+        socketRef.current = newSocket;
+        setSocket(newSocket);
+      } catch (error) {
+        console.error('Failed to initialize socket:', error);
+      }
     };
 
     initSocket();
     
     return () => {
-      socketRef.current?.disconnect();
+      if (socketRef.current) {
+        socketRef.current.off('connect');
+        socketRef.current.off('disconnect');
+        socketRef.current.disconnect();
+      }
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, getToken]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

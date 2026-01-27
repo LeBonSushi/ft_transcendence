@@ -25,14 +25,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     // L'utilisateur est disponible dans client.data.user grâce au WsClerkGuard
 
-    const user = client.id;
-    console.log(`User ${user} connected to chat`);
+    const user = client.data.user || client.id;
+    const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
+    console.log(`User ${userIdentifier} connected to chat`);
   }
 
   handleDisconnect(client: Socket) {
-    const user = client.id;
-    if (user) {
-      console.log(`User ${user} disconnected from chat`);
-    }
+    const user = client.data.user || client.id;
+    const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
+    console.log(`User ${userIdentifier} disconnected from chat`);
   }
 }

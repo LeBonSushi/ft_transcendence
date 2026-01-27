@@ -31,7 +31,10 @@ export function useDeleteAccount({
   const canDelete = confirmText === expectedText;
 
   const deleteAccount = async () => {
-    await user?.delete();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await user.delete();
   };
 
   const deleteWithReverification = useReverification(deleteAccount);

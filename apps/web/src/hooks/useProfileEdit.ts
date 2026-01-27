@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProfileData {
   firstName: string;
@@ -43,6 +43,12 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
   const [firstName, setFirstName] = useState(user.firstName || '');
   const [lastName, setLastName] = useState(user.lastName || '');
   const [username, setUsername] = useState(user.username || '');
+
+  useEffect(() => {
+    setFirstName(user.firstName || '');
+    setLastName(user.lastName || '');
+    setUsername(user.username || '');
+  }, [user]);
 
   const startEditing = () => setIsEditing(true);
 

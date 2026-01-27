@@ -35,9 +35,9 @@ export default function RootLayout({
       <html lang="fr" suppressHydrationWarning>
         <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased `}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SocketProvider>
-              {children}
-            </SocketProvider>
+              <SocketProvider>
+                {children}
+              </SocketProvider>
             <Toaster position="top-right" />
           </ThemeProvider>
         </body>
