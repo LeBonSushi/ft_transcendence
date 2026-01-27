@@ -7,6 +7,7 @@ import './globals.css';
 
 import { shadcn } from '@clerk/themes';
 import { SocketProvider } from '@/providers/socket-provider';
+import { VerificationProvider } from '@/providers/verification-provider';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -35,9 +36,11 @@ export default function RootLayout({
       <html lang="fr" suppressHydrationWarning>
         <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased `}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-              <SocketProvider>
+            <SocketProvider>
+              <VerificationProvider>
                 {children}
-              </SocketProvider>
+              </VerificationProvider>
+            </SocketProvider>
             <Toaster position="top-right" />
           </ThemeProvider>
         </body>

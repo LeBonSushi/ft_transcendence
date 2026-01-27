@@ -36,6 +36,7 @@ import { useClickOutside, useProfileEdit, useSessions, useDeleteAccount } from "
 import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useVerification } from "@/hooks/useVerification";
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
@@ -519,7 +520,7 @@ function SecuritySection({
   const enable2FAAction = async () => {
     return await user.createTOTP();
   }
-  const enable2FA = useReverification(enable2FAAction);
+  const enable2FA = useVerification({ fetcher: enable2FAAction });
 
   const handleEnable2FA = async () => {
     try {
