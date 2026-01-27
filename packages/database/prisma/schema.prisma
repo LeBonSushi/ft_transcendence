@@ -226,7 +226,14 @@ enum MessageType {
 
 enum NotificationType {
   TEXT_EXEMPLE
+  WELCOME_MSG
+  ROOM_INVITE
+  FRIEND_REQUEST
+  NEW_MESSAGE
+
 }
+
+
 
 model Notification {
   id        String    @id @default(uuid())

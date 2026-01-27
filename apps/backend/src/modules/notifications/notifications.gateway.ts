@@ -58,6 +58,38 @@ export class NotificationsGateway {
     }
   }
 
+  @SubscribeMessage('getUnreadNotifications')
+  async handleGetUnreadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string }) {
+    try {
+
+      if (!data.userId) {
+        client.emit('error', { message: 'userId manquant' });
+        return;
+      }
+      console.log("heyyy")
+      const notifications = await this.notificationsService.getUnreadNotification(data.userId)
+      client.emit('notifications', notifications)
+    }
+    catch (error) {
+      console.error("Error notif")
+    }
+  }
+
+  @SubscribeMessage('readnotification')
+  async handleReadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string , notifId:string}) {
+    try {
+
+      if (!data.userId || !data.notifId) {
+        client.emit('error', { message: 'userId manquant' });
+        return;
+      }
+      await this.notificationsService.ChangeNotificationToRead(data.userId, data.notifId)
+    }
+    catch (error) {
+      console.error("Error notif")
+    }
+  }
+
   @SubscribeMessage('sendNotif')
   async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string, notification: NotificationModel })
   {

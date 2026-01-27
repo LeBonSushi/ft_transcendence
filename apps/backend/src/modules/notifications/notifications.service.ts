@@ -8,13 +8,6 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 export class NotificationsService {
   constructor(private redis: RedisService, private Prisma:PrismaService) {}
 
-  // async sendNotification(userId: string, notification: any) {
-  //   await this.redis.publish(
-  //     `user:${userId}:notifications`,
-  //     JSON.stringify(notification)
-  //   );
-  // }
-
   async createNotification(userId: string, notificationtemplate:NotificationModel ) {
     const notif = await this.Prisma.notification.create({
       data : {
@@ -39,6 +32,30 @@ export class NotificationsService {
       }, orderBy: {createdAt: 'desc'}
     })
     return res
+  }
+
+  async getUnreadNotification(userId:string)
+  {
+    const res = await this.Prisma.notification.findMany({
+      where: {
+        userId: userId,
+        read:false
+      }, orderBy: {createdAt: 'desc'}
+    })
+    return res
+  }
+
+  async ChangeNotificationToRead(userId:string, notifId:string)
+  {
+    await this.Prisma.notification.update({
+      where: {
+        userId: userId,
+        id:notifId,
+      },
+      data: {
+        read:true
+      }
+    })
   }
 
 }

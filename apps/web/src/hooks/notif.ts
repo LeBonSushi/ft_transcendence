@@ -27,9 +27,8 @@ export function useNotifications() {
         newSocket.on('connect', () => {
             setIsConnected(true)
             newSocket.emit('subscribetToNotifications', { userId: user?.id })
-            newSocket.emit('getNotifications', { userId: user?.id })
+            newSocket.emit('getUnreadNotifications', { userId: user?.id })
         })
-
         newSocket.on('disconnect', () => {
             setIsConnected(false)
         })
@@ -54,18 +53,25 @@ export function useNotifications() {
     //         socket.emit('getNotifications', { userId: user?.id });
     //     }
     // }
-    const sendNotif = (notifToSend:any) => {
-        if (socket && isConnected &&user?.id)
-        {
+    const sendNotif = (notifToSend: any) => {
+        if (socket && isConnected && user?.id) {
             setLoading(true)
-            socket.emit('sendNotif', {userId : user?.id, notification:notifToSend })
+            socket.emit('sendNotif', { userId: user?.id, notification: notifToSend })
+        }
+    }
+    const readNotification = (notifId: string) => {
+        if (socket && isConnected && user?.id) {
+            setLoading(true)
+            socket.emit('readnotification', { userId: user?.id, notifId: notifId })
         }
     }
     return {
         notifications,
         loading,
         isConnected,
+        setNotifications,
         sendNotif,
+        readNotification
         // refreshNotifications
     }
 }
