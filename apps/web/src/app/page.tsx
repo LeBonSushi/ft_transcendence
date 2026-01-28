@@ -2,7 +2,7 @@
 
 import {NotificationPannel} from "@/components/notificationPannel"
 
-import { Profile } from "@/components/ui/userUi/Profile";
+// import { Profile } from "@/components/ui/userUi/Profile";
 
 export default function Home() {
 

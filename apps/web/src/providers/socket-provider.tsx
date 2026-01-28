@@ -26,7 +26,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     const initSocket = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
         if (!apiUrl) {
           console.error('NEXT_PUBLIC_API_URL is not defined');
           return;
@@ -35,6 +35,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const token = await getToken();
         const newSocket = io(apiUrl, {
           auth: { token },
+          
         });
 
         const onConnect = () => {

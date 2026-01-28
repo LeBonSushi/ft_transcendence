@@ -22,6 +22,7 @@ export class NotificationsService {
       `user:${userId}:notifications`,
       JSON.stringify(notif)
     )
+    return notif
   }
 
   async getNotification(userId:string)

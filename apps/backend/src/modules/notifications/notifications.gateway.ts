@@ -33,7 +33,7 @@ export class NotificationsGateway {
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('subscribetToNotifications')
+  @SubscribeMessage('subscribeToNotifications')
   async handleSubscribe(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string }) {
     const roomName = `user:${data.userId}:notifications`
     client.join(roomName)
@@ -110,7 +110,7 @@ export class NotificationsGateway {
   {
     const roomName = `user:${data.userId}:notifications`
     const notif = await this.notificationsService.createNotification(data.userId,data.notification)
-    this.server.to(roomName).emit('newNotifications', data.notification)
+    this.server.to(roomName).emit('newNotification', notif)
     //envoyer notif a newnotif
   }
 

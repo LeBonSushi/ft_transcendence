@@ -4,47 +4,52 @@ import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
+import { useSocket } from './useSocket';
 
 export function useNotifications() {
     const { user } = useUser();
-    const [socket, setSocket] = useState<Socket | null>(null)
+    const { socket, isConnected } = useSocket()
+    // const [socket, setSocket] = useState<Socket | null>(null)
     const [notifications, setNotifications] = useState<any[]>([])
-    const [isConnected, setIsConnected] = useState(false)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (!user?.id) {
+        if (!user?.id || !socket || !isConnected
+        ) {
             console.log('⏳ En attente de l\'utilisateur...');
             return
         }
-
-        console.log('Utilisateur trouver');
-        const newSocket = io("http://localhost:4000", {
-            withCredentials: true,
-            autoConnect: true
-        })
-        setSocket(newSocket)
-        newSocket.on('connect', () => {
-            setIsConnected(true)
-            newSocket.emit('subscribetToNotifications', { userId: user?.id })
-            newSocket.emit('getUnreadNotifications', { userId: user?.id })
-        })
-        newSocket.on('disconnect', () => {
-            setIsConnected(false)
-        })
-
-        newSocket.on('notifications', (notifs) => {
+        console.log('User found');
+        socket.emit('subscribeToNotifications', { userId: user.id })
+        console.log("User subscribed to room")
+        socket.emit('getNotifications', { userId: user.id })
+        const handleNotif = (notifs: any[]) => {
+            // console.log(notifs)
+            console.log("New notifs:", notifs)
             setNotifications(notifs)
             setLoading(false)
-        })
-        newSocket.on('newNotifications', (notifs) => {
-            setNotifications(prev => [notifs, ...prev])
-            setLoading(false)
-        })
-        return () => {
-            newSocket.disconnect()
         }
-    }, [user?.id])
+        const handleNewNotif = (notif: any) => {
+            console.log("NEw notif:", notif)
+            setNotifications(prev => [notif, ...prev])
+        }
+        const handleError = (error: any) => {
+            console.error(error)
+            setLoading(false)
+        }
+        socket.onAny((eventName, ...args) => {
+            console.log('🎯 ÉVÉNEMENT REÇU:', eventName, args);
+        });
+        socket.on('notifications', handleNotif)
+        // socket.on('getNotifications', handleNotif)
+        socket.on('newNotification', handleNewNotif)
+        socket.on('error', handleError)
+        return () => {
+            socket.off('notifications', handleNotif);
+            socket.off('newNotification', handleNewNotif);
+            socket.off('error', handleError);
+        }
+    }, [user?.id, socket, isConnected])
 
     // const refreshNotifications = () => {
     //     if (socket && isConnected && user?.id)
@@ -55,8 +60,8 @@ export function useNotifications() {
     // }
     const sendNotif = (notifToSend: any) => {
         if (socket && isConnected && user?.id) {
-            setLoading(true)
-            socket.emit('sendNotif', { userId: user?.id, notification: notifToSend })
+            console.log("Notif sent")
+            socket.emit('sendNotif', { userId: user.id, notification: notifToSend })
         }
     }
     const readNotification = (notifId: string) => {
@@ -65,10 +70,10 @@ export function useNotifications() {
             socket.emit('readnotification', { userId: user?.id, notifId: notifId })
         }
     }
-    const answerNotification = (notifId: string, answer:boolean) => {
+    const answerNotification = (notifId: string, answer: boolean) => {
         if (socket && isConnected && user?.id) {
             setLoading(true)
-            socket.emit('answernotification', { userId: user?.id, notifId: notifId , answer:answer})
+            socket.emit('answernotification', { userId: user?.id, notifId: notifId, answer: answer })
         }
     }
     return {
