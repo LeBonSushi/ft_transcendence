@@ -87,5 +87,3 @@ export function useNotifications() {
         // refreshNotifications
     }
 }
-
-// voir comment faire pour actulaliser quand nouvelle notif
