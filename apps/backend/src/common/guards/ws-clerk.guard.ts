@@ -9,7 +9,6 @@ export class WsClerkGuard implements CanActivate {
 
   static async validateToken(client: Socket): Promise<void> {
     const clerkSecretKey = process.env.CLERK_SECRET_KEY;
-    console.log("VALIDATE_TOKEN");
 
     // Mode dev sans Clerk
     if (!clerkSecretKey) {
@@ -44,7 +43,6 @@ export class WsClerkGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log("CAN_ACTIVATE");
     const client: Socket = context.switchToWs().getClient();
 
     if (client.data.user)
