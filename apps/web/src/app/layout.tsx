@@ -6,6 +6,8 @@ import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 import { shadcn } from '@clerk/themes';
+import { SocketProvider } from '@/providers/socket-provider';
+import { VerificationProvider } from '@/providers/verification-provider';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -32,12 +34,13 @@ export default function RootLayout({
   return (
     <ClerkProvider appearance={{ baseTheme: shadcn }}>
       <html lang="fr" suppressHydrationWarning>
-        <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased`}>
+        <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased `}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className='flex flex-col h-screen justify-center items-center'>
-              {/* <Header /> */}
-              {children}
-            </div>
+            <SocketProvider>
+              <VerificationProvider>
+                {children}
+              </VerificationProvider>
+            </SocketProvider>
             <Toaster position="top-right" />
           </ThemeProvider>
         </body>

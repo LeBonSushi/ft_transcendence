@@ -3,21 +3,33 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { createClerkClient, verifyToken } from '@clerk/backend';
+import { createClerkClient, verifyToken, ClerkClient } from '@clerk/backend';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
+  private readonly logger = new Logger(ClerkAuthGuard.name);
+  private clerkClient: ClerkClient | null = null;
+  private clerkSecretKey: string | undefined;
+
   constructor(
     private reflector: Reflector,
     private config: ConfigService,
-  ) {}
+  ) {
+    this.clerkSecretKey = this.config.get<string>('CLERK_SECRET_KEY');
+
+    if (this.clerkSecretKey) {
+      this.clerkClient = createClerkClient({
+        secretKey: this.clerkSecretKey,
+      });
+    }
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Vérifier si la route est publique
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -27,35 +39,25 @@ export class ClerkAuthGuard implements CanActivate {
       return true;
     }
 
+    if (!this.clerkSecretKey || !this.clerkClient) {
+      this.logger.error('Clerk is not configured - missing CLERK_SECRET_KEY');
+      throw new UnauthorizedException('Authentication service not configured');
+    }
+
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('No token provided');
+      throw new UnauthorizedException('Authentication required');
     }
 
     try {
-      // Vérifier le token avec Clerk
-      const clerkSecretKey = this.config.get<string>('CLERK_SECRET_KEY');
-
-      if (!clerkSecretKey) {
-        throw new UnauthorizedException('Clerk is not configured');
-      }
-
-      // Vérifier le token JWT de Clerk
       const verified = await verifyToken(token, {
-        secretKey: clerkSecretKey,
+        secretKey: this.clerkSecretKey,
       });
 
-      // Créer le client Clerk pour récupérer les infos utilisateur
-      const clerkClient = createClerkClient({
-        secretKey: clerkSecretKey,
-      });
+      const clerkUser = await this.clerkClient.users.getUser(verified.sub);
 
-      // Récupérer les informations utilisateur de Clerk
-      const clerkUser = await clerkClient.users.getUser(verified.sub);
-
-      // Attacher les infos utilisateur à la requête
       request.user = {
         id: clerkUser.id,
         email: clerkUser.emailAddresses[0]?.emailAddress,
@@ -64,9 +66,19 @@ export class ClerkAuthGuard implements CanActivate {
       };
 
       return true;
-    } catch (error) {
-      console.error('Clerk token verification failed:', error);
-      throw new UnauthorizedException('Invalid token');
+    } catch (error: any) {
+      if (error.reason === 'TokenExpired') {
+        this.logger.debug('Token expired');
+        throw new UnauthorizedException('Token expired');
+      }
+
+      if (error.reason === 'TokenInvalid') {
+        this.logger.debug('Invalid token format');
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      this.logger.error(`Authentication failed: ${error.message}`);
+      throw new UnauthorizedException('Authentication failed');
     }
   }
 

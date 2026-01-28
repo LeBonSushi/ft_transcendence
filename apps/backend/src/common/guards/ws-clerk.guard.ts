@@ -7,50 +7,51 @@ import { createClerkClient, verifyToken } from '@clerk/backend';
 export class WsClerkGuard implements CanActivate {
   constructor(private configService: ConfigService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const client: Socket = context.switchToWs().getClient();
-    const token = this.extractTokenFromSocket(client);
+  static async validateToken(client: Socket): Promise<void> {
+    const clerkSecretKey = process.env.CLERK_SECRET_KEY;
 
-    if (!token) {
-      throw new UnauthorizedException('No authentication token provided');
-    }
-
-    try {
-      const clerkSecretKey = this.configService.get<string>('CLERK_SECRET_KEY');
-
-      if (!clerkSecretKey) {
-        throw new UnauthorizedException('Clerk is not configured');
-      }
-
-      // Vérifier le token avec Clerk
-      const verified = await verifyToken(token, {
-        secretKey: clerkSecretKey,
-      });
-
-      // Créer le client Clerk pour récupérer les infos utilisateur
-      const clerkClient = createClerkClient({
-        secretKey: clerkSecretKey,
-      });
-
-      // Récupérer les informations utilisateur de Clerk
-      const clerkUser = await clerkClient.users.getUser(verified.sub);
-
-      // Attacher les infos utilisateur au socket
+    // Mode dev sans Clerk
+    if (!clerkSecretKey) {
+      const mockAuthId = client.handshake.auth?.userId;
+      const mockHeaderId = client.handshake.headers['x-mock-user-id'];
+      const effectiveId = (mockAuthId as string) || (mockHeaderId as string) || 'user_test_jane_001';
+      console.log(`🔓 WS DEV MODE: Mock user injected (${effectiveId})`);
       client.data.user = {
-        id: clerkUser.id,
-        email: clerkUser.emailAddresses[0]?.emailAddress,
-        username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress,
-        clerkId: clerkUser.id,
+        id: effectiveId,
+        username: 'DevUser_' + effectiveId,
+        email: 'test@example.com',
       };
-
-      return true;
-    } catch (error) {
-      console.error('WebSocket Clerk token verification failed:', error);
-      throw new UnauthorizedException('Invalid or expired token');
+      return;
     }
+
+    // Extraire le token
+    const token = WsClerkGuard.extractTokenFromSocket(client);
+    if (!token) {
+      throw new Error('No token provided');
+    }
+
+    const verified = await verifyToken(token, { secretKey: clerkSecretKey });
+    const clerkClient = createClerkClient({ secretKey: clerkSecretKey });
+    const clerkUser = await clerkClient.users.getUser(verified.sub);
+
+    client.data.user = {
+      id: clerkUser.id,
+      email: clerkUser.emailAddresses[0]?.emailAddress,
+      username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress,
+      clerkId: clerkUser.id,
+    };
   }
 
-  private extractTokenFromSocket(client: Socket): string | undefined {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const client: Socket = context.switchToWs().getClient();
+
+    if (client.data.user)
+        return true;
+    await WsClerkGuard.validateToken(client);
+    return true;
+  }
+
+  private static extractTokenFromSocket(client: Socket): string | undefined {
     // Essayer d'extraire le token depuis les headers d'authentification
     const authHeader = client.handshake.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
