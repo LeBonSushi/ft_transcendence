@@ -13,9 +13,13 @@ export class WsClerkGuard implements CanActivate {
 
     // Mode dev sans Clerk
     if (!clerkSecretKey) {
+      const mockAuthId = client.handshake.auth?.userId;
+      const mockHeaderId = client.handshake.headers['x-mock-user-id'];
+      const effectiveId = (mockAuthId as string) || (mockHeaderId as string) || 'user_test_jane_001';
+      console.log(`🔓 WS DEV MODE: Mock user injected (${effectiveId})`);
       client.data.user = {
-        id: '4dcb659b-e929-40d8-a8d6-65527501f0da',
-        username: 'TestUserSeeded',
+        id: effectiveId,
+        username: 'DevUser_' + effectiveId,
         email: 'test@example.com',
       };
       return;

@@ -1,7 +1,6 @@
 import {
   WebSocketGateway,
   WebSocketServer,
-  OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -21,38 +20,38 @@ import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
   },
 })
 @UseGuards(WsClerkGuard)
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
   constructor(private chatService: ChatService) {}
 
-  afterInit(server: Server) {
-    server.use(async (socket, next) => {
-      try {
-        console.log("SERVER_USE TRY");
-        await WsClerkGuard.validateToken(socket);
-        next();
-      } catch (error) {
-        console.log('Auth failed:', error.message);
-        next(new Error('Unauthorized'));
-      }
-    });
-    console.log('🔌 WebSocket Gateway initialized');
-  }
+  // afterInit(server: Server) {
+  //   server.use(async (socket, next) => {
+  //     try {
+  //       console.log("SERVER_USE TRY");
+  //       await WsClerkGuard.validateToken(socket);
+  //       next();
+  //     } catch (error) {
+  //       console.log('Auth failed:', error.message);
+  //       next(new Error('Unauthorized'));
+  //     }
+  //   });
+  //   console.log('🔌 WebSocket Gateway initialized');
+  // }
 
   async handleConnection(client: Socket) {
-    console.log("HANDLE_CONNECTION");
-    const user = client.data.user;
-    console.log(`User ${user.username} connected to chat`);
+    // L'utilisateur est disponible dans client.data.user grâce au WsClerkGuard
+
+    const user = client.data.user || client.id;
+    const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
+    console.log(`User ${userIdentifier} connected to chat`);
   }
 
   handleDisconnect(client: Socket) {
-    console.log("HANDLE_DISCONNECT");
-    const user = client.data.user;
-    if (user) {
-      console.log(`User ${user.username} disconnected from chat`);
-    }
+    const user = client.data.user || client.id;
+    const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
+    console.log(`User ${userIdentifier} disconnected from chat`);
   }
 
   @SubscribeMessage("room:join")

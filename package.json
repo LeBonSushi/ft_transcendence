@@ -21,8 +21,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.2"
+    "prettier": "^3.4.2"
   },
   "dependencies": {
     "@prisma/client": "^7.1.0",
