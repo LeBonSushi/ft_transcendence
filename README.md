@@ -1,412 +1,195 @@
-# 🌍 Travel Planner - Modern Trip Planning Platform
+*This project has been created as part of the 42 curriculum by [ggriault](https://github.com/AkAzA509), [macorso](https://github.com/LeBonSushi), [nbrecque](hhttps://github.com/Brecqueville), [njard](https://github.com/noanjrd).*
 
-A scalable, production-ready travel planning platform built with modern technologies. Plan trips with friends, vote on destinations, manage activities, and chat in real-time.
 
-## 🏗️ Architecture
+# Project Overview
 
-**Modern Modular Monolith** - Built for 1000s of concurrent users with horizontal scaling capabilities.
+La direction de notre transcendence a ete d'en faire un site de planifiaction de voyages en groupes (amis, famille, travail ...)
+Pour cela nous avons imaginer notre site comme une messagerie centralisant plusieurs outils d'habitude separer:
+ - gestion des disponibilites
+ - vote/sondage 
+ - (optionnal) budgetisation
+ - messagerie groupees
+ - messagerie privee
 
+
+# Installation 
+
+Pour utiliser notre WepApp il vous suffit de suivre les etapes suivantes
+```bash
+#prerequis
+pnpm V 10.28+
+docker V 29.1+
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   Next.js   │─────▶│   NestJS     │─────▶│  PostgreSQL │
-│  Frontend   │      │   Backend    │      │  + Prisma   │
-│ (React 19)  │      │  (Monolith)  │      └─────────────┘
-└─────────────┘      └──────────────┘              │
-       │                     │                      │
-       │              ┌──────┴────────┐      ┌─────▼─────┐
-       │              │               │      │   Redis   │
-       └─────────────▶│  Socket.io    │◀────▶│  Cache &  │
-         WebSocket    │  Real-time    │      │  Pub/Sub  │
-                      └───────────────┘      └───────────┘
-                              │
-                      ┌───────▼────────┐
-                      │   S3 Storage   │
-                      │  (MinIO/AWS)   │
-                      └────────────────┘
-```
-
-### Key Features
-
-- ✅ **Authentication**: JWT + OAuth (Google, GitHub, 42)
-- ✅ **Real-time Chat**: Socket.io with Redis pub/sub
-- ✅ **Room Management**: Create, join, and manage trip rooms
-- ✅ **Trip Planning**: Proposals, voting, activities
-- ✅ **File Upload**: Profile pictures, room images, attachments
-- ✅ **Horizontal Scaling**: Multiple backend instances with Redis
-- ✅ **Kubernetes Ready**: Production-grade K8s manifests with HPA
-- ✅ **TypeScript**: End-to-end type safety
-
-## 📦 Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | Next.js 15 + React 19 | Server components, App Router |
-| **UI** | shadcn/ui + Tailwind CSS | Modern, accessible components |
-| **Backend** | NestJS | Modular TypeScript framework |
-| **Database** | PostgreSQL + Prisma 7 | Relational data with type-safe ORM |
-| **Cache** | Redis | Session store, pub/sub, rate limiting |
-| **Real-time** | Socket.io | WebSocket connections |
-| **Storage** | S3-compatible (MinIO/AWS S3) | File uploads |
-| **Deployment** | Docker + Kubernetes | Containerization & orchestration |
-| **Package Manager** | pnpm | Fast, efficient monorepo support |
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 22+ (LTS)
-- pnpm 9+
-- Docker & Docker Compose
-- PostgreSQL, Redis, MinIO (via Docker)
-
-### Installation
 
 ```bash
 # Clone the repository
 git clone <your-repo-url>
 cd travel-planner
-
+```
+```bash
 # Install dependencies
 pnpm install
+```
 
+```bash
 # Copy environment file
 cp .env.example .env
 # Edit .env with your configuration
-
-# Start infrastructure (PostgreSQL, Redis, MinIO)
-docker-compose -f docker-compose.dev.yml up -d
-
-# Generate Prisma client
-pnpm db:generate
-
-# Run migrations
-pnpm db:migrate
-
-# Seed database (optional)
-pnpm db:seed
-
-# Start development servers (backend + frontend)
-pnpm dev
 ```
-
-### Development URLs
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000/api
-- **WebSocket**: ws://localhost:4000
-- **Database**: localhost:5432
-- **Redis**: localhost:6379
-- **MinIO Console**: http://localhost:9001 (minioadmin/minioadmin)
-
-## 📂 Project Structure
-
-```
-travel-planner/
-├── apps/
-│   ├── backend/                 # NestJS backend
-│   │   └── src/
-│   │       ├── modules/         # Feature modules
-│   │       │   ├── auth/        # Authentication (JWT + OAuth)
-│   │       │   ├── users/       # User management
-│   │       │   ├── rooms/       # Trip rooms
-│   │       │   ├── chat/        # Real-time chat
-│   │       │   ├── notifications/
-│   │       │   └── storage/     # File uploads
-│   │       ├── common/          # Shared utilities
-│   │       │   ├── decorators/
-│   │       │   ├── guards/
-│   │       │   ├── prisma/
-│   │       │   └── redis/
-│   │       └── main.ts
-│   │
-│   └── web/                     # Next.js frontend (TODO)
-│       ├── src/
-│       │   ├── app/             # App router pages
-│       │   ├── components/      # React components
-│       │   ├── lib/             # Utilities & API client
-│       │   └── hooks/           # Custom hooks
-│       └── package.json
-│
-├── packages/
-│   ├── shared/                  # Shared types & constants
-│   │   └── src/
-│   │       ├── types/           # TypeScript interfaces
-│   │       └── constants/       # API routes, events
-│   │
-│   └── database/                # Prisma schema & migrations
-│       ├── prisma/
-│       │   ├── schema.prisma
-│       │   ├── migrations/
-│       │   └── seed.ts
-│       └── index.ts
-│
-├── docker/                      # Dockerfiles
-│   ├── backend.Dockerfile
-│   └── frontend.Dockerfile
-│
-├── k8s/                         # Kubernetes manifests
-│   ├── namespace.yaml
-│   ├── configmap.yaml
-│   ├── secrets.yaml
-│   ├── postgres.yaml
-│   ├── redis.yaml
-│   ├── backend.yaml
-│   ├── frontend.yaml
-│   └── ingress.yaml
-│
-├── docker-compose.yml           # Production compose
-├── docker-compose.dev.yml       # Development compose
-├── pnpm-workspace.yaml          # Monorepo config
-└── package.json                 # Root package.json
-```
-
-## 🔧 Development
-
-### Available Scripts
-
 ```bash
-# Development
-pnpm dev                # Start all services
-pnpm dev:backend        # Start backend only
-pnpm dev:web            # Start frontend only
-
-# Database
-pnpm db:generate        # Generate Prisma client
-pnpm db:migrate         # Run migrations
-pnpm db:push            # Push schema changes
-pnpm db:seed            # Seed database
-pnpm db:studio          # Open Prisma Studio
-
-# Build
-pnpm build              # Build all packages
-pnpm build:backend      # Build backend
-pnpm build:web          # Build frontend
-
-# Testing
-pnpm test               # Run tests
-pnpm lint               # Lint code
-pnpm format             # Format code with Prettier
-
-# Cleanup
-pnpm clean              # Remove node_modules & build artifacts
+# Launch the app
+pnpm start
 ```
 
-### Setting Up OAuth
+# Usefull Resources
 
-#### Google OAuth
+Ici voici une listes de toute les ressources qui nous on ete a la realisation de notre app
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized redirect URI: `http://localhost:4000/api/auth/google/callback`
-6. Update `.env`:
-   ```env
-   GOOGLE_CLIENT_ID=your_client_id
-   GOOGLE_CLIENT_SECRET=your_client_secret
-   ```
+  * Database:
+	1. Use Prisma in NextJS [here](https://codelynx.dev/posts/guide-prisma)
+	1. Official Prisma docs [here](https://www.prisma.io/docs/getting-started/prisma-postgres/quickstart/prisma-orm)
+	1. etc
 
-#### GitHub OAuth
+  * Framwork/languages:
+	1. Official NestJs docs [here](https://docs.nestjs.com/)
+	1. Official NextJs docs [here](https://nextjs.org/docs)
+	1. Official React docs [here](https://fr.react.dev/reference/react-dom/components)
+	1. Official Tailwind docs [here](https://tailwindcss.com/docs/installation/using-vite)
+	1. Official Clerk docs [here](https://clerk.com/docs/nextjs/getting-started/quickstart)
+	1. OpenClassroom Js tuto [here](https://openclassrooms.com/fr/courses/6390246-passez-au-full-stack-avec-node-js-express-et-mongodb)
+	1. etc
 
-1. Go to GitHub Settings > Developer settings > OAuth Apps
-2. Create new OAuth App
-3. Authorization callback URL: `http://localhost:4000/api/auth/github/callback`
-4. Update `.env`:
-   ```env
-   GITHUB_CLIENT_ID=your_client_id
-   GITHUB_CLIENT_SECRET=your_client_secret
-   ```
+  * API:
+	1. Sort of API youtube video [here](https://www.youtube.com/watch?v=pBASqUbZgkY)
 
-#### 42 OAuth
+L'utilisation de l'IA dans notre projet:
+ - aide au design de l'infrastructure pour etre sur de nos choix
+ - aide au design des relation entre les tables dans la db
+ - explication/aide lors de difficulter a corriger son code
+ - aide a l'aprehension de nouvelle notions en complement des docs
 
-1. Go to [42 Intra](https://profile.intra.42.fr/oauth/applications/new)
-2. Create new application
-3. Redirect URI: `http://localhost:4000/api/auth/42/callback`
-4. Update `.env`:
-   ```env
-   FORTY_TWO_CLIENT_ID=your_uid
-   FORTY_TWO_CLIENT_SECRET=your_secret
-   ```
 
-## 🐳 Docker Deployment
+# Team information
 
-### Development
+## Rôles
 
-```bash
-# Start infrastructure only
-docker-compose -f docker-compose.dev.yml up -d
+### <a name="po"></a>Product Owner (PO)
+Makes decisions on features and priorities. Validates completed work. Communicates with stakeholders.
 
-# Stop infrastructure
-docker-compose -f docker-compose.dev.yml down
-```
+### <a name="pm"></a>Project Manager (PM)
+Organizes team meetings and planning sessions. Tracks progress and deadlines. Ensures team communication. Manages risks and blockers
 
-### Production
+### <a name="techld"></a>Tech Lead
+Defines technical architecture. Makes technology stack decisions. Ensures code quality and best practices
 
-```bash
-# Build images
-docker-compose build
+### <a name="dev"></a>Développeur
+Write code for assigned features. Participate in code reviews. Test their implementations. Document their work.
 
-# Start all services
-docker-compose up -d
 
-# View logs
-docker-compose logs -f
+### ggirault [[ po ](#product-owner-po)][[ dev ](#développeurv)]:
+- Tout les petit trucs chiant
+- Backend users
+- Design archi with macorso
+- Design db
+- front
 
-# Stop services
-docker-compose down
-```
+### macorso [[ tech lead ](#tech-lead)][[ dev ](#développeurv)]:
+- api
+- auth
+- choix des language/framework
+- front
+-
 
-## ☸️ Kubernetes Deployment
+### nbrecque [[ dev ](#développeurv)]:
+- Backend chat
+- WebSocket
+- front
+-
+-
 
-See [k8s/README.md](k8s/README.md) for detailed Kubernetes deployment guide.
+### njard [[ pm ](#project-manager-pm)][[ dev ](#développeurv)] :
+- mise en place de l'organisation
+- Backend notification
+- front
+-
+-
 
-```bash
-# Quick deploy
-kubectl apply -k k8s/
+## Project Management 
 
-# Check status
-kubectl get pods -n travel-planner
+je laisse ca a noan
 
-# View logs
-kubectl logs -n travel-planner -l app=backend -f
-```
+# Technical Stack
 
-### Production Checklist
 
-- [ ] Update secrets in `k8s/secrets.yaml`
-- [ ] Update domain in `k8s/ingress.yaml`
-- [ ] Configure cert-manager for TLS
-- [ ] Set up managed PostgreSQL (AWS RDS, GCP Cloud SQL)
-- [ ] Set up managed Redis (AWS ElastiCache, GCP Memorystore)
-- [ ] Configure S3 or equivalent object storage
-- [ ] Set up monitoring (Prometheus + Grafana)
-- [ ] Configure logging (ELK or cloud logging)
-- [ ] Set up CI/CD pipeline
-- [ ] Configure automated backups
+<p align="center">
+  <a href="https://www.prisma.io/" style="text-decoration:none;">
+    <img src="https://www.freelogovectors.net/wp-content/uploads/2022/01/prisma_logo-freelogovectors.net_.png"  width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">Prisma</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://react.dev/" style="text-decoration:none;">
+    <img src="https://raw.githubusercontent.com/github/explore/main/topics/react/react.png" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">React</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://pnpm.io/" style="text-decoration:none;">
+    <img src="https://imgs.search.brave.com/wUSyYk6sLy6E8ing99k_jEESXUfjDuhZrf1bxwGXPJI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuc2Vla2xvZ28u/Y29tL2xvZ28tcG5n/LzYzLzIvcG5wbS1s/b2dvLXBuZ19zZWVr/bG9nby02MzQ1OTcu/cG5n" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">pnpm</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://nextjs.org/" style="text-decoration:none;">
+    <img src="https://raw.githubusercontent.com/vercel/vercel/main/packages/frameworks/logos/next.svg" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">Next.js</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://nestjs.com/" style="text-decoration:none;">
+    <img src="https://static.cdnlogo.com/logos/n/57/nestjs.svg" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">NestJS</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://tailwindcss.com/" style="text-decoration:none;">
+    <img src="https://raw.githubusercontent.com/github/explore/main/topics/tailwind/tailwind.png" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">Tailwind CSS</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://clerk.com/" style="text-decoration:none;">
+    <img src="https://avatars.githubusercontent.com/u/49538330?s=200&v=4" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">Clerk</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://www.docker.com/" style="text-decoration:none;">
+    <img src="https://www.freelogovectors.net/wp-content/uploads/2023/09/docker_logo-freelogovectors.net_.png" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">Docker</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://kubernetes.io/" style="text-decoration:none;">
+    <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">Kubernetes</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://developer.mozilla.org/fr/docs/Web/JavaScript" style="text-decoration:none;">
+    <img src="https://www.freelogovectors.net/wp-content/uploads/2023/07/js-logo-javascript-sdk-freelogovectors.net_.png" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">JavaScript</span>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://www.typescriptlang.org/" style="text-decoration:none;">
+    <img src="https://www.freelogovectors.net/wp-content/uploads/2021/02/typescript-logo-freelogovectors.net_.png" width="24" height="24" style="vertical-align:middle;"/>
+    <span style="vertical-align:middle;">TypeScript</span>
+  </a>
+</p>
 
-## 🔐 Security
 
-- JWT tokens stored in HTTP-only cookies
-- CORS configured with specific origins
-- Rate limiting via Throttler
-- Input validation with class-validator
-- SQL injection protection via Prisma
-- Password hashing with bcrypt (10 rounds)
-- OAuth for third-party authentication
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | Next.js + React | Server components, App Router |
+| **UI** | shadcn/ui + Tailwind CSS | Modern, accessible components |
+| **Backend** | NestJS | Modular TypeScript framework |
+| **Database** | PostgreSQL + Prisma | Relational data with type-safe ORM |
+| **Cache** | Redis | Session store, caching|
+| **Real-time** | Socket.io | WebSocket connections |
+| **Deployment** | Docker + Kubernetes | Containerization & orchestration |
+| **Package Manager** | pnpm | Fast, efficient, ligthweight|
+<!-- | **Storage** | S3-compatible (MinIO/AWS S3) | File uploads | -->
 
-## 📊 Scaling
 
-### Horizontal Scaling
-
-The architecture supports horizontal scaling out of the box:
-
-1. **Backend**: Scale to multiple instances (K8s HPA: 3-10 pods)
-2. **Frontend**: Scale based on traffic (K8s HPA: 2-5 pods)
-3. **Redis Pub/Sub**: Coordinates real-time events across backend instances
-4. **Database**: Use read replicas for read-heavy operations
-
-### Performance Optimization
-
-- Redis caching for frequently accessed data
-- Database indexes on commonly queried fields
-- Connection pooling via Prisma
-- Lazy loading and code splitting in Next.js
-- CDN for static assets
-- WebSocket connection pooling
-
-## 🧪 Testing
-
-```bash
-# Unit tests
-pnpm test
-
-# E2E tests
-pnpm test:e2e
-
-# Coverage
-pnpm test:cov
-```
-
-## 📝 API Documentation
-
-### Authentication Endpoints
-
-```
-POST   /api/auth/register          # Create account
-POST   /api/auth/login             # Login
-POST   /api/auth/logout            # Logout
-GET    /api/auth/me                # Get current user
-GET    /api/auth/google            # OAuth with Google
-GET    /api/auth/github            # OAuth with GitHub
-GET    /api/auth/42                # OAuth with 42
-```
-
-### Room Endpoints
-
-```
-POST   /api/rooms                  # Create room
-GET    /api/rooms/:id              # Get room details
-POST   /api/rooms/:id/join         # Join room
-POST   /api/rooms/:id/leave        # Leave room
-POST   /api/rooms/:id/proposals    # Create trip proposal
-POST   /api/rooms/:roomId/proposals/:proposalId/vote  # Vote on proposal
-```
-
-See [packages/shared/src/constants/index.ts](packages/shared/src/constants/index.ts) for complete API routes.
-
-## 🔌 WebSocket Events
-
-```typescript
-// Chat
-'message:send'     # Send message
-'message:receive'  # Receive message
-'typing:start'     # User started typing
-'typing:stop'      # User stopped typing
-
-// Room
-'room:join'        # Join room
-'room:leave'       # Leave room
-
-// Presence
-'user:online'      # User came online
-'user:offline'     # User went offline
-```
-
-## 🤝 Contributing
-
-```bash
-# Create feature branch
-git checkout -b feature/your-feature
-
-# Make changes and commit
-git commit -m "feat: add amazing feature"
-
-# Push and create PR
-git push origin feature/your-feature
-```
-
-### Commit Convention
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation
-- `style:` Code style (formatting)
-- `refactor:` Code refactoring
-- `test:` Tests
-- `chore:` Maintenance
-
-## 📄 License
-
-MIT
-
-## 🙏 Acknowledgments
-
-- Built with modern best practices
-- Inspired by production-grade architectures
-- Ready for 1000s of concurrent users
-
----
-
-**Built with ❤️ for collaborative travel planning**
+![Aperçu du schéma de la base de données](./prisma-erd.svg)
