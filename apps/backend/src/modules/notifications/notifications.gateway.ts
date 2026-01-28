@@ -80,10 +80,25 @@ export class NotificationsGateway {
     try {
 
       if (!data.userId || !data.notifId) {
-        client.emit('error', { message: 'userId manquant' });
+        client.emit('error', { message: 'id manquant' });
         return;
       }
       await this.notificationsService.ChangeNotificationToRead(data.userId, data.notifId)
+    }
+    catch (error) {
+      console.error("Error notif")
+    }
+  }
+
+  @SubscribeMessage('answernotification')
+  async handleAnsweredNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string , notifId:string, answer:boolean}) {
+    try {
+
+      if (!data.userId || !data.notifId) {
+        client.emit('error', { message: 'id manquant' });
+        return;
+      }
+      await this.notificationsService.AnswerToNotification(data.userId, data.notifId, data.answer)
     }
     catch (error) {
       console.error("Error notif")

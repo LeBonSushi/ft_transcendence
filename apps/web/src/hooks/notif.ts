@@ -65,13 +65,20 @@ export function useNotifications() {
             socket.emit('readnotification', { userId: user?.id, notifId: notifId })
         }
     }
+    const answerNotification = (notifId: string, answer:boolean) => {
+        if (socket && isConnected && user?.id) {
+            setLoading(true)
+            socket.emit('answernotification', { userId: user?.id, notifId: notifId , answer:answer})
+        }
+    }
     return {
         notifications,
         loading,
         isConnected,
         setNotifications,
         sendNotif,
-        readNotification
+        readNotification,
+        answerNotification
         // refreshNotifications
     }
 }

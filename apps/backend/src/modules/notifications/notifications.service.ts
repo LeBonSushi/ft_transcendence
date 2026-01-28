@@ -57,5 +57,18 @@ export class NotificationsService {
       }
     })
   }
+  async AnswerToNotification(userId:string, notifId:string, answer:boolean)
+  {
+    await this.Prisma.notification.update({
+      where: {
+        userId: userId,
+        id:notifId,
+      },
+      data: {
+        read:true,
+        request_accepted:answer
+      }
+    })
+  }
 
 }

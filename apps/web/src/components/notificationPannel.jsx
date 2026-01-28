@@ -15,54 +15,84 @@ function timeAgo(time) {
         return seconds + " sec ago"
     }
     const minutes = Math.floor(seconds / 60)
+    if (minutes === 1) {
+        return "1 min ago"
+    }
     if (minutes < 60) {
-        return minutes + " min ago"
+        return minutes + " mins ago"
     }
     const hours = Math.floor(minutes / 60)
+    if (hours === 1) {
+        return "1 hour ago"
+    }
     if (hours < 24) {
         return hours + " hours ago"
     }
     const days = Math.floor(hours / 24)
+    if (days === 1) {
+        return "1 day ago"
+    }
     if (days) {
         return days + " days ago"
     }
 }
 
 function CloseIcon({ size = 24 }) {
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+        >
+            <line x1="17" y1="7" x2="7" y2="17" />
+            <line x1="7" y1="7" x2="17" y2="17" />
+        </svg>
+    )
+}
+
+export function AcceptIcon({
+  size = 20,
+  color = "currentColor",
+  strokeWidth = 2.5,
+}) {
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
       width={size}
       height={size}
-      viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+      stroke={color}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      <line x1="17" y1="7" x2="7" y2="17" />
-      <line x1="7" y1="7" x2="17" y2="17" />
+      <path d="M4 12l6 6 10-12" />
     </svg>
   )
 }
 
+
 export function NotificationPannel() {
     const notif = ["heyyyy", "textttttttttt"]
     const [isVisible, setIsVisible] = useState(false)
-    const { notifications,setNotifications, loading, isConnected, refreshNotifications, sendNotif,readNotification } = useNotifications()
+    const { notifications, setNotifications, loading, isConnected, refreshNotifications, sendNotif, readNotification, answerNotification } = useNotifications()
     const panelRef = useRef()
     const { setTheme } = useTheme();
     setTheme('dark');
 
     useEffect(() => {
-        function handleClickOutside(event)
-        {
-            if (panelRef.current && !panelRef.current.contains(event.target))
-            {
+        function handleClickOutside(event) {
+            if (panelRef.current && !panelRef.current.contains(event.target)) {
                 setIsVisible(false)
             }
         }
-        document.addEventListener("mousedown",handleClickOutside)
-        return () => {document.removeEventListener("mousedown", handleClickOutside)}
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => { document.removeEventListener("mousedown", handleClickOutside) }
 
     }, [panelRef])
 
@@ -71,7 +101,7 @@ export function NotificationPannel() {
             {!isVisible && (
                 <>
                     <div className="absolute right-1.5 w-10 h-10 flex justify-center items-center bg-secondary top-1.5 rounded-lg cursor-pointer hover:opacity-70" onClick={() => setIsVisible(true)}>
-                        <Image src={notifIcon} alt="notificationLogo" width={20} height={20}  />
+                        <Image src={notifIcon} alt="notificationLogo" width={20} height={20} />
                     </div>
                 </>
             )}
@@ -94,10 +124,31 @@ export function NotificationPannel() {
                                         <p className="text-foreground text-base ml-2">{item.message}</p>
                                     </div>
                                     <p className="absolute text-white/50 text-sm ml-2 right-2 top-2">{timeAgo(item.createdAt)}</p>
-                                    <div className="absolute right-2 hover:opacity-70 cursor-pointer" 
-                                    onClick={() => {readNotification(item.id); setNotifications((prev) => prev.filter((_,i) => i  !== index))}}>
-                                    <CloseIcon />
-                                    </div>
+                                    {(item.type === 'ROOM_DELETED' || item.type === 'NEW_MESSAGE'
+                                        || item.type === 'WELCOME_MSG' || item.type === "TEXT_EXEMPLE" && (
+
+                                            <div className="absolute right-3 hover:opacity-70 cursor-pointer"
+                                                onClick={() => { readNotification(item.id); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
+                                                <CloseIcon />
+                                            </div>
+                                        )
+                                    )
+                                }
+                                    {(item.type === 'ROOM_INVITE' || item.type === 'FRIEND_REQUEST' && (
+                                            <div className="absolute flex justify-center items-center flex-row right-1 gap-2">
+                                            <div className="hover:opacity-70 cursor-pointer"
+                                                onClick={() => { answerNotification(item.id, true); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
+                                                <AcceptIcon />
+                                            </div>
+                                            <div className="hover:opacity-70 cursor-pointer"
+                                                onClick={() => { answerNotification(item.id, false); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
+                                                <CloseIcon />
+                                            </div>
+                                            </div>
+                                        )
+                                    )
+                                }
+
                                 </div>
                             ))}
                         </motion.div>

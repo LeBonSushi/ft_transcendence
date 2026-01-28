@@ -228,11 +228,10 @@ enum NotificationType {
   TEXT_EXEMPLE
   WELCOME_MSG
   ROOM_INVITE
+  ROOM_DELETED
   FRIEND_REQUEST
   NEW_MESSAGE
-
 }
-
 
 
 model Notification {
@@ -243,7 +242,7 @@ model Notification {
   title     String
   message   String
   read      Boolean   @default(false)
-
+  request_accepted      Boolean   @default(false)
   createdAt DateTime  @default(now())
 
   @@index([userId])
