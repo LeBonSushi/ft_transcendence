@@ -3,28 +3,32 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n \"backend,web,ngrok\" -c \"blue,magenta,green\" \"pnpm --filter backend dev\" \"pnpm --filter web dev\" \"ngrok http 4000\"",
-    "dev:backend": "pnpm --filter backend dev",
-    "dev:web": "pnpm --filter web dev",
-    "dev:ngrok": "ngrok http 4000",
-    "build": "pnpm --filter backend build && pnpm --filter web build",
-    "build:backend": "pnpm --filter backend build",
-    "build:web": "pnpm --filter web build",
-    "db:generate": "pnpm --filter database generate",
-    "db:migrate": "pnpm --filter database migrate",
-    "db:push": "pnpm --filter database push",
-    "db:seed": "pnpm --filter database seed",
-    "db:studio": "pnpm --filter database studio",
-    "lint": "pnpm -r lint",
+    "dev": "turbo dev",
+    "dev:backend": "turbo dev --filter=backend",
+    "dev:web": "turbo dev --filter=web",
+    "dev:ngrok": "ngrok http 4000 --authtoken $NGROK_SECRET_KEY --pool 3",
+    "dev:all": "concurrently -n \"turbo,ngrok\" -c \"blue,green\" \"turbo dev\" \"ngrok http 4000\"",
+    "build": "turbo build",
+    "build:backend": "turbo build --filter=backend",
+    "build:web": "turbo build --filter=web",
+    "db:generate": "turbo db:generate --filter=database",
+    "db:migrate": "turbo db:migrate --filter=database",
+    "db:push": "turbo db:push --filter=database",
+    "db:seed": "turbo db:seed --filter=database",
+    "db:studio": "turbo db:studio --filter=database",
+    "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "pnpm -r clean && rm -rf node_modules"
+    "clean": "turbo clean && rm -rf node_modules .turbo"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "turbo": "^2.7.5",
+    "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@prisma/client": "^7.1.0",
-    "prisma": "^7.1.0"
-  }
+    "@prisma/client": "^7.2.0",
+    "prisma": "^7.2.0"
+  },
+  "packageManager": "pnpm@10.25.0"
 }

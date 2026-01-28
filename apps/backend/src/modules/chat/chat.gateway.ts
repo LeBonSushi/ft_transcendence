@@ -11,7 +11,6 @@ import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
-// import { SOCKET_EVENTS } from "../../../../../packages/shared/src/constants/index"
 
 @WebSocketGateway({
   cors: {
@@ -25,20 +24,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   constructor(private chatService: ChatService) {}
-
-  // afterInit(server: Server) {
-  //   server.use(async (socket, next) => {
-  //     try {
-  //       console.log("SERVER_USE TRY");
-  //       await WsClerkGuard.validateToken(socket);
-  //       next();
-  //     } catch (error) {
-  //       console.log('Auth failed:', error.message);
-  //       next(new Error('Unauthorized'));
-  //     }
-  //   });
-  //   console.log('🔌 WebSocket Gateway initialized');
-  // }
 
   async handleConnection(client: Socket) {
     // L'utilisateur est disponible dans client.data.user grâce au WsClerkGuard

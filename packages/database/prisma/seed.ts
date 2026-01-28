@@ -32,15 +32,16 @@ async function main() {
   const password = await bcrypt.hash('password123', 10);
 
   const user1 = await prisma.user.upsert({
-    where: { email: 'alice@example.com' },
+    where: { email: 'jane+clerk_test@example.com' },
     update: {},
     create: {
-      email: 'alice@example.com',
-      username: 'alice',
+      email: 'jane+clerk_test@example.com',
+      username: 'jane',
       passwordHash: password,
+      clerkId: 'user_38ClRPXR4Jhwvx1c5ZuomEKADRe',
       profile: {
         create: {
-          firstName: 'Alice',
+          firstName: 'Jane',
           lastName: 'Johnson',
           bio: 'Love traveling and exploring new places!',
           location: 'San Francisco, CA',
@@ -196,6 +197,215 @@ async function main() {
   });
 
   console.log('✅ Created sample room with proposals and activities');
+
+  // Create a second room - Paris trip
+  const room2 = await prisma.room.create({
+    data: {
+      name: 'Paris Weekend Getaway',
+      description: 'Quick weekend trip to Paris for shopping and sightseeing',
+      creatorId: user2.id,
+      status: 'PLANNING',
+      members: {
+        create: [
+          { userId: user1.id, role: 'MEMBER' },
+          { userId: user2.id, role: 'ADMIN' },
+        ],
+      },
+      messages: {
+        create: [
+          {
+            senderId: user2.id,
+            content: 'Let\'s plan a Paris trip! Who\'s in?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'I\'d love to! How many days are we thinking?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user2.id,
+            content: 'Maybe 3-4 days in October?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'Sounds perfect! Let\'s book some hotels',
+            type: 'TEXT',
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Created Paris trip room');
+
+  // Create a third room - hiking trip
+  const room3 = await prisma.room.create({
+    data: {
+      name: 'Mountain Hiking Adventure',
+      description: 'Epic hiking trip through the Rocky Mountains',
+      creatorId: user3.id,
+      status: 'PLANNING',
+      members: {
+        create: [
+          { userId: user1.id, role: 'MEMBER' },
+          { userId: user2.id, role: 'MEMBER' },
+          { userId: user3.id, role: 'ADMIN' },
+        ],
+      },
+      messages: {
+        create: [
+          {
+            senderId: user3.id,
+            content: 'Guys, I found an amazing hiking trail!',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'That looks incredible! When can we go?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user2.id,
+            content: 'I\'m in! Need to get new hiking boots though',
+            type: 'TEXT',
+          },
+          {
+            senderId: user3.id,
+            content: 'We should aim for August when weather is best',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'August works great for me! Let\'s do it',
+            type: 'TEXT',
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Created hiking trip room with multiple messages');
+
+  // Create direct messages (private conversations)
+  const dm1 = await prisma.room.create({
+    data: {
+      name: `${user1.username}-${user2.username}`,
+      type: 'DIRECT_MESSAGE',
+      creatorId: user1.id,
+      members: {
+        create: [
+          { userId: user1.id, role: 'MEMBER' },
+          { userId: user2.id, role: 'MEMBER' },
+        ],
+      },
+      messages: {
+        create: [
+          {
+            senderId: user1.id,
+            content: 'Hey! How are you doing?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user2.id,
+            content: 'I\'m doing great! How about you?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'Perfect! Want to grab coffee next week?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user2.id,
+            content: 'Absolutely! Tuesday at 3pm?',
+            type: 'TEXT',
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Created DM between Jane and Bob');
+
+  // Create another DM - Jane and Charlie
+  const dm2 = await prisma.room.create({
+    data: {
+      name: `${user1.username}-${user3.username}`,
+      type: 'DIRECT_MESSAGE',
+      creatorId: user1.id,
+      members: {
+        create: [
+          { userId: user1.id, role: 'MEMBER' },
+          { userId: user3.id, role: 'MEMBER' },
+        ],
+      },
+      messages: {
+        create: [
+          {
+            senderId: user3.id,
+            content: 'Did you see that new hiking spot I found?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'Yeah! It looks amazing! When are you going?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user3.id,
+            content: 'Next weekend. Want to join?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user1.id,
+            content: 'I\'d love to! Count me in 🏔️',
+            type: 'TEXT',
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Created DM between Jane and Charlie');
+
+  // Create another DM - Bob and Charlie
+  const dm3 = await prisma.room.create({
+    data: {
+      name: `${user2.username}-${user3.username}`,
+      type: 'DIRECT_MESSAGE',
+      creatorId: user2.id,
+      members: {
+        create: [
+          { userId: user2.id, role: 'MEMBER' },
+          { userId: user3.id, role: 'MEMBER' },
+        ],
+      },
+      messages: {
+        create: [
+          {
+            senderId: user2.id,
+            content: 'Hey Charlie, how\'s the hiking training going?',
+            type: 'TEXT',
+          },
+          {
+            senderId: user3.id,
+            content: 'Great! I\'ve been hitting the trails twice a week',
+            type: 'TEXT',
+          },
+          {
+            senderId: user2.id,
+            content: 'That\'s awesome! Maybe I should join you',
+            type: 'TEXT',
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Created DM between Bob and Charlie');
+
   console.log('🎉 Database seeded successfully!');
 }
 

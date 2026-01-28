@@ -10,8 +10,14 @@ export interface User {
   email: string;
   oauthProvider?: string;
   oauthId?: string;
+  profile: Profile;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface UserUpdate {
+  user: User;
+  warnings?: string[];
 }
 
 export interface Profile {
@@ -34,4 +40,13 @@ export interface Friendship {
   status: FriendshipStatus;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface RoomSummary {
+	name: string;
+	lastMessage: string;
+	senderUsername: string;
+	senderPicture: string;
+	lastMessageDate: string;
+	createdAt?: Date;
 }

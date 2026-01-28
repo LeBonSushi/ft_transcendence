@@ -33,6 +33,15 @@ export interface Room {
   updatedAt: Date;
 }
 
+export interface RoomSummary {
+  name: string;
+  lastMessage: string | null;
+  lastMessageDate: Date | null;
+  senderUsername: string | null;
+  senderPicture: string | null;
+  createdAt?: Date;
+}
+
 export interface RoomMember {
   id: string;
   roomId: string;
