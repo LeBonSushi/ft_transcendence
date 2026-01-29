@@ -1,6 +1,5 @@
 *This project has been created as part of the 42 curriculum by [ggriault](https://github.com/AkAzA509), [macorso](https://github.com/LeBonSushi), [nbrecque](hhttps://github.com/Brecqueville), [njard](https://github.com/noanjrd).*
 
-
 # Project Overview
 
 La direction de notre transcendence a ete d'en faire un site de planifiaction de voyages en groupes (amis, famille, travail ...)
@@ -120,64 +119,17 @@ je laisse ca a noan
 
 # Technical Stack
 
-
-<p align="center">
-  <a href="https://www.prisma.io/" style="text-decoration:none;">
-    <img src="https://www.freelogovectors.net/wp-content/uploads/2022/01/prisma_logo-freelogovectors.net_.png"  width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">Prisma</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://react.dev/" style="text-decoration:none;">
-    <img src="https://raw.githubusercontent.com/github/explore/main/topics/react/react.png" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">React</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://pnpm.io/" style="text-decoration:none;">
-    <img src="https://imgs.search.brave.com/wUSyYk6sLy6E8ing99k_jEESXUfjDuhZrf1bxwGXPJI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuc2Vla2xvZ28u/Y29tL2xvZ28tcG5n/LzYzLzIvcG5wbS1s/b2dvLXBuZ19zZWVr/bG9nby02MzQ1OTcu/cG5n" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">pnpm</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://nextjs.org/" style="text-decoration:none;">
-    <img src="https://raw.githubusercontent.com/vercel/vercel/main/packages/frameworks/logos/next.svg" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">Next.js</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://nestjs.com/" style="text-decoration:none;">
-    <img src="https://static.cdnlogo.com/logos/n/57/nestjs.svg" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">NestJS</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://tailwindcss.com/" style="text-decoration:none;">
-    <img src="https://raw.githubusercontent.com/github/explore/main/topics/tailwind/tailwind.png" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">Tailwind CSS</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://clerk.com/" style="text-decoration:none;">
-    <img src="https://avatars.githubusercontent.com/u/49538330?s=200&v=4" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">Clerk</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.docker.com/" style="text-decoration:none;">
-    <img src="https://www.freelogovectors.net/wp-content/uploads/2023/09/docker_logo-freelogovectors.net_.png" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">Docker</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://kubernetes.io/" style="text-decoration:none;">
-    <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">Kubernetes</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://developer.mozilla.org/fr/docs/Web/JavaScript" style="text-decoration:none;">
-    <img src="https://www.freelogovectors.net/wp-content/uploads/2023/07/js-logo-javascript-sdk-freelogovectors.net_.png" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">JavaScript</span>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.typescriptlang.org/" style="text-decoration:none;">
-    <img src="https://www.freelogovectors.net/wp-content/uploads/2021/02/typescript-logo-freelogovectors.net_.png" width="24" height="24" style="vertical-align:middle;"/>
-    <span style="vertical-align:middle;">TypeScript</span>
-  </a>
-</p>
-
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=for-the-badge)](https://react.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white&style=for-the-badge)](https://nextjs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white&style=for-the-badge)](https://nestjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white&style=for-the-badge)](https://www.prisma.io/)
+[![Clerk](https://img.shields.io/badge/Clerk-3B82F6?logo=clerk&logoColor=white&style=for-the-badge)](https://clerk.com/)
+[![Pnpm](https://img.shields.io/badge/Pnpm-222?logo=pnpm&logoColor=F69220&style=for-the-badge)](https://pnpm.io/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=for-the-badge)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white&style=for-the-badge)](https://kubernetes.io/)
+[![TS](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
+[![JS](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=222&style=for-the-badge)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
