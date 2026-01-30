@@ -1,9 +1,32 @@
 import { UsersService } from './users.service';
-import { Controller, Body, Get, Put, Param, Delete, HttpCode, HttpStatus, Logger, HttpException } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Get,
+  Put,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  HttpException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { createClerkClient, ClerkClient } from '@clerk/backend';
 import { ConfigService } from '@nestjs/config';
+
+interface PublicUserResponse {
+  id: string;
+  username: string;
+  profile: {
+    firstName: string | null;
+    lastName: string | null;
+    profilePicture: string | null;
+    bio: string | null;
+  } | null;
+}
 
 @Controller('users')
 export class UsersController {
@@ -21,7 +44,7 @@ export class UsersController {
 
   @Get('me')
   async getMe(@GetUser('clerkId') clerkId: string) {
-    return await this.usersService.getUserById(clerkId);
+    return this.usersService.getUserById(clerkId);
   }
 
   @Delete('me')
@@ -30,55 +53,84 @@ export class UsersController {
     this.logger.log(`Attempting to delete user: ${clerkId}`);
 
     try {
-      // Supprimer l'utilisateur de Clerk (cela déclenchera le webhook user.deleted)
       await this.clerkClient.users.deleteUser(clerkId);
       this.logger.log(`User deleted successfully: ${clerkId}`);
       return { success: true, message: 'Account deleted successfully' };
     } catch (error: any) {
-      this.logger.error(`Failed to delete user ${clerkId}:`, error?.message || error);
-      this.logger.error('Full error:', JSON.stringify(error, null, 2));
+      this.logger.error(`Failed to delete user ${clerkId}: ${error?.message || error}`);
       throw new HttpException(
         error?.errors?.[0]?.message || error?.message || 'Failed to delete account',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get('me/rooms')
   async getMyRooms(@GetUser('clerkId') clerkId: string) {
-    return await this.usersService.getRoomsByUser(clerkId);
+    return this.usersService.getRoomsByUser(clerkId);
   }
 
   @Put('me')
   async updateMe(@GetUser('clerkId') clerkId: string, @Body() body: UpdateUserDto) {
-    return await this.usersService.modifyUser(clerkId, body);
+    return this.usersService.modifyUser(clerkId, body);
   }
 
-	@Get(':id')
-	async getUserById(@Param('id') id: string) {
-		const user = await this.usersService.getUserById(id);
-		return user;
-	}
+  @Get(':id')
+  async getUserById(@Param('id') id: string): Promise<PublicUserResponse> {
+    const user = await this.usersService.getUserById(id);
 
-	@Put(':id')
-	async modifyUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-		const user = await this.usersService.modifyUser(id, body);
-		return user;
-	}
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-	@Get(':id/rooms')
-	async getRooms(@Param('id') id: string) {
-		return await this.usersService.getRoomsByUser(id);
-	}
+    return {
+      id: user.id,
+      username: user.username,
+      profile: user.profile
+        ? {
+            firstName: user.profile.firstName,
+            lastName: user.profile.lastName,
+            profilePicture: user.profile.profilePicture,
+            bio: user.profile.bio,
+          }
+        : null,
+    };
+  }
 
-	@Get(':id/friends')
-	async getFriends(@Param('id') id: string) {
-		const friends = await this.usersService.getFriendById(id);
-		return friends;
-	}
+  @Put(':id')
+  async modifyUser(
+    @GetUser('clerkId') clerkId: string,
+    @Param('id') id: string,
+    @Body() body: UpdateUserDto,
+  ) {
+    if (clerkId !== id) {
+      throw new HttpException('Not authorized to modify this user', HttpStatus.FORBIDDEN);
+    }
 
-	@Get()
-	getStatus() {
-		return { status: 'Auth service is running' };
-	}
+    return this.usersService.modifyUser(id, body);
+  }
+
+  @Get(':id/rooms')
+  async getRooms(@GetUser('clerkId') clerkId: string, @Param('id') id: string) {
+    if (clerkId !== id) {
+      throw new HttpException('Not authorized to view this user rooms', HttpStatus.FORBIDDEN);
+    }
+
+    return this.usersService.getRoomsByUser(id);
+  }
+
+  @Get(':id/friends')
+  async getFriends(@GetUser('clerkId') clerkId: string, @Param('id') id: string) {
+    // Only allow users to view their own friends
+    if (clerkId !== id) {
+      throw new HttpException('Not authorized to view this user friends', HttpStatus.FORBIDDEN);
+    }
+
+    return this.usersService.getFriendById(id);
+  }
+
+  @Get()
+  getStatus() {
+    return { status: 'Users service is running' };
+  }
 }

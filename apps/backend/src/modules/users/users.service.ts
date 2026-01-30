@@ -1,5 +1,5 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -22,240 +22,239 @@ interface UpdateFromClerkDto {
 
 @Injectable()
 export class UsersService {
-	constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(UsersService.name);
 
-	async getUserById(clerkId: string) {
-		return this.prisma.user.findUnique({
-			where: { id: clerkId },
-			include: { profile: true },
-		});
-	}
+  constructor(private prisma: PrismaService) {}
 
-	async createFromClerk(data: CreateFromClerkDto) {
-    console.log('createFromClerk', data);
-		return this.prisma.user.create({
-			data: {
-				id: data.clerkId,
-				email: data.email,
-				username: data.username,
-				profile: data.firstName && data.lastName ? {
-					create: {
-						firstName: data.firstName,
-						lastName: data.lastName,
-						profilePicture: data.profilePicture,
-					},
-				} : undefined,
-			},
-			include: {
-				profile: true,
-			},
-		});
-	}
+  async getUserById(clerkId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: clerkId },
+      include: { profile: true },
+    });
+  }
 
-	async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
-    console.log('updateFromClerk', clerkId, data);
-		const user = await this.getUserById(clerkId);
+  async createFromClerk(data: CreateFromClerkDto) {
+    this.logger.debug(`Creating user from Clerk: ${data.clerkId}`);
 
-    //user_38ZDYpdMvIAflhNM2UgzqxSvcV6
+    return this.prisma.user.create({
+      data: {
+        id: data.clerkId,
+        email: data.email,
+        username: data.username,
+        profile: data.firstName && data.lastName ? {
+          create: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            profilePicture: data.profilePicture,
+          },
+        } : undefined,
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
 
-		if (!user) {
-			throw new NotFoundException('User not found');
-		}
+  async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
+    this.logger.debug(`Updating user from Clerk: ${clerkId}`);
 
-    console.log('updating user...');
+    const user = await this.getUserById(clerkId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-		return this.prisma.user.update({
-			where: { id: clerkId },
-			data: {
-				email: data.email,
-				username: data.username,
-				profile: data.firstName && data.lastName ? {
-					upsert: {
-						create: {
-							firstName: data.firstName,
-							lastName: data.lastName,
-							profilePicture: data.profilePicture,
-						},
-						update: {
-							firstName: data.firstName,
-							lastName: data.lastName,
-							profilePicture: data.profilePicture,
-						},
-					},
-				} : undefined,
-			},
-			include: {
-				profile: true,
-			},
-		});
-	}
+    return this.prisma.user.update({
+      where: { id: clerkId },
+      data: {
+        email: data.email,
+        username: data.username,
+        profile: data.firstName && data.lastName ? {
+          upsert: {
+            create: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              profilePicture: data.profilePicture,
+            },
+            update: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              profilePicture: data.profilePicture,
+            },
+          },
+        } : undefined,
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
 
-	async deleteByClerkId(clerkId: string) {
-		// Transférer les rooms créées par l'utilisateur au membre le plus ancien
-		const roomsCreated = await this.prisma.room.findMany({
-			where: { creatorId: clerkId },
-			include: {
-				members: {
-					where: { userId: { not: clerkId } },
-					orderBy: { joinedAt: 'asc' },
-					take: 1,
-				},
-			},
-		});
+  async deleteByClerkId(clerkId: string) {
+    const roomsCreated = await this.prisma.room.findMany({
+      where: { creatorId: clerkId },
+      include: {
+        members: {
+          where: { userId: { not: clerkId } },
+          orderBy: { joinedAt: 'asc' },
+          take: 1,
+        },
+      },
+    });
 
-		for (const room of roomsCreated) {
-			if (room.members.length > 0) {
-				// Transférer au membre le plus ancien
-				await this.prisma.room.update({
-					where: { id: room.id },
-					data: { creatorId: room.members[0].userId },
-				});
-			} else {
-				// Aucun autre membre, supprimer la room
-				await this.prisma.room.delete({
-					where: { id: room.id },
-				});
-			}
-		}
+    for (const room of roomsCreated) {
+      if (room.members.length > 0) {
+        await this.prisma.room.update({
+          where: { id: room.id },
+          data: { creatorId: room.members[0].userId },
+        });
+      } else {
+        await this.prisma.room.delete({
+          where: { id: room.id },
+        });
+      }
+    }
 
-		// Supprimer l'utilisateur
-		return this.prisma.user.delete({
-			where: { id: clerkId },
-		});
-	}
+    return this.prisma.user.delete({
+      where: { id: clerkId },
+    });
+  }
 
-	async updateProfile(userId: string, data: any) {
-		return this.prisma.profile.update({
-			where: { userId },
-			data,
-		});
-	}
+  async updateProfile(userId: string, data: any) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+    });
 
-	async modifyUser(id: string, body: UpdateUserDto) {
-		const user = await this.prisma.user.findUnique({ where: { id } });
-		if (!user)
-			throw new BadRequestException('User not found');
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
 
-		const { firstName, lastName, bio, profilePicture, location, birthdate, ...userFields } = body as any;
+    return this.prisma.profile.update({
+      where: { userId },
+      data,
+    });
+  }
 
-		if (userFields.password) {
-			userFields.passwordHash = await bcrypt.hash(userFields.password, 10);
-			delete userFields.password;
-		}
+  /**
+   * Validates that a field value is unique among users (excluding current user)
+   */
+  private async validateUniqueField(
+    field: 'email' | 'username',
+    value: string,
+    excludeUserId: string,
+  ): Promise<void> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        [field]: value,
+        id: { not: excludeUserId },
+      },
+    });
 
-		let emailWarning: string | null = null;
-		let usernameWarning: string | null = null;
+    if (existingUser) {
+      throw new ConflictException(`This ${field} is already in use`);
+    }
+  }
 
-		if (userFields.email && user.email === userFields.email) {
-			delete userFields.email;
-			emailWarning = 'Email unchanged - same as current email';
-		}
+  async modifyUser(id: string, body: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-		if (userFields.email) {
-			console.log('check email');
-	
-			const existingUsers = await this.prisma.user.findMany({ 
-				where: { 
-					email: userFields.email,
-					id: { not: id }
-				} 
-			});
-			
-			if (existingUsers.length > 0) {
-				console.log('erreur email');
-				throw new ConflictException('Error: email address already used');
-			}
-		}
+    const { firstName, lastName, bio, profilePicture, location, birthdate, ...userFields } = body as any;
 
-		if (userFields.username && user.username === userFields.username) {
-			delete userFields.username;
-			usernameWarning = 'username unchanged - same as current username';
-		}
+    if (userFields.password) {
+      userFields.passwordHash = await bcrypt.hash(userFields.password, 10);
+      delete userFields.password;
+    }
 
-		if (userFields.username) {
-			console.log('check username');
-	
-			const existingUsers = await this.prisma.user.findMany({ 
-				where: { 
-					username: userFields.username,
-					id: { not: id }
-				} 
-			});
-			
-			if (existingUsers.length > 0) {
-				console.log('erreur username');
-				throw new ConflictException('Error: username address already used');
-			}
-		}
+    const warnings: string[] = [];
 
-		await this.prisma.user.update({
-			where: { id },
-			data: userFields,
-		});
+    // Handle email update
+    if (userFields.email) {
+      if (user.email === userFields.email) {
+        delete userFields.email;
+        warnings.push('Email unchanged - same as current email');
+      } else {
+        await this.validateUniqueField('email', userFields.email, id);
+      }
+    }
 
-		await this.prisma.profile.update({
-			where: { userId: id },
-			data: { firstName, lastName, bio, profilePicture, location, birthdate },
-		});
+    // Handle username update
+    if (userFields.username) {
+      if (user.username === userFields.username) {
+        delete userFields.username;
+        warnings.push('Username unchanged - same as current username');
+      } else {
+        await this.validateUniqueField('username', userFields.username, id);
+      }
+    }
 
-		const updatedUser = await this.prisma.user.findUnique({
-				where: { id },
-				include: {
-					profile: true,
-				}
-			});
+    await this.prisma.user.update({
+      where: { id },
+      data: userFields,
+    });
 
-		const warnings: string[] = [];
-		if (emailWarning) warnings.push(emailWarning);
-		if (usernameWarning) warnings.push(usernameWarning);
+    await this.prisma.profile.upsert({
+      where: { userId: id },
+      update: { firstName, lastName, bio, profilePicture, location, birthdate },
+      create: { userId: id, firstName, lastName, bio, profilePicture, location, birthdate },
+    });
 
-		return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
-	}
+    const updatedUser = await this.prisma.user.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
 
-	async getRoomsByUser(clerkId: string) {
-		const user = this.getUserById(clerkId);
+    return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
+  }
 
-		if (!user)
-			throw new BadRequestException('User not found');
+  async getRoomsByUser(clerkId: string) {
+    const user = await this.getUserById(clerkId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-		const userWithRooms = await this.prisma.user.findUnique({
-				where: { id: clerkId },
-				select: {
-					roomMemberships: {
-						select: {
-							room: {
-								select: {
-									id: true,
-									name: true,
-									description: true,
-									status: true,
-									creatorId: true,
-									createdAt: true,
-									updatedAt: true,
-								}
-							}
-						}
-					}
-				}
-			});
+    const userWithRooms = await this.prisma.user.findUnique({
+      where: { id: clerkId },
+      select: {
+        roomMemberships: {
+          select: {
+            room: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true,
+                creatorId: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-		if (!userWithRooms)
-			return [];
+    if (!userWithRooms) {
+      return [];
+    }
 
-		return userWithRooms.roomMemberships.map(m => m.room);
-	}
+    return userWithRooms.roomMemberships.map((m) => m.room);
+  }
 
-	async getFriendById(clerkId: string) {
-		const user = await this.prisma.user.findUnique({
-			where: { id: clerkId },
-			include: {
-				sentFriendRequests: true,
-				receivedFriendRequests: true,
-			}
-		});
-		if (!user)
-			throw new BadRequestException('User not found');
-		console.log(user);
-		return { user };
-	}
+  async getFriendById(clerkId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: clerkId },
+      include: {
+        sentFriendRequests: true,
+        receivedFriendRequests: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return { user };
+  }
 }
