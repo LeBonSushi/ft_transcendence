@@ -4,10 +4,15 @@
   "main": "./index.ts",
   "scripts": {
     "generate": "prisma generate",
+    "db:generate": "prisma generate",
     "migrate": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev",
     "push": "prisma db push",
+    "db:push": "prisma db push",
     "seed": "tsx prisma/seed.ts",
+    "db:seed": "tsx prisma/seed.ts",
     "studio": "prisma studio",
+    "db:studio": "prisma studio",
     "reset": "prisma migrate reset --force"
   },
   "dependencies": {

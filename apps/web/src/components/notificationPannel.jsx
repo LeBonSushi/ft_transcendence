@@ -7,6 +7,7 @@ import notifDarkIcon from "../../public/notifdark.svg"
 import Image from "next/image"
 import { motion, AnimatePresence } from "motion/react"
 import { useTheme } from "next-themes"
+import { Modal } from "./ui"
 
 function timeAgo(time) {
     const now = new Date()
@@ -84,7 +85,7 @@ export function NotificationPannel() {
     const { notifications, setNotifications, loading, isConnected, refreshNotifications, sendNotif, readNotification, answerNotification } = useNotifications()
     const panelRef = useRef()
     const { setTheme, theme } = useTheme();
-    setTheme('dark');
+    // setTheme('dark');
 
     useEffect(() => {
         setMounted(true)

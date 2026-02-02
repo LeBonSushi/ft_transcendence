@@ -24,6 +24,12 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  Settings2,
+  SunMedium,
+  Moon,
+  LaptopMinimal,
+  ChevronUp,
+  Section,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -37,6 +43,8 @@ import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useVerification } from "@/hooks/useVerification";
+import { useTheme } from "next-themes";
+import { motion } from 'motion/react'
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
@@ -359,6 +367,14 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
               </div>
             </div>
           ))}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Apparence" icon={Settings2}>
+        <div className="bg-popover w-full">
+          <button className="w-full">
+            test
+          </button>
         </div>
       </SectionCard>
 
