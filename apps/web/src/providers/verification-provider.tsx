@@ -549,15 +549,15 @@ export function VerificationProvider({ children }: { children: ReactNode }) {
           {flow.step === "first_factor" && !hasPasswordFactor && hasEmailCodeFactor && (
             <>
               {/* Header */}
-              <div className="flex items-center gap-3 mb-5">
-                <div className="p-3 rounded-full bg-primary/10">
+              <div className="flex w-full items-center gap-3 mb-5">
+                <div className="shrink-0 p-3 rounded-full bg-primary/10">
                   <Mail className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h2 className="text-lg font-semibold text-foreground">
                     Code de vérification
                   </h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground wrap-break-word">
                     Un code a été envoyé à{" "}
                     <span className="font-medium text-foreground">
                       {flow.emailHint || "votre email"}
