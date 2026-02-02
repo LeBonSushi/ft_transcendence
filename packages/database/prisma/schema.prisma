@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  id            String   @id // Clerk ID used as primary key
+  id            String   @id
   username      String   @unique
   email         String   @unique
 

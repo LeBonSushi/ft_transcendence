@@ -35,6 +35,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
     "react-qr-code": "^2.0.18",
     "shadcn": "^3.7.0",
     "socket.io-client": "^4.8.1",

@@ -1,412 +1,223 @@
-# 🌍 Travel Planner - Modern Trip Planning Platform
+*This project has been created as part of the 42 curriculum by [ggriault](https://github.com/AkAzA509), [macorso](https://github.com/LeBonSushi), [nbrecque](https://github.com/Brecqueville), [njard](https://github.com/noanjrd).*
 
-A scalable, production-ready travel planning platform built with modern technologies. Plan trips with friends, vote on destinations, manage activities, and chat in real-time.
+# Project Overview
 
-## 🏗️ Architecture
+The direction of our transcendence was to make it a group travel planning site (friends, family, work, etc.)
+For this, we imagined our site as a messaging platform centralizing several tools that are usually separate:
+ - availability management
+ - voting/polling
+ - (optional) budgeting
+ - group messaging
+ - private messaging
 
-**Modern Modular Monolith** - Built for 1000s of concurrent users with horizontal scaling capabilities.
+# Installation
 
+To use our WebApp, simply follow these steps
+```bash
+#prerequisites
+pnpm v10.28+
+docker v29.1+
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   Next.js   │─────▶│   NestJS     │─────▶│  PostgreSQL │
-│  Frontend   │      │   Backend    │      │  + Prisma   │
-│ (React 19)  │      │  (Monolith)  │      └─────────────┘
-└─────────────┘      └──────────────┘              │
-       │                     │                      │
-       │              ┌──────┴────────┐      ┌─────▼─────┐
-       │              │               │      │   Redis   │
-       └─────────────▶│  Socket.io    │◀────▶│  Cache &  │
-         WebSocket    │  Real-time    │      │  Pub/Sub  │
-                      └───────────────┘      └───────────┘
-                              │
-                      ┌───────▼────────┐
-                      │   S3 Storage   │
-                      │  (MinIO/AWS)   │
-                      └────────────────┘
-```
-
-### Key Features
-
-- ✅ **Authentication**: JWT + OAuth (Google, GitHub, 42)
-- ✅ **Real-time Chat**: Socket.io with Redis pub/sub
-- ✅ **Room Management**: Create, join, and manage trip rooms
-- ✅ **Trip Planning**: Proposals, voting, activities
-- ✅ **File Upload**: Profile pictures, room images, attachments
-- ✅ **Horizontal Scaling**: Multiple backend instances with Redis
-- ✅ **Kubernetes Ready**: Production-grade K8s manifests with HPA
-- ✅ **TypeScript**: End-to-end type safety
-
-## 📦 Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | Next.js 15 + React 19 | Server components, App Router |
-| **UI** | shadcn/ui + Tailwind CSS | Modern, accessible components |
-| **Backend** | NestJS | Modular TypeScript framework |
-| **Database** | PostgreSQL + Prisma 7 | Relational data with type-safe ORM |
-| **Cache** | Redis | Session store, pub/sub, rate limiting |
-| **Real-time** | Socket.io | WebSocket connections |
-| **Storage** | S3-compatible (MinIO/AWS S3) | File uploads |
-| **Deployment** | Docker + Kubernetes | Containerization & orchestration |
-| **Package Manager** | pnpm | Fast, efficient monorepo support |
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 22+ (LTS)
-- pnpm 9+
-- Docker & Docker Compose
-- PostgreSQL, Redis, MinIO (via Docker)
-
-### Installation
 
 ```bash
 # Clone the repository
 git clone <your-repo-url>
 cd travel-planner
-
+```
+```bash
 # Install dependencies
 pnpm install
+```
 
+```bash
 # Copy environment file
 cp .env.example .env
 # Edit .env with your configuration
-
-# Start infrastructure (PostgreSQL, Redis, MinIO)
-docker-compose -f docker-compose.dev.yml up -d
-
-# Generate Prisma client
-pnpm db:generate
-
-# Run migrations
-pnpm db:migrate
-
-# Seed database (optional)
-pnpm db:seed
-
-# Start development servers (backend + frontend)
-pnpm dev
 ```
-
-### Development URLs
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000/api
-- **WebSocket**: ws://localhost:4000
-- **Database**: localhost:5432
-- **Redis**: localhost:6379
-- **MinIO Console**: http://localhost:9001 (minioadmin/minioadmin)
-
-## 📂 Project Structure
-
-```
-travel-planner/
-├── apps/
-│   ├── backend/                 # NestJS backend
-│   │   └── src/
-│   │       ├── modules/         # Feature modules
-│   │       │   ├── auth/        # Authentication (JWT + OAuth)
-│   │       │   ├── users/       # User management
-│   │       │   ├── rooms/       # Trip rooms
-│   │       │   ├── chat/        # Real-time chat
-│   │       │   ├── notifications/
-│   │       │   └── storage/     # File uploads
-│   │       ├── common/          # Shared utilities
-│   │       │   ├── decorators/
-│   │       │   ├── guards/
-│   │       │   ├── prisma/
-│   │       │   └── redis/
-│   │       └── main.ts
-│   │
-│   └── web/                     # Next.js frontend (TODO)
-│       ├── src/
-│       │   ├── app/             # App router pages
-│       │   ├── components/      # React components
-│       │   ├── lib/             # Utilities & API client
-│       │   └── hooks/           # Custom hooks
-│       └── package.json
-│
-├── packages/
-│   ├── shared/                  # Shared types & constants
-│   │   └── src/
-│   │       ├── types/           # TypeScript interfaces
-│   │       └── constants/       # API routes, events
-│   │
-│   └── database/                # Prisma schema & migrations
-│       ├── prisma/
-│       │   ├── schema.prisma
-│       │   ├── migrations/
-│       │   └── seed.ts
-│       └── index.ts
-│
-├── docker/                      # Dockerfiles
-│   ├── backend.Dockerfile
-│   └── frontend.Dockerfile
-│
-├── k8s/                         # Kubernetes manifests
-│   ├── namespace.yaml
-│   ├── configmap.yaml
-│   ├── secrets.yaml
-│   ├── postgres.yaml
-│   ├── redis.yaml
-│   ├── backend.yaml
-│   ├── frontend.yaml
-│   └── ingress.yaml
-│
-├── docker-compose.yml           # Production compose
-├── docker-compose.dev.yml       # Development compose
-├── pnpm-workspace.yaml          # Monorepo config
-└── package.json                 # Root package.json
-```
-
-## 🔧 Development
-
-### Available Scripts
-
 ```bash
-# Development
-pnpm dev                # Start all services
-pnpm dev:backend        # Start backend only
-pnpm dev:web            # Start frontend only
-
-# Database
-pnpm db:generate        # Generate Prisma client
-pnpm db:migrate         # Run migrations
-pnpm db:push            # Push schema changes
-pnpm db:seed            # Seed database
-pnpm db:studio          # Open Prisma Studio
-
-# Build
-pnpm build              # Build all packages
-pnpm build:backend      # Build backend
-pnpm build:web          # Build frontend
-
-# Testing
-pnpm test               # Run tests
-pnpm lint               # Lint code
-pnpm format             # Format code with Prettier
-
-# Cleanup
-pnpm clean              # Remove node_modules & build artifacts
+# Launch the app
+pnpm start
 ```
 
-### Setting Up OAuth
+# Useful Resources
 
-#### Google OAuth
+Here is a list of all the resources that helped us build our app
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized redirect URI: `http://localhost:4000/api/auth/google/callback`
-6. Update `.env`:
-   ```env
-   GOOGLE_CLIENT_ID=your_client_id
-   GOOGLE_CLIENT_SECRET=your_client_secret
-   ```
+  * Database:
+	- Use Prisma in NextJS [here](https://codelynx.dev/posts/guide-prisma)
+	- Official Prisma docs [here](https://www.prisma.io/docs/getting-started/prisma-postgres/quickstart/prisma-orm)
+	- etc
 
-#### GitHub OAuth
+  * Framework/languages:
+	- Official NestJs docs [here](https://docs.nestjs.com/)
+	- Official NextJs docs [here](https://nextjs.org/docs)
+	- Official React docs [here](https://fr.react.dev/reference/react-dom/components)
+	- Official Tailwind docs [here](https://tailwindcss.com/docs/installation/using-vite)
+	- Official Clerk docs [here](https://clerk.com/docs/nextjs/getting-started/quickstart)
+	- OpenClassroom Js tutorial [here](https://openclassrooms.com/fr/courses/6390246-passez-au-full-stack-avec-node-js-express-et-mongodb)
+	- etc
 
-1. Go to GitHub Settings > Developer settings > OAuth Apps
-2. Create new OAuth App
-3. Authorization callback URL: `http://localhost:4000/api/auth/github/callback`
-4. Update `.env`:
-   ```env
-   GITHUB_CLIENT_ID=your_client_id
-   GITHUB_CLIENT_SECRET=your_client_secret
-   ```
+  * API:
+	- Sort of API youtube video [here](https://www.youtube.com/watch?v=pBASqUbZgkY)
 
-#### 42 OAuth
+Use of AI in our project:
+ - help with infrastructure design to confirm our choices
+ - help with designing relationships between tables in the db
+ - explanation/help when having difficulty fixing code
+ - help understanding new concepts in addition to the docs
 
-1. Go to [42 Intra](https://profile.intra.42.fr/oauth/applications/new)
-2. Create new application
-3. Redirect URI: `http://localhost:4000/api/auth/42/callback`
-4. Update `.env`:
-   ```env
-   FORTY_TWO_CLIENT_ID=your_uid
-   FORTY_TWO_CLIENT_SECRET=your_secret
-   ```
+# Team information
 
-## 🐳 Docker Deployment
+## Roles
 
-### Development
+### <a name="po"></a>Product Owner (PO)
+Makes decisions on features and priorities. Validates completed work. Communicates with stakeholders.
 
-```bash
-# Start infrastructure only
-docker-compose -f docker-compose.dev.yml up -d
+### <a name="pm"></a>Project Manager (PM)
+Organizes team meetings and planning sessions. Tracks progress and deadlines. Ensures team communication. Manages risks and blockers
 
-# Stop infrastructure
-docker-compose -f docker-compose.dev.yml down
-```
+### <a name="techld"></a>Tech Lead
+Defines technical architecture. Makes technology stack decisions. Ensures code quality and best practices
 
-### Production
+### <a name="dev"></a>Developer
+Write code for assigned features. Participate in code reviews. Test their implementations. Document their work.
 
-```bash
-# Build images
-docker-compose build
+### ggirault [[ po ](#product-owner-po)][[ dev ](#developer)]:
+- All the little annoying things
+- Backend users
+- Archi design with macorso
+- DB design
+- front
 
-# Start all services
-docker-compose up -d
+### macorso [[ tech lead ](#tech-lead)][[ dev ](#developer)]:
+- api
+- auth
+- choice of language/framework
+- front
+- 
 
-# View logs
-docker-compose logs -f
+### nbrecque [[ dev ](#developer)]:
+- Backend chat
+- WebSocket
+- front
+-
+-
 
-# Stop services
-docker-compose down
-```
+### njard [[ pm ](#project-manager-pm)][[ dev ](#developer)] :
+- organization setup
+- Backend notification
+- front
+-
+-
 
-## ☸️ Kubernetes Deployment
+## Project Management
 
-See [k8s/README.md](k8s/README.md) for detailed Kubernetes deployment guide.
+Teamwork was organized in a structured way to ensure good project progress tracking.
 
-```bash
-# Quick deploy
-kubectl apply -k k8s/
+- **Work organization**
+  Tasks were distributed among team members and tracked via a shared **Google Docs** document, allowing everyone to see each other's progress.
+  Individual meetings were organized **once a week** with each member to review task status and anticipate potential blockers.
 
-# Check status
-kubectl get pods -n travel-planner
+- **Project management tools**
+  - **Google Docs**: task organization and progress tracking
+  - **GitHub**: code sharing, version control, and collaboration
 
-# View logs
-kubectl logs -n travel-planner -l app=backend -f
-```
+- **Communication channels**
+  - **WhatsApp**: fast communication and daily coordination between team members
 
-### Production Checklist
+# Technical Stack
 
-- [ ] Update secrets in `k8s/secrets.yaml`
-- [ ] Update domain in `k8s/ingress.yaml`
-- [ ] Configure cert-manager for TLS
-- [ ] Set up managed PostgreSQL (AWS RDS, GCP Cloud SQL)
-- [ ] Set up managed Redis (AWS ElastiCache, GCP Memorystore)
-- [ ] Configure S3 or equivalent object storage
-- [ ] Set up monitoring (Prometheus + Grafana)
-- [ ] Configure logging (ELK or cloud logging)
-- [ ] Set up CI/CD pipeline
-- [ ] Configure automated backups
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=for-the-badge)](https://react.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white&style=for-the-badge)](https://nextjs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white&style=for-the-badge)](https://nestjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white&style=for-the-badge)](https://www.prisma.io/)
+[![Clerk](https://img.shields.io/badge/Clerk-3B82F6?logo=clerk&logoColor=white&style=for-the-badge)](https://clerk.com/)
+[![Pnpm](https://img.shields.io/badge/Pnpm-222?logo=pnpm&logoColor=F69220&style=for-the-badge)](https://pnpm.io/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=for-the-badge)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white&style=for-the-badge)](https://kubernetes.io/)
+[![TS](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
+[![JS](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=222&style=for-the-badge)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
+[![ngrok](https://img.shields.io/badge/ngrok-1F1F1F?logo=ngrok&logoColor=white&style=for-the-badge)](https://ngrok.com/)
 
-## 🔐 Security
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | Next.js + React | Server components, App Router |
+| **UI** | shadcn/ui + Tailwind CSS | Modern, accessible components |
+| **Backend** | NestJS + Clerk | Modular TypeScript framework and auth provider|
+| **Database** | PostgreSQL + Prisma | Relational data with type-safe ORM |
+| **Cache** | Redis | Session store, caching|
+| **Real-time** | Socket.io | WebSocket connections |
+| **Deployment** | Docker + Kubernetes | Containerization & orchestration |
+| **Package Manager** | pnpm | Fast, efficient, lightweight|
+<!-- | **Storage** | S3-compatible (MinIO/AWS S3) | File uploads | -->
 
-- JWT tokens stored in HTTP-only cookies
-- CORS configured with specific origins
-- Rate limiting via Throttler
-- Input validation with class-validator
-- SQL injection protection via Prisma
-- Password hashing with bcrypt (10 rounds)
-- OAuth for third-party authentication
+## Database scheme
 
-## 📊 Scaling
+![Database schema preview](./prisma-erd.svg)
 
-### Horizontal Scaling
+# Features List
 
-The architecture supports horizontal scaling out of the box:
+Here is a list of features and the people who worked on them
 
-1. **Backend**: Scale to multiple instances (K8s HPA: 3-10 pods)
-2. **Frontend**: Scale based on traffic (K8s HPA: 2-5 pods)
-3. **Redis Pub/Sub**: Coordinates real-time events across backend instances
-4. **Database**: Use read replicas for read-heavy operations
+* Chat/Notifications (Njard / Nbrecque):
+	<p>to be completed</p>
 
-### Performance Optimization
+* Rooms (Njard / Nbrecque / Ggirault / Macorso):
+	<p>to be completed</p>
 
-- Redis caching for frequently accessed data
-- Database indexes on commonly queried fields
-- Connection pooling via Prisma
-- Lazy loading and code splitting in Next.js
-- CDN for static assets
-- WebSocket connection pooling
+* Profile (Macorso / Ggirault):
+	<p>to be completed</p>
 
-## 🧪 Testing
+* 2-factor authentication (Macorso)
+	<p>to be completed</p>
 
-```bash
-# Unit tests
-pnpm test
+# Chosen modules
 
-# E2E tests
-pnpm test:e2e
+| Module                                | Type   | Points | Members  | Justification | Implementation |
+|----------------------------------------|--------|--------|------------------------|----------------------------------------------------------------------|------------------------------------------------|
+| Realtime feature (WebSocket)           | Major  |   2    | Njard, Nbrecque        | Enables instant notifications and messaging for real-time UX         | Used socket.io, managed events and templates   |
+| Frameworks (NestJS, Next.js)           | Major  |   2    | All team               | Robust, scalable, productive fullstack foundation                    | Main project architecture and dev              |
+| Users interactions                     | Major  |   2    | All team               | Social features (friends, chat, blocking) are core to the app        | Add/remove/block friends, private/group chat   |
+| User authentication and management     | Major  |   2    | Macorso, Ggirault      | Security and user management for persistence and compliance          | Clerk auth, GDPR management, admin interface   |
+| Public API                             | Major  |   2    | Macorso                | Allows external integrations and extensibility                       | Secure REST endpoints, documentation           |
+| ORM (Prisma)                           | Minor  |   1    | Macorso, Ggirault      | Simplifies and secures database access                               | Schema modeling, type-safe queries             |
+| Notifications system                   | Minor  |   1    | Njard                  | Completes the user interaction experience                            | Real-time notification system                  |
+| OAuth 2.0                              | Minor  |   1    | Macorso                | Simplifies login via external providers                              | Clerk OAuth integration                        |
+| 2FA                                    | Minor  |   1    | Macorso                | Enhances account security                                            | 2FA via Clerk                                  |
+| Custom design (min 10 components)      | Minor  |   1    | All team               | Improves user experience and visual identity                         | Reusable UI components (shadcn/ui, Tailwind)   |
+| Advanced chat features                 | Minor  |   1    | All team               | Improves user experience with richer chat                            | Support for images, audio, user blocking       |
+| GDPR compliance                        | Minor  |   1    | Ggirault, Macorso      | Legal compliance and data security                                   | Terms page, GDPR management in profile         |
+| **TOTAL**                              |        | **17** 
 
-# Coverage
-pnpm test:cov
-```
+# Individual Contributions
 
-## 📝 API Documentation
+Below is a summary of the main project areas and contributions.
 
-### Authentication Endpoints
+## Project Architecture (Ggirault, Macorso)
+- Led the initial design and technical decisions for the project architecture.
+- Organized service structure, Dockerization, and overall infrastructure.
+- Migrated from the old subject constraints to a more flexible architecture after the new requirements were announced.
+- Switched from npm to pnpm for efficiency, introduced Kubernetes for scalability, and reused existing code where possible.
+- Faced challenges adapting to new technologies and requirements, but overcame them through research and team collaboration.
 
-```
-POST   /api/auth/register          # Create account
-POST   /api/auth/login             # Login
-POST   /api/auth/logout            # Logout
-GET    /api/auth/me                # Get current user
-GET    /api/auth/google            # OAuth with Google
-GET    /api/auth/github            # OAuth with GitHub
-GET    /api/auth/42                # OAuth with 42
-```
+## Backend Services (All team)
+- Early backend development was handled by the first two members, then distributed among the full team as more joined.
+- Each member took responsibility for different backend services [see module table above](#chosen-modules).
+- Initial difficulties with branch merging and coordination were resolved through improved communication and workflow adjustments.
 
-### Room Endpoints
+## Frontend (All team)
+- Frontend tasks were divided so everyone could work on the parts related to their backend features.
+- Example: Njard developed the notification backend and also implemented the notification UI and components.
+- Early challenges in maintaining a consistent UI were solved by adopting a global stylesheet and frequent team discussions.
 
-```
-POST   /api/rooms                  # Create room
-GET    /api/rooms/:id              # Get room details
-POST   /api/rooms/:id/join         # Join room
-POST   /api/rooms/:id/leave        # Leave room
-POST   /api/rooms/:id/proposals    # Create trip proposal
-POST   /api/rooms/:roomId/proposals/:proposalId/vote  # Vote on proposal
-```
+## Database (All team)
+- Ggirault created the original schema with all [the tables](#database-scheme) and relations and did the first migrations.
+- Then each member added/modified the schema to match our new features or needs.
+- We had some implementation issues at the beginning, struggling to use it properly, and also some problems during schema migrations or seeding for tests.
 
-See [packages/shared/src/constants/index.ts](packages/shared/src/constants/index.ts) for complete API routes.
+## WebSocket
+- to be completed
 
-## 🔌 WebSocket Events
-
-```typescript
-// Chat
-'message:send'     # Send message
-'message:receive'  # Receive message
-'typing:start'     # User started typing
-'typing:stop'      # User stopped typing
-
-// Room
-'room:join'        # Join room
-'room:leave'       # Leave room
-
-// Presence
-'user:online'      # User came online
-'user:offline'     # User went offline
-```
-
-## 🤝 Contributing
-
-```bash
-# Create feature branch
-git checkout -b feature/your-feature
-
-# Make changes and commit
-git commit -m "feat: add amazing feature"
-
-# Push and create PR
-git push origin feature/your-feature
-```
-
-### Commit Convention
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation
-- `style:` Code style (formatting)
-- `refactor:` Code refactoring
-- `test:` Tests
-- `chore:` Maintenance
-
-## 📄 License
-
-MIT
-
-## 🙏 Acknowledgments
-
-- Built with modern best practices
-- Inspired by production-grade architectures
-- Ready for 1000s of concurrent users
-
----
-
-**Built with ❤️ for collaborative travel planning**
+## Other Features
+- to be completed
