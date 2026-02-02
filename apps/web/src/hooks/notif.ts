@@ -30,7 +30,7 @@ export function useNotifications() {
             setLoading(false)
         }
         const handleNewNotif = (notif: any) => {
-            console.log("NEw notif:", notif)
+            console.log("New notif:", notif)
             setNotifications(prev => [notif, ...prev])
         }
         const handleError = (error: any) => {

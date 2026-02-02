@@ -61,6 +61,8 @@ model Friendship {
   @@unique([userId, friendId])
   @@index([userId])
   @@index([friendId])
+
+  notifications Notification[]
 }
 
 enum FriendshipStatus {
@@ -88,6 +90,7 @@ model Room {
 	availabilities  UserAvailability[]
 	tripProposals   TripProposal[]
 	messages        Message[]
+	notifications        Notification[]
 
 	createdAt DateTime @default(now())
 	updatedAt DateTime @updatedAt
@@ -241,6 +244,13 @@ model Notification {
   type      NotificationType
   title     String
   message   String
+
+  friendshipId  String?
+  friendship    Friendship?   @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
+ 
+  roomId  String?
+  room    Room?   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+ 
   read      Boolean   @default(false)
   request_accepted      Boolean   @default(false)
   createdAt DateTime  @default(now())

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useNotifications } from "../hooks/notif"
-import notifIcon from "../../public/notif.svg"
+import notifLightIcon from "../../public/notiflight.svg"
+import notifDarkIcon from "../../public/notifdark.svg"
 import Image from "next/image"
 import { motion, AnimatePresence } from "motion/react"
 import { useTheme } from "next-themes"
@@ -82,13 +83,13 @@ export function NotificationPannel() {
     const [isVisible, setIsVisible] = useState(false)
     const { notifications, setNotifications, loading, isConnected, refreshNotifications, sendNotif, readNotification, answerNotification } = useNotifications()
     const panelRef = useRef()
-    const { setTheme } = useTheme();
+    const { setTheme, theme } = useTheme();
     setTheme('dark');
 
     useEffect(() => {
         function handleClickOutside(event) {
             if (panelRef.current && !panelRef.current.contains(event.target)) {
-                // setIsVisible(false)
+                setIsVisible(false)
             }
         }
         document.addEventListener("mousedown", handleClickOutside)
@@ -98,12 +99,19 @@ export function NotificationPannel() {
 
     return (
         <>
-        <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
-        onClick={() => sendNotif({title:"test",message:"this is a message", type:"FRIEND_REQUEST"})}>try</button>
+        {/* <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
+        onClick={() => sendNotif({title:"test",message:"this is a message", type:"FRIEND_REQUEST"})}>try</button> */}
             {!isVisible && (
                 <>
                     <div className="absolute right-1.5 w-10 h-10 flex justify-center items-center bg-secondary top-1.5 rounded-lg cursor-pointer hover:opacity-70" onClick={() => setIsVisible(true)}>
-                        <Image src={notifIcon} alt="notificationLogo" width={20} height={20} />
+                        {theme == 'light' && (
+
+                        <Image src={notifLightIcon} alt="notificationLogo" width={20} height={20} />
+                        )}
+                        {theme == 'dark' && (
+
+                        <Image src={notifDarkIcon} alt="notificationLogo" width={20} height={20} />
+                        )}
                     </div>
                 </>
             )}
@@ -116,7 +124,7 @@ export function NotificationPannel() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
                             transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute  w-2/11 h-150 bg-secondary border rounded-xl right-3 top-3">
+                            className="absolute  w-2/11 max-h-100 bg-secondary border rounded-xl right-3 top-3 overflow-y-auto">
                             {notifications.map((item, index) => (
                                 <div
                                     key={index} className="relative flex  h-20   gap-1  items-center flex-row">
