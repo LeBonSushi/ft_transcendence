@@ -79,13 +79,16 @@ export function AcceptIcon({
 
 
 export function NotificationPannel() {
-    const notif = ["heyyyy", "textttttttttt"]
+    const [mounted, setMounted] = useState(false);
     const [isVisible, setIsVisible] = useState(false)
     const { notifications, setNotifications, loading, isConnected, refreshNotifications, sendNotif, readNotification, answerNotification } = useNotifications()
     const panelRef = useRef()
     const { setTheme, theme } = useTheme();
     setTheme('dark');
 
+    useEffect(() => {
+        setMounted(true)
+    }, [])
     useEffect(() => {
         function handleClickOutside(event) {
             if (panelRef.current && !panelRef.current.contains(event.target)) {
@@ -97,6 +100,10 @@ export function NotificationPannel() {
 
     }, [panelRef])
 
+    if (!mounted)
+    {
+        return null
+    }
     return (
         <>
         {/* <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
