@@ -18,15 +18,21 @@ import { NotificationModel } from './templates/type';
     credentials: true,
   },
 })
-
+@UseGuards(WsClerkGuard)
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;
 
   constructor(private notificationsService: NotificationsService) { }
 
-  handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+  async handleConnection(client: Socket) {
+    try {
+      await WsClerkGuard.validateToken(client);
+      console.log(`Client connected: ${client.id}`);
+    } catch (error) {
+      console.log(`Client rejected: ${client.id} - ${error.message}`);
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
