@@ -6,7 +6,6 @@ import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 import { shadcn } from '@clerk/themes';
-import Footer from '@/components/ui/footer';
 import { SocketProvider } from '@/providers/socket-provider';
 import { VerificationProvider } from '@/providers/verification-provider';
 
