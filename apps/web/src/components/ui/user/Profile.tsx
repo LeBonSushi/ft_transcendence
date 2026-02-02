@@ -103,50 +103,55 @@ interface ProfileDropdownMenuProps {
 
 function ProfileDropdownMenu({ user, createdAt, onClose, onOpenSettings, onSignOut }: ProfileDropdownMenuProps) {
   return (
-    <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
-      {/* Header */}
-      <div className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-b border-border">
-        <div className="flex items-center gap-3">
-          <Avatar
-            src={user.imageUrl}
-            alt={user.fullName || 'Avatar'}
-            fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
-            size="md"
-            ringColor="ring-primary/20"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-foreground truncate">
-              {user.fullName || user.firstName || 'Utilisateur'}
-            </p>
-            <p className="text-sm text-muted-foreground truncate">
-              @{user.username || user.id.slice(0, 8)}
-            </p>
+    <>
+      {/* Mobile backdrop */}
+      <div className="fixed inset-0 z-40 bg-black/40 sm:hidden" onClick={onClose} />
+      
+      <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 w-auto sm:absolute sm:fixed-auto sm:inset-auto sm:translate-y-0 sm:right-0 sm:top-auto sm:mt-2 sm:w-72 rounded-xl border border-border bg-popover shadow-xl overflow-hidden animate-in fade-in-0 zoom-in-95 sm:slide-in-from-top-2">
+        {/* Header */}
+        <div className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-b border-border">
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={user.imageUrl}
+              alt={user.fullName || 'Avatar'}
+              fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
+              size="md"
+              ringColor="ring-primary/20"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground truncate">
+                {user.fullName || user.firstName || 'Utilisateur'}
+              </p>
+              <p className="text-sm text-muted-foreground truncate">
+                @{user.username || user.id.slice(0, 8)}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* User info */}
-      <div className="p-3 space-y-1 border-b border-border">
-        <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
-          <Mail className="h-4 w-4 shrink-0" />
-          <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
-        </div>
-        {createdAt && (
+        {/* User info */}
+        <div className="p-3 space-y-1 border-b border-border">
           <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4 shrink-0" />
-            <span>Membre depuis {createdAt}</span>
+            <Mail className="h-4 w-4 shrink-0" />
+            <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
           </div>
-        )}
-      </div>
+          {createdAt && (
+            <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span>Membre depuis {createdAt}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Actions */}
-      <div className="p-2">
-        <DropdownItem icon={User} label="Mon profil" onClick={onClose} />
-        <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
-        <div className="my-2 border-t border-border" />
-        <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+        {/* Actions */}
+        <div className="p-2">
+          <DropdownItem icon={User} label="Mon profil" onClick={onClose} />
+          <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
+          <div className="my-2 border-t border-border" />
+          <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

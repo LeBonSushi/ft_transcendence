@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { API_ROUTES } from '@travel-planner/shared';
-import type { User, Profile, Room, RoomSummary, UserUpdate } from '@travel-planner/shared';
+import type { User, Profile, Room, UserUpdate } from '@travel-planner/shared';
 
 export interface UpdateProfileDto {
   displayName?: string;
