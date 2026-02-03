@@ -2,7 +2,7 @@
 
 import { useClerk, useReverification, useUser } from "@clerk/nextjs";
 import { TOTPResource, UserResource } from "@clerk/types";
-import { useState, useRef } from "react";
+import { useState, useRef, InputHTMLAttributes, ChangeEvent } from "react";
 import  QRCode from 'react-qr-code';
 import {
   Settings,
@@ -30,6 +30,7 @@ import {
   LaptopMinimal,
   ChevronUp,
   Section,
+  MoonIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -38,6 +39,7 @@ import { SectionCard, InfoRow, ListItem } from "@/components/ui/card";
 import { TabNavigation } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { formatDate, formatDateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { useClickOutside, useProfileEdit, useSessions, useDeleteAccount } from "@/hooks";
 import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
@@ -45,6 +47,7 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useVerification } from "@/hooks/useVerification";
 import { useTheme } from "next-themes";
 import { motion } from 'motion/react'
+import toast from "react-hot-toast";
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
@@ -153,7 +156,7 @@ function ProfileDropdownMenu({ user, createdAt, onClose, onOpenSettings, onSignO
 
         {/* Actions */}
         <div className="p-2">
-          <DropdownItem icon={User} label="Mon profil" onClick={onClose} />
+          {/* <DropdownItem icon={User} label="Mon profil" onClick={onClose} /> */}
           <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
           <div className="my-2 border-t border-border" />
           <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
@@ -214,18 +217,44 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
 
   const createdAt = user.createdAt ? formatDate(user.createdAt) : null;
   const lastSignIn = user.lastSignInAt ? formatDateTime(user.lastSignInAt) : null;
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const enableProfileChange = () => {
+    inputRef.current?.click();
+  }
+
+  const onChangeProfilePicture = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if(!file)
+      return
+
+    const MAX_SIZE = 2 * 1024 * 1024
+
+    if (file.size > MAX_SIZE)
+    {
+      toast.error("File size exceed 2Mo");
+      return
+    }
+
+    
+    user.setProfileImage({file});
+  }
 
   return (
     <Modal isOpen onClose={onClose} size="xl" className="p-4 sm:p-6 md:px-12 lg:px-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8 p-4 sm:p-6 rounded-2xl bg-card border border-border mt-8 sm:mt-0">
-        <Avatar
-          src={user.imageUrl}
-          alt={user.fullName || 'Avatar'}
-          fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
-          size="lg"
-          ringColor="ring-primary/20"
-        />
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8 p-4 sm:p-6 rounded-2xl bg-card border border-border">
+        <input onChange={onChangeProfilePicture} ref={inputRef} type="file" accept="image/*" hidden></input>
+        <button onClick={enableProfileChange} className="rounded-full">
+          <Avatar
+            src={user.imageUrl}
+            alt={user.fullName || 'Avatar'}
+            fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
+            size="lg"
+            ringColor="ring-primary/20"
+            className="fill"
+          />
+        </button>
         <div className="flex-1 text-center sm:text-left">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             {user.fullName || user.firstName || 'Utilisateur'}
@@ -287,6 +316,18 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
     handleCancel,
   } = useProfileEdit({ user });
 
+  const { theme, themes, setTheme } = useTheme();
+  const themeProps = [
+    { type: "light", name: "Clair", icon: SunMedium },
+    { type: "dark", name: "Sombre", icon: MoonIcon },
+    { type: "system", name: "Systeme", icon: LaptopMinimal },
+  ]
+
+  const themeSelectRef = useRef(null);
+  const [themeSelectOpen, setThemeSelectOpen] = useState(false);
+
+  useClickOutside(themeSelectRef, () => setThemeSelectOpen(false), themeSelectOpen);
+
   return (
     <>
       <SectionCard title="Informations personnelles" icon={User}>
@@ -319,11 +360,11 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
             />
             <div className="flex gap-2 mt-4">
               <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none">
-                {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2 hidden sm:inline" /> : <Check className="h-4 w-4 mr-2 hidden sm:inline" />}
                 Enregistrer
               </Button>
               <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="flex-1 sm:flex-none">
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-4 w-4 mr-2 hidden sm:inline" />
                 Annuler
               </Button>
             </div>
@@ -347,7 +388,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
           {user.emailAddresses.map((email: any) => (
             <div
               key={email.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50"
+              className="flex items-center justify-between gap-2 p-3 rounded-lg bg-muted/50"
             >
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -358,7 +399,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
                   </span>
                 )}
               </div>
-              <div className="flex justify-end">
+              <div className="shrink-0">
                 {email.verification?.status === 'verified' ? (
                   <Check className="h-4 w-4 text-green-500" />
                 ) : (
@@ -371,10 +412,26 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
       </SectionCard>
 
       <SectionCard title="Apparence" icon={Settings2}>
-        <div className="bg-popover w-full">
-          <button className="w-full">
-            test
-          </button>
+        <div className="grid grid-cols-3 gap-3">
+          {themeProps.map((t) => {
+            const isActive = theme === t.type;
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.type}
+                onClick={() => setTheme(t.type)}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all",
+                  isActive
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-sm font-medium">{t.name}</span>
+              </button>
+            );
+          })}
         </div>
       </SectionCard>
 
@@ -537,6 +594,8 @@ function SecuritySection({
   const [isEnabling2FA, setisEnabling2FA] = useState<boolean>(false);
   const [totpData, setTotpData] = useState<{ uri: string; secret: string } | null>(null);
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [isLoadingCodes, setIsLoadingCodes] = useState(false);
 
   const enable2FAAction = async () => {
     return await user.createTOTP();
@@ -553,6 +612,28 @@ function SecuritySection({
       setisEnabling2FA(false);
     }
   }
+
+  const createBackupCodeAction = async () => {
+    return await user.createBackupCode();
+  };
+  const createBackupCode = useVerification({ fetcher: createBackupCodeAction });
+
+  const handleShowBackupCodes = async () => {
+    if (showBackupCodes) {
+      setShowBackupCodes(false);
+      return;
+    }
+    setIsLoadingCodes(true);
+    try {
+      const result = await createBackupCode();
+      setBackupCodes(result.codes || []);
+      setShowBackupCodes(true);
+    } catch {
+      // Reverification annulée ou erreur
+    } finally {
+      setIsLoadingCodes(false);
+    }
+  };
 
   const disable2FAAction = async () => {
     await user.disableTOTP();
@@ -626,23 +707,34 @@ function SecuritySection({
             title="Codes de récupération"
             description="Codes de secours en cas de perte"
             action={
-              <Button size="sm" variant="outline" onClick={() => setShowBackupCodes(!showBackupCodes)}>
-                {showBackupCodes ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                {showBackupCodes ? 'Masquer' : 'Afficher'}
+              <Button size="sm" variant="outline" onClick={handleShowBackupCodes} disabled={isLoadingCodes}>
+                {isLoadingCodes ? (
+                  <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                ) : showBackupCodes ? (
+                  <EyeOff className="h-4 w-4 mr-1" />
+                ) : (
+                  <Eye className="h-4 w-4 mr-1" />
+                )}
+                {isLoadingCodes ? 'Chargement...' : showBackupCodes ? 'Quitter' : 'Générer'}
               </Button>
             }
           />
 
-          {showBackupCodes && user.backupCodeEnabled && (
-            <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
-              <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                Les codes de récupération doivent être générés via l&apos;API Clerk.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                TODO: Implement user.createBackupCode() to generate/fetch real backup codes
-              </p>
+          <Modal size='lg' onClose={() => setShowBackupCodes(false)} isOpen={showBackupCodes && backupCodes.length > 0} className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+              Conservez ces codes dans un endroit sûr. Chaque code ne peut être utilisé qu&apos;une seule fois.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {backupCodes.map((code, i) => (
+                <code
+                  key={i}
+                  className="px-3 py-2 text-sm font-mono text-center rounded-md bg-background border border-border text-foreground"
+                >
+                  {code}
+                </code>
+              ))}
             </div>
-          )}
+          </Modal>
         </div>
       </SectionCard>
 

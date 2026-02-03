@@ -138,9 +138,9 @@ interface InfoRowProps {
 
 function InfoRow({ label, value, className }: InfoRowProps) {
   return (
-    <div className={cn("flex items-center justify-between py-2 border-b border-border last:border-0", className)}>
-      <span className="text-muted-foreground text-sm">{label}</span>
-      <span className="font-medium text-foreground text-sm">{value}</span>
+    <div className={cn("flex items-center justify-between gap-2 py-2 border-b border-border last:border-0", className)}>
+      <span className="text-muted-foreground text-sm shrink-0">{label}</span>
+      <span className="font-medium text-foreground text-sm truncate">{value}</span>
     </div>
   );
 }

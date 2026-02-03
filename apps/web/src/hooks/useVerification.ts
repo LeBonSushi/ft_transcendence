@@ -6,6 +6,7 @@ export function useVerification({ fetcher }: { fetcher: (...args: any[]) => Prom
 
   const verifHandle = useReverification(fetcher, {
     onNeedsReverification(properties) {
+      console.log('[useVerification] onNeedsReverification triggered, level:', properties.level);
       requestVerification(properties);
     },
   });

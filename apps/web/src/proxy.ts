@@ -11,7 +11,18 @@ const isPublicRoute = createRouteMatcher([
   '/rgpd/condition(.*)',  // Conditions Page
 ]);
 
+const isAuthRoute = createRouteMatcher([
+  '/sign-in(.*)',        // Pages de connexion
+  '/sign-up(.*)',        // Pages d'inscription
+]);
+
 export default clerkMiddleware(async (auth, request) => {
+
+  const { userId } = await auth();
+
+  if (userId && isAuthRoute(request)) {
+    return Response.redirect(new URL('/', request.url), 302);
+  }
   if (!isPublicRoute(request)) {
     await auth.protect({
       unauthenticatedUrl: new URL(`${process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL}`, request.url).toString(),

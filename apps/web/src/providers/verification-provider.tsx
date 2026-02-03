@@ -107,7 +107,6 @@ function extractError(err: unknown, fallback: string): string {
 export function VerificationProvider({ children }: { children: ReactNode }) {
   const { session } = useSession();
 
-  // Callbacks from Clerk's useReverification
   const [callbacks, setCallbacks] = useState<VerificationCallbacks | null>(
     null
   );
@@ -144,6 +143,7 @@ export function VerificationProvider({ children }: { children: ReactNode }) {
 
   const requestVerification = useCallback(
     async (state: VerificationCallbacks) => {
+      console.log('[VerificationProvider] requestVerification called, level:', state.level);
       callbacksRef.current = state;
       setCallbacks(state);
       setFlow((prev) => ({ ...prev, step: "initializing" }));

@@ -74,8 +74,6 @@ export function AuthLayout({
           </div>
         </div>
 
-        {/* Decorative corner */}
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-accent/20 to-transparent" />
       </div>
 
       {/* Right side - Form */}
