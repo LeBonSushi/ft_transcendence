@@ -1,14 +1,13 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { env } from '@/common/env';
 
 @Injectable()
 export class WsClerkGuard implements CanActivate {
-  constructor(private configService: ConfigService) {}
 
   static async validateToken(client: Socket): Promise<void> {
-    const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+    const clerkSecretKey = env.CLERK_SECRET_KEY;
 
     // Mode dev sans Clerk
     if (!clerkSecretKey) {

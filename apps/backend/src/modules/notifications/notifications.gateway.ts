@@ -11,10 +11,11 @@ import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
 import { NotificationsService } from './notifications.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { NotificationModel } from './templates/type';
+import { env } from '@/common/env';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: env.CORS_ORIGIN,
     credentials: true,
   },
 })

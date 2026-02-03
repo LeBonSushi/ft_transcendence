@@ -16,7 +16,7 @@ import { GatewayModule } from './common/gateway/gateway.module';
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../../.env',
+      envFilePath: '.env',
     }),
 
     // Rate limiting

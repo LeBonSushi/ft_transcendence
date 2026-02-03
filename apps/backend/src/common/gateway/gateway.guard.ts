@@ -1,8 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { env } from '@/common/env';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 
@@ -10,7 +10,6 @@ export const IS_PUBLIC_KEY = 'isPublic';
 export class GatewayGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,7 +32,7 @@ export class GatewayGuard implements CanActivate {
     // Note: Assurez-vous que process.env.NODE_ENV n'est pas 'production'
     const mockUserId = request.headers['x-mock-user-id'];
     
-    if (mockUserId && process.env.NODE_ENV !== 'production') {
+    if (mockUserId && env.NODE_ENV !== 'production') {
       // On injecte manuellement l'utilisateur dans la requête
       request.user = {
         id: mockUserId, // L'ID que vous avez envoyé dans le header
@@ -53,7 +52,7 @@ export class GatewayGuard implements CanActivate {
     }
 
     try {
-      const clerkSecretKey = this.configService.get<string>('CLERK_SECRET_KEY');
+      const clerkSecretKey = env.CLERK_SECRET_KEY;
 
       if (!clerkSecretKey) {
         throw new UnauthorizedException('Clerk is not configured');

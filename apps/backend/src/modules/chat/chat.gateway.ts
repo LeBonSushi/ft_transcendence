@@ -11,10 +11,11 @@ import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
+import { env } from '@/common/env';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: env.CORS_ORIGIN,
     credentials: true,
   },
 })

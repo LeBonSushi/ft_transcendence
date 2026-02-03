@@ -1,21 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { env } from '@/common/env';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  const configService = app.get(ConfigService);
-
 
   app.useWebSocketAdapter(new IoAdapter(app));
 
   // Enable CORS
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN') || 'http://localhost:3000',
+    origin: env.CORS_ORIGIN,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -33,18 +30,10 @@ async function bootstrap() {
   // Middleware
   app.use(cookieParser());
 
-  // Debug middleware
-  // app.use((req: any, _res: any, next: any) => {
-  //   console.log(`${req.method} ${req.url}`);
-  //   // console.log('Cookies:', req.cookies);
-  //   // console.log('Headers:', req.headers.cookie);
-  //   next();
-  // });
-
   // API prefix
   app.setGlobalPrefix('api');
 
-  const port = configService.get('BACKEND_PORT') || 4000;
+  const port = env.BACKEND_PORT;
   await app.listen(port);
 
   console.log(`🚀 Backend is running on http://localhost:${port}`);
