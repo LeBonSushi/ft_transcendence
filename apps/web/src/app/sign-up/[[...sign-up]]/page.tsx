@@ -18,7 +18,7 @@ import {
   ArrowLeft,
   Mail,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -210,7 +210,6 @@ const FEATURES = [
 export default function SignUpPage() {
   const { signUp, setActive, isLoaded } = useSignUp();
   const router = useRouter();
-  const { theme } = useTheme();
 
   // Form state
   const [step, setStep] = useState<SignUpStep>("form");
@@ -236,9 +235,19 @@ export default function SignUpPage() {
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
+    console.log("[sign-up] useEffect triggered", {
+      isLoaded,
+      signUpExists: !!signUp,
+      status: signUp?.status,
+      createdSessionId: signUp?.createdSessionId,
+      unverifiedFields: signUp?.unverifiedFields,
+      missingFields: signUp?.missingFields,
+    });
+
     if (!signUp || !isLoaded || !setActive) return;
 
     if (signUp.status === "complete" && signUp.createdSessionId) {
+      console.log("[sign-up] Status complete, activating session...");
       setActive({ session: signUp.createdSessionId }).then(() =>
         router.push("/")
       );
@@ -246,7 +255,10 @@ export default function SignUpPage() {
       signUp.status === "missing_requirements" &&
       signUp.unverifiedFields?.includes("email_address")
     ) {
+      console.log("[sign-up] Missing requirements, switching to verify_email");
       setStep("verify_email");
+    } else {
+      console.log("[sign-up] No action taken for status:", signUp.status);
     }
   }, [signUp?.status, isLoaded]);
 
@@ -644,7 +656,6 @@ export default function SignUpPage() {
           </div>
         </div>
       )}
-      <div id="clerk-captcha" data-cl-theme={theme} data-cl-size="flexible" data-cl-language="fr-FR" />
     </AuthLayout>
   );
 }

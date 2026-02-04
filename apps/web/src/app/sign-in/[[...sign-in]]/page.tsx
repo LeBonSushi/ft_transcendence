@@ -200,14 +200,27 @@ export default function SignInPage() {
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
+    console.log("[sign-in] useEffect triggered", {
+      isLoaded,
+      signInExists: !!signIn,
+      status: signIn?.status,
+      createdSessionId: signIn?.createdSessionId,
+      firstFactorVerification: signIn?.firstFactorVerification,
+      secondFactorVerification: signIn?.secondFactorVerification,
+    });
+
     if (!signIn || !isLoaded || !setActive) return;
 
     if (signIn.status === "complete" && signIn.createdSessionId) {
+      console.log("[sign-in] Status complete, activating session...");
       setActive({ session: signIn.createdSessionId }).then(() =>
         router.push("/")
       );
     } else if (signIn.status === "needs_second_factor") {
+      console.log("[sign-in] Needs second factor, switching to 2FA step");
       setStep("two_factor");
+    } else {
+      console.log("[sign-in] No action taken for status:", signIn.status);
     }
   }, [signIn?.status, isLoaded]);
 
@@ -645,7 +658,6 @@ export default function SignInPage() {
           )}
         </div>
       )}
-      <div id="clerk-captcha" data-cl-theme="dark" data-cl-size="flexible" data-cl-language="fr-FR" />
     </AuthLayout>
   );
 }
