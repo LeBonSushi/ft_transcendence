@@ -534,8 +534,6 @@ export default function SignUpPage() {
               }
             />
 
-            <div id="clerk-captcha" data-cl-theme={theme} data-cl-size="flexible" data-cl-language="fr-FR" />
-
             <button
               type="submit"
               disabled={isLoading}
@@ -646,6 +644,7 @@ export default function SignUpPage() {
           </div>
         </div>
       )}
+      <div id="clerk-captcha" data-cl-theme={theme} data-cl-size="flexible" data-cl-language="fr-FR" />
     </AuthLayout>
   );
 }

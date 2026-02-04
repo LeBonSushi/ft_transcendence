@@ -476,8 +476,6 @@ export default function SignInPage() {
               </button>
             </div>
 
-            <div id="clerk-captcha" data-cl-theme="dark" data-cl-size="flexible" data-cl-language="fr-FR" />
-
             <button
               type="submit"
               disabled={isLoading || !email.trim() || !password.trim()}
@@ -647,6 +645,7 @@ export default function SignInPage() {
           )}
         </div>
       )}
+      <div id="clerk-captcha" data-cl-theme="dark" data-cl-size="flexible" data-cl-language="fr-FR" />
     </AuthLayout>
   );
 }
