@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
                     <section>
                         <h3 className="text-lg font-semibold mb-1">3. Data Sharing and Disclosure</h3>
                         <ul className="list-disc list-inside">
-                            <li>Third-party service providers (e.g., Google, Github, Clerk manager, Discord).</li>
+                            <li>Third-party service providers (e.g., Google, Github, authentication services, Discord).</li>
                             <li>Legal authorities, if required by law or to protect our rights.</li>
                             <li>Business partners, only with your consent or as permitted by law.</li>
                         </ul>

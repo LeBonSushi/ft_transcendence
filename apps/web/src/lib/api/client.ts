@@ -1,12 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
+import { getSession } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-// Client navigateur avec Axios et Clerk - UNIQUEMENT pour Client Components
+// Client navigateur avec Axios - UNIQUEMENT pour Client Components
 class BrowserApiClient {
   private client: AxiosInstance;
-  private clerkReady: Promise<void> | null = null;
-  private initialized = false;
 
   constructor() {
     this.client = axios.create({
@@ -17,62 +16,17 @@ class BrowserApiClient {
       },
     });
 
-    // Intercepteur Axios pour Clerk
+    // Add auth interceptor with NextAuth session token
     this.client.interceptors.request.use(
       async (config) => {
-        // Initialiser Clerk seulement côté client
-        if (typeof window !== 'undefined' && !this.initialized) {
-          this.initClerk();
-          this.initialized = true;
-        }
-
-        if (this.clerkReady) {
-          await this.clerkReady;
-        }
-        try {
-          if (typeof window !== 'undefined') {
-            const clerk = (window as any).Clerk;
-            if (clerk && clerk.session) {
-              const token = await clerk.session.getToken();
-              if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error getting Clerk token:', error);
+        const session = await getSession();
+        if (session?.accessToken) {
+          config.headers.Authorization = `Bearer ${session.accessToken}`;
         }
         return config;
       },
       (error) => Promise.reject(error)
     );
-  }
-
-  private initClerk() {
-    if (typeof window === 'undefined') return;
-
-    this.clerkReady = new Promise((resolve) => {
-      const checkClerk = () => {
-        const clerk = (window as any).Clerk;
-        if (clerk && clerk.loaded) {
-          resolve();
-        } else {
-          window.addEventListener('clerk:loaded', () => resolve(), { once: true });
-          const interval = setInterval(() => {
-            const clerk = (window as any).Clerk;
-            if (clerk && clerk.loaded) {
-              clearInterval(interval);
-              resolve();
-            }
-          }, 100);
-          setTimeout(() => {
-            clearInterval(interval);
-            resolve();
-          }, 10000);
-        }
-      };
-      checkClerk();
-    });
   }
 
   async get<T>(url: string, config = {}) {

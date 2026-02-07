@@ -79,7 +79,7 @@ export function AuthLayout({
       </div>
 
       {/* Right side - Form */}
-      <div className="w-full lg:w-1/2 relative flex items-center justify-center p-6 sm:p-8 lg:p-12 overflow-hidden">
+      <div className="w-full lg:w-1/2 relative flex items-center justify-center p-6 sm:p-8 lg:p-12 ">
         {/* Background with subtle pattern */}
         <div className="absolute inset-0 bg-linear-to-br from-background via-background to-primary/5" />
         <BackgroundPattern />
@@ -88,27 +88,27 @@ export function AuthLayout({
         <div className="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
 
-        <div className="relative z-10 w-full max-w-md">
+        <div className="relative z-10 w-full max-w-md my-auto">
           {/* Mobile header */}
-          <div className="lg:hidden mb-10 text-center">
-            <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="lg:hidden mb-6 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
               <Logo size="lg" />
             </div>
-            <h1 className="font-serif text-3xl font-medium mb-2">{mobileTitle}</h1>
-            <p className="text-muted-foreground">{mobileSubtitle}</p>
+            <h1 className="font-serif text-2xl font-medium mb-1">{mobileTitle}</h1>
+            <p className="text-sm text-muted-foreground">{mobileSubtitle}</p>
           </div>
 
           {/* Card container */}
-          <div className="bg-card rounded-3xl p-8 sm:p-10 shadow-2xl border border-border/50">
+          <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-2xl border border-border/50">
             {/* Desktop header inside card */}
-            <div className="hidden lg:block mb-8">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="hidden lg:block mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <Logo size="lg" showText={false} />
               </div>
-              <h2 className="font-serif text-3xl font-medium mb-2">
+              <h2 className="font-serif text-2xl font-medium mb-1">
                 {desktopTitle}
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {desktopSubtitle}
               </p>
             </div>
@@ -116,7 +116,7 @@ export function AuthLayout({
             {children}
 
             {/* Custom footer */}
-            <div className="mt-8 pt-6 border-t border-border/50 text-center">
+            <div className="mt-6 pt-4 border-t border-border/50 text-center">
               <p className="text-muted-foreground text-sm">
                 {footerText}{" "}
                 <a href={footerLinkHref} className="text-primary font-semibold hover:text-primary/80 transition-colors">
@@ -127,7 +127,7 @@ export function AuthLayout({
           </div>
 
           {/* Footer */}
-          <p className="text-center text-xs text-muted-foreground mt-6">
+          <p className="text-center text-xs text-muted-foreground mt-4">
             En vous connectant, vous acceptez nos{" "}
             <a href="/terms" className="underline hover:text-foreground transition-colors">
               Conditions

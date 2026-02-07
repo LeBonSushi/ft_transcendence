@@ -1,7 +1,7 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
+import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 
 @WebSocketGateway({
   cors: {
@@ -9,7 +9,7 @@ import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
     credentials: true,
   },
 })
-@UseGuards(WsClerkGuard)
+@UseGuards(WsAuthGuard)
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;

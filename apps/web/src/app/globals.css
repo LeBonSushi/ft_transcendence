@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import '@clerk/themes/shadcn.css';
 
 :root {
   --background: oklch(0.9856 0.0084 56.3169);

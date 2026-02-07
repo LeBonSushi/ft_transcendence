@@ -3,16 +3,8 @@ import { Injectable, ConflictException, NotFoundException, Logger } from '@nestj
 import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
-interface CreateFromClerkDto {
-  clerkId: string;
-  email: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
-}
-
-interface UpdateFromClerkDto {
+interface CreateUserDto {
+  id: string;
   email: string;
   username: string;
   firstName?: string;
@@ -26,19 +18,19 @@ export class UsersService {
 
   constructor(private prisma: PrismaService) {}
 
-  async getUserById(clerkId: string) {
+  async getUserById(userId: string) {
     return this.prisma.user.findUnique({
-      where: { id: clerkId },
+      where: { id: userId },
       include: { profile: true },
     });
   }
 
-  async createFromClerk(data: CreateFromClerkDto) {
-    this.logger.debug(`Creating user from Clerk: ${data.clerkId}`);
+  async createUser(data: CreateUserDto) {
+    this.logger.debug(`Creating user: ${data.id}`);
 
     return this.prisma.user.create({
       data: {
-        id: data.clerkId,
+        id: data.id,
         email: data.email,
         username: data.username,
         profile: data.firstName && data.lastName ? {
@@ -55,16 +47,16 @@ export class UsersService {
     });
   }
 
-  async updateFromClerk(clerkId: string, data: UpdateFromClerkDto) {
-    this.logger.debug(`Updating user from Clerk: ${clerkId}`);
+  async updateUser(userId: string, data: UpdateUserDto) {
+    this.logger.debug(`Updating user: ${userId}`);
 
-    const user = await this.getUserById(clerkId);
+    const user = await this.getUserById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     return this.prisma.user.update({
-      where: { id: clerkId },
+      where: { id: userId },
       data: {
         email: data.email,
         username: data.username,
@@ -89,12 +81,12 @@ export class UsersService {
     });
   }
 
-  async deleteByClerkId(clerkId: string) {
+  async deleteUser(userId: string) {
     const roomsCreated = await this.prisma.room.findMany({
-      where: { creatorId: clerkId },
+      where: { creatorId: userId },
       include: {
         members: {
-          where: { userId: { not: clerkId } },
+          where: { userId: { not: userId } },
           orderBy: { joinedAt: 'asc' },
           take: 1,
         },
@@ -115,7 +107,7 @@ export class UsersService {
     }
 
     return this.prisma.user.delete({
-      where: { id: clerkId },
+      where: { id: userId },
     });
   }
 
@@ -208,14 +200,14 @@ export class UsersService {
     return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
   }
 
-  async getRoomsByUser(clerkId: string) {
-    const user = await this.getUserById(clerkId);
+  async getRoomsByUser(userId: string) {
+    const user = await this.getUserById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     const userWithRooms = await this.prisma.user.findUnique({
-      where: { id: clerkId },
+      where: { id: userId },
       select: {
         roomMemberships: {
           select: {
@@ -242,9 +234,9 @@ export class UsersService {
     return userWithRooms.roomMemberships.map((m) => m.room);
   }
 
-  async getFriendById(clerkId: string) {
+  async getFriendById(userId: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id: clerkId },
+      where: { id: userId },
       include: {
         sentFriendRequests: true,
         receivedFriendRequests: true,
