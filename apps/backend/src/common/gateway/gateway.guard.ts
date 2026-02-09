@@ -29,7 +29,7 @@ export class GatewayGuard implements CanActivate {
     // Note: Assurez-vous que process.env.NODE_ENV n'est pas 'production'
     const mockUserId = request.headers['x-mock-user-id'];
     
-    if (mockUserId && env.NODE_ENV !== 'production') {
+    if (mockUserId && process.env.NODE_ENV !== 'production') {
       // On injecte manuellement l'utilisateur dans la requête
       request.user = {
         id: mockUserId, // L'ID que vous avez envoyé dans le header
@@ -49,13 +49,9 @@ export class GatewayGuard implements CanActivate {
     }
 
     try {
-<<<<<<< HEAD
-      const clerkSecretKey = env.CLERK_SECRET_KEY;
-=======
       // TODO: Verify JWT token with your auth system
       // const decoded = jwt.verify(token, this.configService.get('JWT_SECRET'));
       // request['user'] = { id: decoded.sub, email: decoded.email, username: decoded.username };
->>>>>>> fixall
 
       throw new UnauthorizedException('Gateway auth guard not yet implemented - replace with your JWT verification');
     } catch (error) {
