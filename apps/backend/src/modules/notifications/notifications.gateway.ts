@@ -3,15 +3,18 @@ import {
   WebSocketServer,
   SubscribeMessage,
   ConnectedSocket,
-  MessageBody
+  MessageBody,
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
+import { NotificationsService } from './notifications.service';
+import { NotificationModel } from './templates/type';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: env.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   },
 })
@@ -24,7 +27,7 @@ export class NotificationsGateway {
 
   async handleConnection(client: Socket) {
     try {
-      await WsClerkGuard.validateToken(client);
+      await WsAuthGuard.validateToken(client);
       console.log(`Client connected: ${client.id}`);
     } catch (error) {
       console.log(`Client rejected: ${client.id} - ${error.message}`);
@@ -43,7 +46,7 @@ export class NotificationsGateway {
     console.log("User just subscribed")
   }
 
-  // @UseGuards(WsClerkGuard) // a remettre
+  // @UseGuards(WsAuthGuard) // a remettre
   @SubscribeMessage('getNotifications')
   async handleGetNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string }) {
     try {

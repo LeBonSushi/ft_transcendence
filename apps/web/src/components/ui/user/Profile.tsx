@@ -1,12 +1,6 @@
 'use client';
 
-<<<<<<< HEAD
-import { useClerk, useReverification, useUser } from "@clerk/nextjs";
-import { TOTPResource, UserResource } from "@clerk/types";
-import { useState, useRef, InputHTMLAttributes, ChangeEvent } from "react";
-=======
 import { useState, useRef } from "react";
->>>>>>> fixall
 import  QRCode from 'react-qr-code';
 import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
 import {
@@ -49,13 +43,7 @@ import { useClickOutside, useProfileEdit, useSessions, useDeleteAccount } from "
 import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-<<<<<<< HEAD
-import { useVerification } from "@/hooks/useVerification";
 import { useTheme } from "next-themes";
-import { motion } from 'motion/react'
-import toast from "react-hot-toast";
-=======
->>>>>>> fixall
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
@@ -162,14 +150,15 @@ function ProfileDropdownMenu({ user, createdAt, onClose, onOpenSettings, onSignO
             <Mail className="h-4 w-4 shrink-0" />
             <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
           </div>
-          {createdAt && (
+        )}
+        {createdAt && (
             <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 shrink-0" />
               <span>Membre depuis {createdAt}</span>
             </div>
           )}
         </div>
-
+  
         {/* Actions */}
         <div className="p-2">
           {/* <DropdownItem icon={User} label="Mon profil" onClick={onClose} /> */}
@@ -178,7 +167,7 @@ function ProfileDropdownMenu({ user, createdAt, onClose, onOpenSettings, onSignO
           <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -611,7 +600,7 @@ function SecuritySection({
             title="Codes de récupération"
             description="Codes de secours en cas de perte"
             action={
-              <Button size="sm" variant="outline" onClick={handleShowBackupCodes} disabled={isLoadingCodes}>
+              <Button size="sm" variant="outline" onClick={() => {}} disabled={isLoadingCodes}>
                 {isLoadingCodes ? (
                   <RefreshCw className="h-4 w-4 animate-spin mr-1" />
                 ) : showBackupCodes ? (
@@ -623,103 +612,15 @@ function SecuritySection({
               </Button>
             }
           />
-
-          {showBackupCodes && (
-            <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
-              <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                TODO: Implement backup codes with your auth system.
-              </p>
-            </div>
-          </Modal>
         </div>
       </SectionCard>
 
-      <SectionCard
-        title="Sessions actives"
-        icon={Monitor}
-        description="Gérez vos sessions connectées. Révoquez l'accès aux appareils que vous ne reconnaissez pas."
-      >
-        <div className="space-y-2 sm:space-y-3">
-          {sessions.map((s) => {
-            const isCurrentSession = s.id === session?.id;
-            const lastActive = new Date(s.lastActiveAt).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-
-            return (
-              <ListItem
-                key={s.id}
-                highlight={isCurrentSession}
-                icon={<Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />}
-                title={
-                  <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                    <span>{s.latestActivity?.browserName || 'Navigateur inconnu'}</span>
-                    {isCurrentSession && (
-                      <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded-full bg-primary/10 text-primary font-medium">
-                        Actuelle
-                      </span>
-                    )}
-                  </div>
-                }
-                description={`${s.latestActivity?.deviceType || 'Appareil'} • ${lastActive}`}
-                action={
-                  !isCurrentSession && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => revokeSession(s.id)}
-                      disabled={revoking === s.id}
-                    >
-                      {revoking === s.id ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <X className="h-4 w-4" />
-                      )}
-                    </Button>
-                  )
-                }
-              />
-            );
-          })}
-
-          {sessions.length === 0 && (
-            <p className="text-center text-muted-foreground py-4 text-sm">
-              Aucune session trouvée
-            </p>
-          )}
+      {showBackupCodes && (
+        <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+            TODO: Implement backup codes with your auth system.
+          </p>
         </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Historique d'activité"
-        icon={Clock}
-        description="Dernières activités de sécurité sur votre compte."
-      >
-        <div className="space-y-2 sm:space-y-3">
-          <p className="text-sm text-muted-foreground">L&apos;historique d&apos;activité sera disponible prochainement.</p>
-        </div>
-      </SectionCard>
-
-      <SectionCard title="Zone dangereuse" icon={AlertTriangle} variant="danger">
-        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-          Ces actions sont irréversibles. Procédez avec prudence.
-        </p>
-        <Button
-          variant="outline"
-          className="border-destructive/30 text-destructive hover:bg-destructive/10 w-full sm:w-auto text-sm"
-          onClick={() => setShowDeleteConfirm(true)}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Supprimer le compte
-        </Button>
-      </SectionCard>
-
-      {showDeleteConfirm && (
-        <DeleteAccountModal onClose={() => setShowDeleteConfirm(false)} />
       )}
     </>
   );
