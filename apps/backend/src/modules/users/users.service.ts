@@ -1,6 +1,6 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
-import { UpdateUserDto, CreateFromClerkDto, UpdateFromClerkDto } from './dto/user.dto';
+import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
 interface CreateUserDto {
