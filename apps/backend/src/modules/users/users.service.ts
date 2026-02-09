@@ -226,39 +226,39 @@ export class UsersService {
   }
 
   async getFriend(clerkId: string) {
-	const user = await this.prisma.user.findUnique({
-		where: { id: clerkId },
-		include: {
-			sentFriendRequests: true,
-			receivedFriendRequests: true,
-		},
-	});
+    const user = await this.prisma.user.findUnique({
+      where: { id: clerkId },
+      include: {
+        sentFriendRequests: true,
+        receivedFriendRequests: true,
+      },
+    });
 
-	if (!user)
-		throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException('User not found');
 
-	return user;
+    return user;
   }
 
   async sendFriendRequest(clerkId: string, friendId: string) {
-	const IsUserexist = await this.prisma.user.findUnique({
-		where: { id: friendId }
-	})
+    const IsUserexist = await this.prisma.user.findUnique({
+      where: { id: friendId }
+    })
 
-	if (!IsUserexist)
-		throw new NotFoundException('user not found');
+    if (!IsUserexist)
+      throw new NotFoundException('user not found');
 
-	const currentUser = await this.prisma.user.findUnique({
-		where: { id: clerkId },
-		include: {
-			sentFriendRequests: true,
-			receivedFriendRequests: true,
-		}
-	})
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: clerkId },
+      include: {
+        sentFriendRequests: true,
+        receivedFriendRequests: true,
+      }
+    })
 
-	if (!currentUser)
-		throw new NotFoundException('user not found');
+    if (!currentUser)
+      throw new NotFoundException('user not found');
 
-	console.log("friend to add: ", IsUserexist, ", current user :", currentUser);
+    console.log("friend to add: ", IsUserexist, ", current user :", currentUser);
   }
 }
