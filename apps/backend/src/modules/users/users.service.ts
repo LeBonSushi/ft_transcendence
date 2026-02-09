@@ -1,24 +1,7 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
-import { UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto, CreateFromClerkDto, UpdateFromClerkDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
-
-interface CreateFromClerkDto {
-  clerkId: string;
-  email: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
-}
-
-interface UpdateFromClerkDto {
-  email: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
-}
 
 @Injectable()
 export class UsersService {
@@ -242,19 +225,40 @@ export class UsersService {
     return userWithRooms.roomMemberships.map((m) => m.room);
   }
 
-  async getFriendById(clerkId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: clerkId },
-      include: {
-        sentFriendRequests: true,
-        receivedFriendRequests: true,
-      },
-    });
+  async getFriend(clerkId: string) {
+	const user = await this.prisma.user.findUnique({
+		where: { id: clerkId },
+		include: {
+			sentFriendRequests: true,
+			receivedFriendRequests: true,
+		},
+	});
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+	if (!user)
+		throw new NotFoundException('User not found');
 
-    return { user };
+	return user;
+  }
+
+  async sendFriendRequest(clerkId: string, friendId: string) {
+	const IsUserexist = await this.prisma.user.findUnique({
+		where: { id: friendId }
+	})
+
+	if (!IsUserexist)
+		throw new NotFoundException('user not found');
+
+	const currentUser = await this.prisma.user.findUnique({
+		where: { id: clerkId },
+		include: {
+			sentFriendRequests: true,
+			receivedFriendRequests: true,
+		}
+	})
+
+	if (!currentUser)
+		throw new NotFoundException('user not found');
+
+	console.log("friend to add: ", IsUserexist, ", current user :", currentUser);
   }
 }

@@ -11,22 +11,13 @@ import {
   Logger,
   HttpException,
   NotFoundException,
+  Post,
 } from '@nestjs/common';
-import { UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto, PublicUserResponse } from './dto/user.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { createClerkClient, ClerkClient } from '@clerk/backend';
 import { ConfigService } from '@nestjs/config';
 
-interface PublicUserResponse {
-  id: string;
-  username: string;
-  profile: {
-    firstName: string | null;
-    lastName: string | null;
-    profilePicture: string | null;
-    bio: string | null;
-  } | null;
-}
 
 @Controller('users')
 export class UsersController {
@@ -126,7 +117,15 @@ export class UsersController {
       throw new HttpException('Not authorized to view this user friends', HttpStatus.FORBIDDEN);
     }
 
-    return this.usersService.getFriendById(id);
+    return this.usersService.getFriend(id);
+  }
+
+  @Post(':id/:friendRequest')
+  async sendFriendRequest(@GetUser('clerkId') clerkId: string, @Param('id') id: string, @Param('friendRequest') friendId :string) {
+	if (clerkId !== id)
+      throw new HttpException('Not authorized to view this user friends', HttpStatus.FORBIDDEN);
+	
+	return await this.usersService.sendFriendRequest(clerkId, friendId);
   }
 
   @Get()

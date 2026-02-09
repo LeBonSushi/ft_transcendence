@@ -12,13 +12,13 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center">
             <a
-              href="/login"
+              href="/sign-up"
               className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
             >
               Get Started
             </a>
             <a
-              href="/about"
+              href="/test-profile"
               className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition"
             >
               Learn More

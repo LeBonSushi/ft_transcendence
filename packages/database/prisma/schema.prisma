@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  // Prisma 7 preview features
   previewFeatures = ["typedSql"]
 }
 

@@ -47,3 +47,32 @@ export class UpdateUserDto {
 	@IsString()
 	birthdate?: string;
 }
+
+
+export interface CreateFromClerkDto {
+  clerkId: string;
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  profilePicture?: string;
+}
+
+export interface UpdateFromClerkDto {
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  profilePicture?: string;
+}
+
+export interface PublicUserResponse {
+  id: string;
+  username: string;
+  profile: {
+	firstName: string | null;
+	lastName: string | null;
+	profilePicture: string | null;
+	bio: string | null;
+  } | null;
+}
