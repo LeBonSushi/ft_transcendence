@@ -53,7 +53,7 @@ Here is a list of all the resources that helped us build our app
 	- Official NextJs docs [here](https://nextjs.org/docs)
 	- Official React docs [here](https://fr.react.dev/reference/react-dom/components)
 	- Official Tailwind docs [here](https://tailwindcss.com/docs/installation/using-vite)
-	- Official Clerk docs [here](https://clerk.com/docs/nextjs/getting-started/quickstart)
+	- Official NextAuth docs [here](https://next-auth.js.org/)
 	- OpenClassroom Js tutorial [here](https://openclassrooms.com/fr/courses/6390246-passez-au-full-stack-avec-node-js-express-et-mongodb)
 	- etc
 
@@ -131,7 +131,7 @@ Teamwork was organized in a structured way to ensure good project progress track
 [![Next.js](https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white&style=for-the-badge)](https://nextjs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white&style=for-the-badge)](https://nestjs.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white&style=for-the-badge)](https://www.prisma.io/)
-[![Clerk](https://img.shields.io/badge/Clerk-3B82F6?logo=clerk&logoColor=white&style=for-the-badge)](https://clerk.com/)
+[![NextAuth](https://img.shields.io/badge/NextAuth-000000?logo=nextdotjs&logoColor=white&style=for-the-badge)](https://next-auth.js.org/)
 [![Pnpm](https://img.shields.io/badge/Pnpm-222?logo=pnpm&logoColor=F69220&style=for-the-badge)](https://pnpm.io/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=for-the-badge)](https://www.docker.com/)
@@ -144,7 +144,7 @@ Teamwork was organized in a structured way to ensure good project progress track
 |-------|-----------|---------|
 | **Frontend** | Next.js + React | Server components, App Router |
 | **UI** | shadcn/ui + Tailwind CSS | Modern, accessible components |
-| **Backend** | NestJS + Clerk | Modular TypeScript framework and auth provider|
+| **Backend** | NestJS + NextAuth | Modular TypeScript framework and auth provider|
 | **Database** | PostgreSQL + Prisma | Relational data with type-safe ORM |
 | **Cache** | Redis | Session store, caching|
 | **Real-time** | Socket.io | WebSocket connections |

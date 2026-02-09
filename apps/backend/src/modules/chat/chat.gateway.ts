@@ -10,8 +10,7 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
-import { env } from '@/common/env';
+import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 
 @WebSocketGateway({
   cors: {
@@ -19,7 +18,7 @@ import { env } from '@/common/env';
     credentials: true,
   },
 })
-@UseGuards(WsClerkGuard)
+@UseGuards(WsAuthGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -27,14 +26,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private chatService: ChatService) {}
 
   async handleConnection(client: Socket) {
-    try {
-      await WsClerkGuard.validateToken(client);
-      const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
-      console.log(`User ${userIdentifier} connected to chat`);
-    } catch (error) {
-      console.log(`Client rejected: ${client.id} - ${error.message}`);
-      client.disconnect();
-    }
+    // L'utilisateur est disponible dans client.data.user grâce au WsAuthGuard
+
+    const user = client.data.user || client.id;
+    const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
+    console.log(`User ${userIdentifier} connected to chat`);
   }
 
   handleDisconnect(client: Socket) {

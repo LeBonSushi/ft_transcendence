@@ -14,8 +14,6 @@ import {
 } from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { createClerkClient, ClerkClient } from '@clerk/backend';
-import { ConfigService } from '@nestjs/config';
 
 interface PublicUserResponse {
   id: string;
@@ -31,48 +29,40 @@ interface PublicUserResponse {
 @Controller('users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
-  private clerkClient: ClerkClient;
 
-  constructor(
-    private usersService: UsersService,
-    private configService: ConfigService,
-  ) {
-    this.clerkClient = createClerkClient({
-      secretKey: this.configService.get<string>('CLERK_SECRET_KEY'),
-    });
-  }
+  constructor(private usersService: UsersService) {}
 
   @Get('me')
-  async getMe(@GetUser('clerkId') clerkId: string) {
-    return this.usersService.getUserById(clerkId);
+  async getMe(@GetUser('id') userId: string) {
+    return this.usersService.getUserById(userId);
   }
 
   @Delete('me')
   @HttpCode(HttpStatus.OK)
-  async deleteMe(@GetUser('clerkId') clerkId: string) {
-    this.logger.log(`Attempting to delete user: ${clerkId}`);
+  async deleteMe(@GetUser('id') userId: string) {
+    this.logger.log(`Attempting to delete user: ${userId}`);
 
     try {
-      await this.clerkClient.users.deleteUser(clerkId);
-      this.logger.log(`User deleted successfully: ${clerkId}`);
+      await this.usersService.deleteUser(userId);
+      this.logger.log(`User deleted successfully: ${userId}`);
       return { success: true, message: 'Account deleted successfully' };
     } catch (error: any) {
-      this.logger.error(`Failed to delete user ${clerkId}: ${error?.message || error}`);
+      this.logger.error(`Failed to delete user ${userId}: ${error?.message || error}`);
       throw new HttpException(
-        error?.errors?.[0]?.message || error?.message || 'Failed to delete account',
+        error?.message || 'Failed to delete account',
         error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get('me/rooms')
-  async getMyRooms(@GetUser('clerkId') clerkId: string) {
-    return this.usersService.getRoomsByUser(clerkId);
+  async getMyRooms(@GetUser('id') userId: string) {
+    return this.usersService.getRoomsByUser(userId);
   }
 
   @Put('me')
-  async updateMe(@GetUser('clerkId') clerkId: string, @Body() body: UpdateUserDto) {
-    return this.usersService.modifyUser(clerkId, body);
+  async updateMe(@GetUser('id') userId: string, @Body() body: UpdateUserDto) {
+    return this.usersService.modifyUser(userId, body);
   }
 
   @Get(':id')
@@ -99,11 +89,11 @@ export class UsersController {
 
   @Put(':id')
   async modifyUser(
-    @GetUser('clerkId') clerkId: string,
+    @GetUser('id') userId: string,
     @Param('id') id: string,
     @Body() body: UpdateUserDto,
   ) {
-    if (clerkId !== id) {
+    if (userId !== id) {
       throw new HttpException('Not authorized to modify this user', HttpStatus.FORBIDDEN);
     }
 
@@ -111,8 +101,8 @@ export class UsersController {
   }
 
   @Get(':id/rooms')
-  async getRooms(@GetUser('clerkId') clerkId: string, @Param('id') id: string) {
-    if (clerkId !== id) {
+  async getRooms(@GetUser('id') userId: string, @Param('id') id: string) {
+    if (userId !== id) {
       throw new HttpException('Not authorized to view this user rooms', HttpStatus.FORBIDDEN);
     }
 
@@ -120,9 +110,9 @@ export class UsersController {
   }
 
   @Get(':id/friends')
-  async getFriends(@GetUser('clerkId') clerkId: string, @Param('id') id: string) {
+  async getFriends(@GetUser('id') userId: string, @Param('id') id: string) {
     // Only allow users to view their own friends
-    if (clerkId !== id) {
+    if (userId !== id) {
       throw new HttpException('Not authorized to view this user friends', HttpStatus.FORBIDDEN);
     }
 

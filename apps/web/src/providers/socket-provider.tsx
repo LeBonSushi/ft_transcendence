@@ -2,7 +2,7 @@
 
 import { createContext, useState, useEffect, useRef} from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "@clerk/nextjs"; // Hypothetical authentication hook
+import { useSession } from "next-auth/react";
 
 interface SocketContextValue {
   socket: Socket | null;
@@ -15,7 +15,8 @@ export const SocketContext = createContext<SocketContextValue>({
 });
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
-  const { getToken, isSignedIn } = useAuth();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === "authenticated";
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
@@ -32,7 +33,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        const token = await getToken();
+        const token = session?.accessToken || '';
         const newSocket = io(apiUrl, {
           auth: { token },
           
@@ -59,7 +60,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     };
 
     initSocket();
-    
+
     return () => {
       if (socketRef.current) {
         socketRef.current.off('connect');
@@ -67,7 +68,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         socketRef.current.disconnect();
       }
     }
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

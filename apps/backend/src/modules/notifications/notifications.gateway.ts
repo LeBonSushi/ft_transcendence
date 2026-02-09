@@ -6,12 +6,8 @@ import {
   MessageBody
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
-import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
-import { NotificationsService } from './notifications.service';
-import { GetUser } from '@/common/decorators/get-user.decorator';
-import { NotificationModel } from './templates/type';
-import { env } from '@/common/env';
+import { Server } from 'socket.io';
+import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 
 @WebSocketGateway({
   cors: {
@@ -19,7 +15,7 @@ import { env } from '@/common/env';
     credentials: true,
   },
 })
-@UseGuards(WsClerkGuard)
+@UseGuards(WsAuthGuard)
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;
