@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, DM_Sans } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { Toaster } from 'react-hot-toast';
+import { SessionProvider } from 'next-auth/react';
+import { auth } from '@/auth';
 import './globals.css';
 
-import { shadcn } from '@clerk/themes';
 import { SocketProvider } from '@/providers/socket-provider';
-import { VerificationProvider } from '@/providers/verification-provider';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -27,25 +26,25 @@ export const metadata: Metadata = {
 };
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  
   return (
-    <ClerkProvider appearance={{ baseTheme: shadcn }}>
-      <html lang="fr" suppressHydrationWarning>
-        <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased `}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <html lang="fr" suppressHydrationWarning>
+      <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased `}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <SessionProvider session={session}>
             <SocketProvider>
-              <VerificationProvider>
-                {children}
-              </VerificationProvider>
+              {children}
             </SocketProvider>
-            <Toaster position="top-right" />
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+          </SessionProvider>
+          <Toaster position="top-right" />
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

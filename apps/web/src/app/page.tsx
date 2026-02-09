@@ -1,6 +1,10 @@
 import Footer from '@/components/ui/footer';
 
 
+import {NotificationPannel} from "@/components/notificationPannel"
+
+// import { Profile } from "@/components/ui/userUi/Profile";
+
 export default function Home() {
   return (
     <div className="flex h-screen flex-col">
@@ -28,5 +32,6 @@ export default function Home() {
       </div>
       <Footer/>
     </div>
+    </>
   );
 }

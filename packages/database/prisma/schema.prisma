@@ -11,6 +11,7 @@ model User {
   id            String   @id
   username      String   @unique
   email         String   @unique
+  passwordHash  String?
 
   // Relations
   profile                Profile?
@@ -22,6 +23,7 @@ model User {
   votes                  TripVote[]
   suggestedActivities    ActivitySuggestion[]
   createdRooms           Room[]               @relation("RoomCreator")
+  notifications          Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,6 +61,8 @@ model Friendship {
   @@unique([userId, friendId])
   @@index([userId])
   @@index([friendId])
+
+  notifications Notification[]
 }
 
 enum FriendshipStatus {
@@ -86,6 +90,7 @@ model Room {
 	availabilities  UserAvailability[]
 	tripProposals   TripProposal[]
 	messages        Message[]
+	notifications        Notification[]
 
 	createdAt DateTime @default(now())
 	updatedAt DateTime @updatedAt
@@ -220,4 +225,37 @@ enum MessageType {
   TEXT
   IMAGE
   SYSTEM
+}
+
+enum NotificationType {
+  TEXT_EXEMPLE
+  WELCOME_MSG
+  ROOM_INVITE
+  ROOM_DELETED
+  FRIEND_REQUEST
+  NEW_MESSAGE
+}
+
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+
+  friendshipId  String?
+  friendship    Friendship?   @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
+ 
+  roomId  String?
+  room    Room?   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+ 
+  read      Boolean   @default(false)
+  request_accepted      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
 }

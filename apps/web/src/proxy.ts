@@ -1,22 +1,47 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
 
-// Routes publiques qui ne nécessitent pas d'authentification
-const isPublicRoute = createRouteMatcher([
-  '/',                    // Page d'accueil / landing page
-  '/sign-in(.*)',        // Pages de connexion
-  '/sign-up(.*)',        // Pages d'inscription
-  '/api/webhooks(.*)',   // Webhooks Clerk
-  '/about(.*)',           // Page about
-  '/rgpd/privacy(.*)',    // Policy Page
-  '/rgpd/condition(.*)',  // Conditions Page
-]);
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isAuthenticated = !!req.auth;
 
-export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    await auth.protect({
-      unauthenticatedUrl: new URL(`${process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL}`, request.url).toString(),
-    });
+  // Routes publiques (accessibles sans connexion)
+  const publicRoutes = [
+    "/signin",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/about",
+    "/rgpd",
+    "/terms",
+    "/privacy",
+  ];
+
+  // Vérifier si c'est une route publique
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+
+  // Routes API NextAuth (toujours publiques)
+  if (pathname.startsWith("/api/auth")) {
+    return NextResponse.next();
   }
+
+  // Permettre l'accès aux routes publiques
+  if (isPublicRoute) {
+    // Si connecté et sur signin/signup, rediriger vers /
+    if (isAuthenticated && (pathname === "/signin" || pathname === "/signup")) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Rediriger vers /signin si non authentifié sur route protégée
+  if (!isAuthenticated) {
+    const signInUrl = new URL("/signin", req.url);
+    signInUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  return NextResponse.next();
 });
 
 export const config = {

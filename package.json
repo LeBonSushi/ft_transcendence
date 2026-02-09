@@ -3,32 +3,31 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
-    "dev:backend": "turbo dev --filter=backend",
-    "dev:web": "turbo dev --filter=web",
+    "dev": "concurrently -n \"web,backend\" -c \"blue,green\" \"pnpm --filter web dev\" \"pnpm --filter backend dev\"",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:web": "pnpm --filter web dev",
     "dev:ngrok": "ngrok http 4000 --authtoken $NGROK_SECRET_KEY --pool 3",
-    "dev:all": "concurrently -n \"turbo,ngrok\" -c \"blue,green\" \"turbo dev\" \"ngrok http 4000\"",
-    "build": "turbo build",
-    "build:backend": "turbo build --filter=backend",
-    "build:web": "turbo build --filter=web",
-    "db:generate": "pnpm --filter=@travel-planner/database run generate",
-    "db:migrate": "pnpm --filter=@travel-planner/database run migrate",
-    "db:push": "pnpm --filter=@travel-planner/database run push",
-    "db:seed": "pnpm --filter=@travel-planner/database run seed",
-    "db:studio": "pnpm --filter=@travel-planner/database run studio",
-    "db:reset": "pnpm --filter=@travel-planner/database run reset",
-    "lint": "turbo lint",
+    "dev:all": "concurrently -n \"web,backend,ngrok\" -c \"blue,green,yellow\" \"pnpm --filter web dev\" \"pnpm --filter backend dev\" \"ngrok http 4000\"",
+    "build": "pnpm --filter web build && pnpm --filter backend build",
+    "build:backend": "pnpm --filter backend build",
+    "build:web": "pnpm --filter web build",
+    "db:generate": "pnpm --filter @travel-planner/database generate",
+    "db:migrate": "pnpm --filter @travel-planner/database migrate",
+    "db:push": "pnpm --filter @travel-planner/database push",
+    "db:seed": "pnpm --filter @travel-planner/database seed",
+    "db:studio": "pnpm --filter @travel-planner/database studio",
+    "lint": "pnpm --filter web lint && pnpm --filter backend lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "turbo clean && rm -rf node_modules .turbo"
+    "clean": "rm -rf node_modules apps/web/.next apps/backend/dist"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
     "prettier": "^3.4.2",
-    "turbo": "^2.7.5",
     "typescript": "^5.7.2"
   },
   "dependencies": {
     "@prisma/client": "^7.2.0",
+    "pnpm": "^10.28.1",
     "prisma": "^7.2.0"
   },
   "packageManager": "pnpm@10.25.0"

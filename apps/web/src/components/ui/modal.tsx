@@ -87,7 +87,9 @@ export function Modal({
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
         )}
-        {children}
+        <div className={showCloseButton ? "mr-10 sm:mr-12" : undefined}>
+          {children}
+        </div>
       </div>
     </div>
   );

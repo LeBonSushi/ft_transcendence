@@ -10,15 +10,15 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { WsClerkGuard } from '@/common/guards/ws-clerk.guard';
+import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: env.CORS_ORIGIN,
     credentials: true,
   },
 })
-@UseGuards(WsClerkGuard)
+@UseGuards(WsAuthGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -26,7 +26,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private chatService: ChatService) {}
 
   async handleConnection(client: Socket) {
-    // L'utilisateur est disponible dans client.data.user grâce au WsClerkGuard
+    // L'utilisateur est disponible dans client.data.user grâce au WsAuthGuard
 
     const user = client.data.user || client.id;
     const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
@@ -34,7 +34,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
-    const user = client.data.user || client.id;
     const userIdentifier = client.data.user ? (client.data.user.username || client.data.user.id) : client.id;
     console.log(`User ${userIdentifier} disconnected from chat`);
   }

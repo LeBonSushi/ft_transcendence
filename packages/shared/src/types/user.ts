@@ -41,12 +41,3 @@ export interface Friendship {
   createdAt: Date;
   updatedAt: Date;
 }
-
-export interface RoomSummary {
-	name: string;
-	lastMessage: string;
-	senderUsername: string;
-	senderPicture: string;
-	lastMessageDate: string;
-	createdAt?: Date;
-}

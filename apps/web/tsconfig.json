@@ -37,7 +37,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-  ],
+, "src/components/notificationPannel.jsx"  ],
   "exclude": [
     "node_modules"
   ]

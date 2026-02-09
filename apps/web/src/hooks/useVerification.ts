@@ -1,14 +1,11 @@
-import { useReverification } from "@clerk/nextjs";
-import { useVerificationModal } from "@/providers/verification-provider";
+import { useSession } from "next-auth/react";
 
 export function useVerification({ fetcher }: { fetcher: (...args: any[]) => Promise<any> | undefined }) {
-  const { requestVerification } = useVerificationModal();
-
-  const verifHandle = useReverification(fetcher, {
-    onNeedsReverification(properties) {
-      requestVerification(properties);
-    },
-  });
-
-  return verifHandle;
+  const { data: session } = useSession();
+  
+  if (!session) {
+    throw new Error("Verification required - please sign in");
+  }
+  
+  return fetcher;
 }

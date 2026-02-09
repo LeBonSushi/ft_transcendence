@@ -1,12 +1,11 @@
 import 'server-only';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-// Helper pour créer un client fetch avec auth Clerk serveur
 async function createServerFetch() {
-  const { getToken } = await auth();
-  const token = await getToken();
+  const session = await auth();
+  const token = session?.accessToken || '';
 
   return async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API_URL}${url}`, {

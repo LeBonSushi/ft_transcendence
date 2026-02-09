@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useReverification, useSession } from '@clerk/nextjs';
+import { useState } from 'react';
 
 interface Session {
   id: string;
@@ -8,13 +7,10 @@ interface Session {
     browserName?: string;
     deviceType?: string;
   };
-  revoke: () => Promise<any>;
 }
 
 interface UseSessionsOptions {
-  user: {
-    getSessions: () => Promise<Session[]>;
-  } | null | undefined;
+  user: any;
 }
 
 interface UseSessionsReturn {
@@ -28,56 +24,24 @@ interface UseSessionsReturn {
 
 /**
  * Hook pour gérer les sessions utilisateur
- * Gère le fetch, la révocation avec vérification, et le refresh
+ * TODO: Implement with your auth system
  */
 export function useSessions({ user }: UseSessionsOptions): UseSessionsReturn {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
-  const { session } = useSession();
-
-  const removeSession = async (sessionToRevoke: Session) => {
-    await sessionToRevoke.revoke();
-    setSessions(prev => prev.filter(s => s.id !== sessionToRevoke.id));
-  };
-
-  const revokeWithVerification = useReverification(removeSession);
 
   const fetchSessions = async () => {
-    if (!user) return;
-
-    setIsLoading(true);
-    try {
-      const userSessions = await user.getSessions();
-      setSessions(userSessions);
-    } catch (error) {
-      console.error('Erreur lors du chargement des sessions:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // TODO: Fetch sessions from your API
   };
 
-  useEffect(() => {
-    fetchSessions();
-  }, [user]);
-
   const revokeSession = async (sessionId: string) => {
-    setRevoking(sessionId);
-    try {
-      const sessionToRevoke = sessions.find(s => s.id === sessionId);
-      if (sessionToRevoke) {
-        await revokeWithVerification(sessionToRevoke);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la révocation:', error);
-    } finally {
-      setRevoking(null);
-    }
+    // TODO: Revoke session via your API
   };
 
   return {
     sessions,
-    currentSession: session,
+    currentSession: null,
     isLoading,
     revoking,
     revokeSession,

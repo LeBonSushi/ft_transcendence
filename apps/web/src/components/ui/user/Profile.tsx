@@ -1,9 +1,14 @@
 'use client';
 
+<<<<<<< HEAD
 import { useClerk, useReverification, useUser } from "@clerk/nextjs";
 import { TOTPResource, UserResource } from "@clerk/types";
+import { useState, useRef, InputHTMLAttributes, ChangeEvent } from "react";
+=======
 import { useState, useRef } from "react";
+>>>>>>> fixall
 import  QRCode from 'react-qr-code';
+import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
 import {
   Settings,
   ChevronDown,
@@ -24,6 +29,13 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  Settings2,
+  SunMedium,
+  Moon,
+  LaptopMinimal,
+  ChevronUp,
+  Section,
+  MoonIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -32,17 +44,27 @@ import { SectionCard, InfoRow, ListItem } from "@/components/ui/card";
 import { TabNavigation } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { formatDate, formatDateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { useClickOutside, useProfileEdit, useSessions, useDeleteAccount } from "@/hooks";
 import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+<<<<<<< HEAD
 import { useVerification } from "@/hooks/useVerification";
+import { useTheme } from "next-themes";
+import { motion } from 'motion/react'
+import toast from "react-hot-toast";
+=======
+>>>>>>> fixall
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
-  const { signOut } = useClerk();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoaded = status !== "loading";
+  const signOut = () => nextAuthSignOut();
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { user, isLoaded } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +74,10 @@ export function Profile() {
     return <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />;
   }
 
-  const createdAt = user.createdAt ? formatDate(user.createdAt) : null;
+  const createdAt = user.createdAt ? formatDate(new Date(user.createdAt)) : null;
+  const displayName = user.profile?.firstName && user.profile?.lastName 
+    ? `${user.profile.firstName} ${user.profile.lastName}`
+    : user.name || user.username;
 
   return (
     <>
@@ -65,9 +90,9 @@ export function Profile() {
           className="flex items-center gap-2 p-1.5 rounded-full hover:bg-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           <Avatar
-            src={user.imageUrl}
-            alt={user.fullName || 'Avatar'}
-            fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
+            src={user.profile?.profilePicture || user.image || ''}
+            alt={displayName}
+            fallback={user.profile?.firstName || user.name || user.email || 'U'}
             size="sm"
           />
           <ChevronDown
@@ -84,7 +109,7 @@ export function Profile() {
               setIsSettingsOpen(true);
               setIsOpen(false);
             }}
-            onSignOut={() => signOut()}
+            onSignOut={signOut}
           />
         )}
       </div>
@@ -94,7 +119,7 @@ export function Profile() {
 
 // ============ DROPDOWN MENU ============
 interface ProfileDropdownMenuProps {
-  user: UserResource;
+  user: any;
   createdAt: string | null;
   onClose: () => void;
   onOpenSettings: () => void;
@@ -108,45 +133,52 @@ function ProfileDropdownMenu({ user, createdAt, onClose, onOpenSettings, onSignO
       <div className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-b border-border">
         <div className="flex items-center gap-3">
           <Avatar
-            src={user.imageUrl}
-            alt={user.fullName || 'Avatar'}
-            fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
+            src={user.profile?.profilePicture || user.image || ''}
+            alt={user.name || 'Avatar'}
+            fallback={user.profile?.firstName || user.name || user.email || 'U'}
             size="md"
             ringColor="ring-primary/20"
           />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-foreground truncate">
-              {user.fullName || user.firstName || 'Utilisateur'}
+              {user.profile?.firstName && user.profile?.lastName
+                ? `${user.profile.firstName} ${user.profile.lastName}`
+                : user.name || 'Utilisateur'}
             </p>
             <p className="text-sm text-muted-foreground truncate">
-              @{user.username || user.id.slice(0, 8)}
+              @{user.username || user.id?.slice(0, 8)}
             </p>
           </div>
         </div>
-      </div>
 
       {/* User info */}
       <div className="p-3 space-y-1 border-b border-border">
         <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
           <Mail className="h-4 w-4 shrink-0" />
-          <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
+          <span className="truncate">{user.email}</span>
         </div>
         {createdAt && (
           <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4 shrink-0" />
-            <span>Membre depuis {createdAt}</span>
+            <Mail className="h-4 w-4 shrink-0" />
+            <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
           </div>
-        )}
-      </div>
+          {createdAt && (
+            <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span>Membre depuis {createdAt}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Actions */}
-      <div className="p-2">
-        <DropdownItem icon={User} label="Mon profil" onClick={onClose} />
-        <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
-        <div className="my-2 border-t border-border" />
-        <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+        {/* Actions */}
+        <div className="p-2">
+          {/* <DropdownItem icon={User} label="Mon profil" onClick={onClose} /> */}
+          <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
+          <div className="my-2 border-t border-border" />
+          <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -182,8 +214,11 @@ const TABS = [
 ];
 
 export function ProfilePage({ onClose }: { onClose: () => void }) {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoaded = status !== "loading";
+  const signOut = () => nextAuthSignOut();
+
   const [activeTab, setActiveTab] = useState<Tab>('account');
   const [showBackupCodes, setShowBackupCodes] = useState(false);
 
@@ -198,27 +233,28 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
       </Modal>
     );
   }
-
-  const createdAt = user.createdAt ? formatDate(user.createdAt) : null;
-  const lastSignIn = user.lastSignInAt ? formatDateTime(user.lastSignInAt) : null;
+  const createdAt = user.createdAt ? formatDate(new Date(user.createdAt)) : null;
+  const lastSignIn = null; // Would need to be stored separately if needed
 
   return (
     <Modal isOpen onClose={onClose} size="xl" className="p-4 sm:p-6 md:px-12 lg:px-16">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8 p-4 sm:p-6 rounded-2xl bg-card border border-border mt-8 sm:mt-0">
         <Avatar
-          src={user.imageUrl}
-          alt={user.fullName || 'Avatar'}
-          fallback={user.firstName || user.emailAddresses[0]?.emailAddress}
+          src={user.profile?.profilePicture || user.image || ''}
+          alt={user.name || 'Avatar'}
+          fallback={user.profile?.firstName || user.name || user.email || 'U'}
           size="lg"
           ringColor="ring-primary/20"
         />
         <div className="flex-1 text-center sm:text-left">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            {user.fullName || user.firstName || 'Utilisateur'}
+            {user.profile?.firstName && user.profile?.lastName
+              ? `${user.profile.firstName} ${user.profile.lastName}`
+              : user.name || 'Utilisateur'}
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base">
-            @{user.username || user.id.slice(0, 8)}
+            @{user.username || user.id?.slice(0, 8)}
           </p>
           {createdAt && (
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -274,6 +310,18 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
     handleCancel,
   } = useProfileEdit({ user });
 
+  const { theme, themes, setTheme } = useTheme();
+  const themeProps = [
+    { type: "light", name: "Clair", icon: SunMedium },
+    { type: "dark", name: "Sombre", icon: MoonIcon },
+    { type: "system", name: "Systeme", icon: LaptopMinimal },
+  ]
+
+  const themeSelectRef = useRef(null);
+  const [themeSelectOpen, setThemeSelectOpen] = useState(false);
+
+  useClickOutside(themeSelectRef, () => setThemeSelectOpen(false), themeSelectOpen);
+
   return (
     <>
       <SectionCard title="Informations personnelles" icon={User}>
@@ -306,11 +354,11 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
             />
             <div className="flex gap-2 mt-4">
               <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none">
-                {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2 hidden sm:inline" /> : <Check className="h-4 w-4 mr-2 hidden sm:inline" />}
                 Enregistrer
               </Button>
               <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="flex-1 sm:flex-none">
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-4 w-4 mr-2 hidden sm:inline" />
                 Annuler
               </Button>
             </div>
@@ -329,31 +377,36 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         )}
       </SectionCard>
 
-      <SectionCard title="Adresses email" icon={Mail}>
-        <div className="space-y-2 sm:space-y-3">
-          {user.emailAddresses.map((email: any) => (
-            <div
-              key={email.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-muted/50"
-            >
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-foreground text-sm sm:text-base truncate">{email.emailAddress}</span>
-                {email.id === user.primaryEmailAddressId && (
-                  <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary font-medium shrink-0">
-                    Principal
-                  </span>
+      <SectionCard title="Adresse email" icon={Mail}>
+        <div className="p-3 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-foreground text-sm sm:text-base truncate">{user.email}</span>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Apparence" icon={Settings2}>
+        <div className="grid grid-cols-3 gap-3">
+          {themeProps.map((t) => {
+            const isActive = theme === t.type;
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.type}
+                onClick={() => setTheme(t.type)}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all",
+                  isActive
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
-              </div>
-              <div className="flex justify-end">
-                {email.verification?.status === 'verified' ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                )}
-              </div>
-            </div>
-          ))}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-sm font-medium">{t.name}</span>
+              </button>
+            );
+          })}
         </div>
       </SectionCard>
 
@@ -369,13 +422,11 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 function TwoFaVerif({
   qrCodeUri,
   secret,
-  user,
   onClose,
   onSuccess
 }: {
   qrCodeUri: string;
   secret: string;
-  user: UserResource;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -390,12 +441,12 @@ function TwoFaVerif({
     setError(null);
 
     try {
-      await user.verifyTOTP({ code: codeToVerify });
+      // TODO: Verify TOTP with your auth system
       onSuccess();
       onClose();
     } catch (err: any) {
       setError(err?.errors?.[0]?.message || 'Code invalide. Veuillez réessayer.');
-      setCode(''); // Reset le code pour réessayer
+      setCode('');
     } finally {
       setIsVerifying(false);
     }
@@ -504,7 +555,7 @@ function SecuritySection({
   showBackupCodes,
   setShowBackupCodes
 }: {
-  user: UserResource;
+  user: any;
   session: any;
   sessions: any[];
   revoking: string | null;
@@ -516,45 +567,21 @@ function SecuritySection({
   const [isEnabling2FA, setisEnabling2FA] = useState<boolean>(false);
   const [totpData, setTotpData] = useState<{ uri: string; secret: string } | null>(null);
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
-
-  const enable2FAAction = async () => {
-    return await user.createTOTP();
-  }
-  const enable2FA = useVerification({ fetcher: enable2FAAction });
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [isLoadingCodes, setIsLoadingCodes] = useState(false);
 
   const handleEnable2FA = async () => {
-    try {
-      const qrData: TOTPResource = await enable2FA();
-      setTotpData({ uri: qrData.uri || '', secret: qrData.secret || '' });
-      setisEnabling2FA(true);
-    } catch {
-      setTotpData(null);
-      setisEnabling2FA(false);
-    }
+    // TODO: Implement 2FA enable with your auth system
   }
 
-  const disable2FAAction = async () => {
-    await user.disableTOTP();
-  };
-
-  const disable2FA = useReverification(disable2FAAction);
-
   const handleDisable2FA = async () => {
-    setIsDisabling2FA(true);
-    try {
-      await disable2FA();
-    } catch {
-      // Reverification en cours ou annulée
-    } finally {
-      setIsDisabling2FA(false);
-    }
+    // TODO: Implement 2FA disable with your auth system
   };
 
   return (
     <>
       {isEnabling2FA && totpData && (
         <TwoFaVerif
-          user={user}
           qrCodeUri={totpData.uri}
           secret={totpData.secret}
           onClose={() => {
@@ -573,30 +600,9 @@ function SecuritySection({
             title="Application d'authentification"
             description="Google Authenticator, Authy, etc."
             action={
-              user.twoFactorEnabled ? (
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-medium">
-                    <Check className="h-3 w-3" /> Activé
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={handleDisable2FA}
-                    disabled={isDisabling2FA}
-                  >
-                    {isDisabling2FA ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <X className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <Button size="sm" onClick={() => {handleEnable2FA()}}>
-                  <Plus className="h-4 w-4 mr-1" /> Activer
-                </Button>
-              )
+              <Button size="sm" onClick={() => {handleEnable2FA()}}>
+                <Plus className="h-4 w-4 mr-1" /> Activer
+              </Button>
             }
           />
 
@@ -605,23 +611,26 @@ function SecuritySection({
             title="Codes de récupération"
             description="Codes de secours en cas de perte"
             action={
-              <Button size="sm" variant="outline" onClick={() => setShowBackupCodes(!showBackupCodes)}>
-                {showBackupCodes ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                {showBackupCodes ? 'Masquer' : 'Afficher'}
+              <Button size="sm" variant="outline" onClick={handleShowBackupCodes} disabled={isLoadingCodes}>
+                {isLoadingCodes ? (
+                  <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                ) : showBackupCodes ? (
+                  <EyeOff className="h-4 w-4 mr-1" />
+                ) : (
+                  <Eye className="h-4 w-4 mr-1" />
+                )}
+                {isLoadingCodes ? 'Chargement...' : showBackupCodes ? 'Quitter' : 'Générer'}
               </Button>
             }
           />
 
-          {showBackupCodes && user.backupCodeEnabled && (
+          {showBackupCodes && (
             <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
               <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                Les codes de récupération doivent être générés via l&apos;API Clerk.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                TODO: Implement user.createBackupCode() to generate/fetch real backup codes
+                TODO: Implement backup codes with your auth system.
               </p>
             </div>
-          )}
+          </Modal>
         </div>
       </SectionCard>
 
@@ -692,7 +701,6 @@ function SecuritySection({
       >
         <div className="space-y-2 sm:space-y-3">
           <p className="text-sm text-muted-foreground">L&apos;historique d&apos;activité sera disponible prochainement.</p>
-          {/* TODO: Fetch real activity data from Clerk audit/events API */}
         </div>
       </SectionCard>
 
@@ -746,7 +754,7 @@ function ActivityItem({
 // ============ DELETE ACCOUNT MODAL ============
 function DeleteAccountModal({ onClose }: { onClose: () => void }) {
   const expectedText = 'SUPPRIMER';
-  const { canDelete, confirmText, setConfirmText, error, handleDelete, isDeleting } = useDeleteAccount({ expectedText }); 
+  const { canDelete, confirmText, setConfirmText, error, handleDelete, isDeleting } = useDeleteAccount({ expectedText });
 
   return (
     <Modal isOpen onClose={onClose} size="sm" showCloseButton={false} overlayClassName="bg-black/60">

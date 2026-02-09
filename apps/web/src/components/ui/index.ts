@@ -21,7 +21,6 @@ export {
 
 // Auth components
 export { AuthLayout, StatItem, FeatureItem } from "./auth";
-export { clerkAppearance, clerkAppearanceCompact } from "./auth";
 
 // Theme
 export { ThemeProvider } from "./theme-provider";

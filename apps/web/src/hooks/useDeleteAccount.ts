@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useUser, useReverification } from '@clerk/nextjs';
 
 interface UseDeleteAccountOptions {
   expectedText?: string;
@@ -17,28 +16,19 @@ interface UseDeleteAccountReturn {
 
 /**
  * Hook pour gérer la suppression de compte
- * Gère la confirmation par texte, la révérification et la suppression
+ * Gère la confirmation par texte et la suppression
  */
 export function useDeleteAccount({
   expectedText = 'SUPPRIMER',
   redirectUrl = '/',
 }: UseDeleteAccountOptions = {}): UseDeleteAccountReturn {
-  const { user } = useUser();
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canDelete = confirmText === expectedText;
 
-  const deleteAccount = async () => {
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-    await user.delete();
-  };
-
-  const deleteWithReverification = useReverification(deleteAccount);
-
+  // TODO: Implement delete account logic with your auth system
   const handleDelete = async () => {
     if (!canDelete) return;
 
@@ -46,7 +36,7 @@ export function useDeleteAccount({
     setError(null);
 
     try {
-      await deleteWithReverification();
+      // TODO: Call your API to delete the account
       window.location.href = redirectUrl;
     } catch (err: any) {
       setError(
