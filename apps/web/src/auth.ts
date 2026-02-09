@@ -58,19 +58,61 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google" || account?.provider === "github") {
+        try {
+          // Sync OAuth user with your backend
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/oauth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              provider: account.provider,
+              providerId: account.providerAccountId,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+            }),
+          });
+
+          if (!response.ok) {
+            return false;
+          }
+
+          const data = await response.json();
+          // Attach backend user data to the user object
+          user.id = data.id;
+          user.username = data.username;
+          user.createdAt = new Date(data.createdAt);
+          user.profile = data.profile || null;
+
+          return true;
+        } catch (error) {
+          console.error("OAuth signIn error:", error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
-        token.createdAt = user.createdAt.toISOString();
+        token.createdAt = user.createdAt?.toISOString?.() || new Date().toISOString();
         token.profile = user.profile;
       }
-      
+
       if (account?.access_token) {
         token.accessToken = account.access_token;
       }
-      
+
       return token;
     },
     async session({ session, token }) {
