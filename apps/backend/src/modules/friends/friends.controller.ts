@@ -1,4 +1,4 @@
-import { Controller, Logger, Get, Post, Param, HttpException, HttpStatus, Delete} from "@nestjs/common";
+import { Controller, Logger, Get, Post, Param, Delete} from "@nestjs/common";
 import { FriendsService } from "./friends.service";
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
@@ -46,5 +46,10 @@ export class FriendsController {
   @Delete('/:friendId')
   async deleteRequest(@GetUser('id') id: string, @Param('friendId') friendId: string) {
     return await this.friendsService.deleteFriend(id, friendId);
+  }
+
+  @Post('test/:userId/:friendId')
+  async addrequest(@Param('userId') userId: string, @Param('friendId') friendId: string) {
+    return await this.friendsService.addRequest(userId, friendId);
   }
 }
