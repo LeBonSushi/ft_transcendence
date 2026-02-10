@@ -16,6 +16,7 @@
     "db:push": "pnpm --filter @travel-planner/database push",
     "db:seed": "pnpm --filter @travel-planner/database seed",
     "db:studio": "pnpm --filter @travel-planner/database studio",
+    "db:reset": "pnpm --filter @travel-planner/database reset",
     "lint": "pnpm --filter web lint && pnpm --filter backend lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "rm -rf node_modules apps/web/.next apps/backend/dist"

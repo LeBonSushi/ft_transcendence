@@ -3,7 +3,7 @@ import { join } from 'path';
 import { defineConfig } from 'prisma/config';
 
 // Load .env from backend app
-config({ path: join(process.cwd(), '../../apps/backend/.env') });
+config({ path: join(process.cwd(), '../../.env') });
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
