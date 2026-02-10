@@ -1,12 +1,16 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { removeListener } from 'node:cluster';
+import { Injectable, NotFoundException, UnauthorizedException, Logger } from '@nestjs/common';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { NotificationTemplates } from '@/modules/notifications/templates/templates';
 
 @Injectable()
 export class FriendsService {
   private readonly logger = new Logger(FriendsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async getRequestReceived(id: string) {
     const receivedRequest = await this.prisma.user.findUnique({
@@ -19,27 +23,29 @@ export class FriendsService {
     return {friend_request: receivedRequest?.receivedFriendRequests};
   }
 
-  // a finir
   async sendRequest(id: string, friendId: string) {
-    const IsUserexist = await this.prisma.user.findUnique({
-      where: { id: friendId }
-    })
+    const user = await this.prisma.user.findUnique({ where: { id: id } });
+    const friend = await this.prisma.user.findUnique({ where: { id: friendId } });
 
-    if (!IsUserexist)
-      throw new NotFoundException('user not found');
+    if (!user || !friend) {
+      throw new NotFoundException('User not found');
+    }
 
-    const currentUser = await this.prisma.user.findUnique({
-      where: { id: id },
-      include: {
-        sentFriendRequests: true,
-        receivedFriendRequests: true,
+    const friendRequest = await this.prisma.friendship.create({
+      data: {
+        userId: id,
+        friendId: friendId,
+        status: 'PENDING',
       }
-    })
+    });
 
-    if (!currentUser)
-      throw new NotFoundException('user not found');
+    const notif = NotificationTemplates.getTemplate("FRIEND_REQUEST", {
+        username: "test", title: "Friend request"
+    });
+    
+    await this.notificationsService.createNotification(friendId, notif);
 
-    console.log("friend to add: ", IsUserexist, ", current user :", currentUser);
+    return { success: true, friendRequest };
   }
 
   async acceptRequest(id: string, friendId: string) {
@@ -63,6 +69,13 @@ export class FriendsService {
 
     if (acceptFriend.count === 0)
         throw new NotFoundException('No pending friend request found from this user');
+
+    const notif = NotificationTemplates.getTemplate("FRIEND_REQUEST", {
+        username: "test", title: "Accepted" 
+    });
+
+    // attendre que noan update son code 
+    // await this.notificationsService.AnswerToNotification(friendId, notif);
 
     return { success: true };
   }
@@ -139,7 +152,7 @@ export class FriendsService {
     return { succes: true, deleted: deleteFriend.count };
   }
 
-  // Endpoint de test pour créer des demandes d'amis
+  // Endpoint de test pour créer des demandes d'amis vers mon current user
   async addRequest(userId: string, friendId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const friend = await this.prisma.user.findUnique({ where: { id: friendId } });
@@ -150,8 +163,8 @@ export class FriendsService {
 
     const friendRequest = await this.prisma.friendship.create({
       data: {
-        userId: friendId,      // Celui qui envoie
-        friendId: userId,  // Celui qui reçoit
+        userId: friendId,
+        friendId: userId,
         status: 'PENDING',
       }
     });
