@@ -22,6 +22,8 @@
     "moduleResolution": "node",
     "paths": {
       "@/*": ["src/*"],
+      "@travel-planner/shared": ["../../packages/shared/src"],
+      "@travel-planner/shared/*": ["../../packages/shared/src/*"]
     }
   },
   "include": ["src/**/*"],
