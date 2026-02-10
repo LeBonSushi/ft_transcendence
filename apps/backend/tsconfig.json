@@ -21,9 +21,7 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "paths": {
-      "@/*": ["src/*"],
-      "@travel-planner/shared": ["../../packages/shared/src"],
-      "@travel-planner/shared/*": ["../../packages/shared/src/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src/**/*"],

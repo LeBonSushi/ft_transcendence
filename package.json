@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n \"web,backend\" -c \"blue,green\" \"pnpm --filter web dev\" \"pnpm --filter backend dev\"",
+    "predev": "pnpm --filter @travel-planner/shared build",
+    "dev": "concurrently -n \"shared,web,backend\" -c \"yellow,blue,green\" \"pnpm --filter @travel-planner/shared build:watch\" \"pnpm --filter web dev\" \"pnpm --filter backend dev\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:web": "pnpm --filter web dev",
     "dev:ngrok": "ngrok http 4000 --authtoken $NGROK_SECRET_KEY --pool 3",
-    "dev:all": "concurrently -n \"web,backend,ngrok\" -c \"blue,green,yellow\" \"pnpm --filter web dev\" \"pnpm --filter backend dev\" \"ngrok http 4000\"",
-    "build": "pnpm --filter web build && pnpm --filter backend build",
-    "build:backend": "pnpm --filter backend build",
-    "build:web": "pnpm --filter web build",
+    "dev:all": "concurrently -n \"shared,web,backend,ngrok\" -c \"yellow,blue,green,magenta\" \"pnpm --filter @travel-planner/shared build:watch\" \"pnpm --filter web dev\" \"pnpm --filter backend dev\" \"ngrok http 4000\"",
+    "build": "pnpm --filter @travel-planner/shared build && pnpm --filter web build && pnpm --filter backend build",
+    "build:backend": "pnpm --filter @travel-planner/shared build && pnpm --filter backend build",
+    "build:web": "pnpm --filter @travel-planner/shared build && pnpm --filter web build",
+    "start:prod": "pnpm --filter backend start:prod",
     "db:generate": "pnpm --filter @travel-planner/database generate",
     "db:migrate": "pnpm --filter @travel-planner/database migrate",
     "db:push": "pnpm --filter @travel-planner/database push",
@@ -19,7 +21,7 @@
     "db:reset": "pnpm --filter @travel-planner/database reset",
     "lint": "pnpm --filter web lint && pnpm --filter backend lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "rm -rf node_modules apps/web/.next apps/backend/dist"
+    "clean": "rm -rf node_modules apps/web/.next apps/backend/dist packages/shared/dist"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
