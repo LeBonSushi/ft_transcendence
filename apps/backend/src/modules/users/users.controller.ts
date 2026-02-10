@@ -11,7 +11,6 @@ import {
   Logger,
   HttpException,
   NotFoundException,
-  Post,
 } from '@nestjs/common';
 import { UpdateUserDto, PublicUserResponse } from './dto/user.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
@@ -102,20 +101,11 @@ export class UsersController {
 
   @Get(':id/friends')
   async getFriends(@GetUser('id') userId: string, @Param('id') id: string) {
-    // Only allow users to view their own friends
     if (userId !== id) {
       throw new HttpException('Not authorized to view this user friends', HttpStatus.FORBIDDEN);
     }
 
-    return this.usersService.getFriend(id);
-  }
-
-  @Post(':id/:friendRequest')
-  async sendFriendRequest(@GetUser('clerkId') clerkId: string, @Param('id') id: string, @Param('friendRequest') friendId :string) {
-	if (clerkId !== id)
-      throw new HttpException('Not authorized to view this user friends', HttpStatus.FORBIDDEN);
-	
-	return await this.usersService.sendFriendRequest(clerkId, friendId);
+    return this.usersService.getFriends(id);
   }
 
   @Get()

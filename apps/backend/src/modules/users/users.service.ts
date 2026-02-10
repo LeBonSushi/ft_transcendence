@@ -234,7 +234,9 @@ export class UsersService {
     return userWithRooms.roomMemberships.map((m) => m.room);
   }
 
-  async getFriend(clerkId: string) {
+
+  // a remodifier je pense 
+  async getFriends(clerkId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: clerkId },
       include: {
@@ -247,27 +249,5 @@ export class UsersService {
       throw new NotFoundException('User not found');
 
     return user;
-  }
-
-  async sendFriendRequest(clerkId: string, friendId: string) {
-    const IsUserexist = await this.prisma.user.findUnique({
-      where: { id: friendId }
-    })
-
-    if (!IsUserexist)
-      throw new NotFoundException('user not found');
-
-    const currentUser = await this.prisma.user.findUnique({
-      where: { id: clerkId },
-      include: {
-        sentFriendRequests: true,
-        receivedFriendRequests: true,
-      }
-    })
-
-    if (!currentUser)
-      throw new NotFoundException('user not found');
-
-    console.log("friend to add: ", IsUserexist, ", current user :", currentUser);
   }
 }

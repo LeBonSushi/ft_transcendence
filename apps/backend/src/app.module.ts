@@ -10,6 +10,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
 import { GatewayModule } from './common/gateway/gateway.module';
+import { FriendsModule } from './modules/friends/friends.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { GatewayModule } from './common/gateway/gateway.module';
     UsersModule,
     RoomsModule,
     ChatModule,
+    FriendsModule,
     NotificationsModule,
     StorageModule,
   ],
