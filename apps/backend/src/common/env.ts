@@ -1,8 +1,8 @@
 import { config } from 'dotenv';
 import { join } from 'path';
 
-// Load .env from apps/backend/.env
-config({ path: join(__dirname, '../../.env') });
+// Load .env from project root
+config({ path: join(__dirname, '../../../../.env') });
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
