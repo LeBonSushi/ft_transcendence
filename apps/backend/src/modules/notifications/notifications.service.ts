@@ -14,7 +14,8 @@ export class NotificationsService {
         userId,
         title:notificationtemplate.title,
         message:notificationtemplate.message,
-        type:notificationtemplate.type
+        type:notificationtemplate.type,
+        friendshipId: notificationtemplate.friendId
       }
     })
 

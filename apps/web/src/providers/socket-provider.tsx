@@ -36,7 +36,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const token = session?.accessToken || '';
         const newSocket = io(apiUrl, {
           auth: { token },
-          
         });
 
         const onConnect = () => {

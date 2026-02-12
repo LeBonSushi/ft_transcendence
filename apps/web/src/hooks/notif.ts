@@ -1,22 +1,30 @@
 "use client"
 
-import { useUser } from '@clerk/nextjs';
+// import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
 import { useSocket } from './useSocket';
+import { useSession } from "next-auth/react";
 
 export function useNotifications() {
-    const { user } = useUser();
+    // cosnt 
+    // const { user } = useUser();
+    const { data: session, status } = useSession();
+    const user = session?.user
     const { socket, isConnected } = useSocket()
     // const [socket, setSocket] = useState<Socket | null>(null)
     const [notifications, setNotifications] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (!user?.id || !socket || !isConnected
-        ) {
+        if (!user ) {
             console.log('⏳ En attente de l\'utilisateur...');
+            return
+        }
+        if (!socket || !isConnected)
+        {
+            console.log("Problem with socket")
             return
         }
         console.log('User found');
