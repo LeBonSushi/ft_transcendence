@@ -22,7 +22,7 @@ export class GatewayGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<Request>();
 
-        // ============================================================
+    // ============================================================
     // AJOUT : BACKDOOR POUR LE DÉVELOPPEMENT LOCAL
     // ============================================================
     // On vérifie si on est en dev ET si le header spécial est présent
@@ -35,10 +35,9 @@ export class GatewayGuard implements CanActivate {
         id: mockUserId, // L'ID que vous avez envoyé dans le header
         email: 'mock@test.com',
         username: 'MockUser',
-        clerkId: mockUserId,
       };
       console.log(`🔓 DEV MODE: Mock user injected (${mockUserId})`);
-      return true; // On laisse passer sans vérifier Clerk
+      return true;
     }
     // ============================================================
 
