@@ -1,11 +1,14 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import * as jwt from 'jsonwebtoken';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 
 @Injectable()
 export class GatewayGuard implements CanActivate {
+  private readonly logger = new Logger(GatewayGuard.name);
+
   constructor(
     private reflector: Reflector,
   ) {}
@@ -22,25 +25,6 @@ export class GatewayGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<Request>();
 
-    // ============================================================
-    // AJOUT : BACKDOOR POUR LE DÉVELOPPEMENT LOCAL
-    // ============================================================
-    // On vérifie si on est en dev ET si le header spécial est présent
-    // Note: Assurez-vous que process.env.NODE_ENV n'est pas 'production'
-    const mockUserId = request.headers['x-mock-user-id'];
-    
-    if (mockUserId && process.env.NODE_ENV !== 'production') {
-      // On injecte manuellement l'utilisateur dans la requête
-      request.user = {
-        id: mockUserId, // L'ID que vous avez envoyé dans le header
-        email: 'mock@test.com',
-        username: 'MockUser',
-      };
-      console.log(`🔓 DEV MODE: Mock user injected (${mockUserId})`);
-      return true;
-    }
-    // ============================================================
-
     const token = this.extractTokenFromRequest(request);
 
     if (!token) {
@@ -48,13 +32,23 @@ export class GatewayGuard implements CanActivate {
     }
 
     try {
-      // TODO: Verify JWT token with your auth system
-      // const decoded = jwt.verify(token, this.configService.get('JWT_SECRET'));
-      // request['user'] = { id: decoded.sub, email: decoded.email, username: decoded.username };
+      const jwtSecret = process.env.NEXTAUTH_SECRET;
 
-      throw new UnauthorizedException('Gateway auth guard not yet implemented - replace with your JWT verification');
-    } catch (error) {
-      console.error('Token verification failed:', error);
+      if (!jwtSecret) {
+        this.logger.error('NEXTAUTH_SECRET is not configured');
+        throw new UnauthorizedException('Server configuration error');
+      }
+
+      const decoded = jwt.verify(token, jwtSecret) as any;
+      request['user'] = {
+        id: decoded.sub || decoded.id,
+        email: decoded.email,
+        username: decoded.username,
+      };
+
+      return true;
+    } catch (error: any) {
+      this.logger.error(`Token verification failed: ${error.message}`);
       throw new UnauthorizedException('Invalid or expired token');
     }
   }
