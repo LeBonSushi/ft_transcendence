@@ -89,7 +89,7 @@ async function main() {
   });
 
   const user5 = await prisma.user.upsert({
-    where: { email: 'david@example.com' },
+    where: { email: 'akaza@example.com' },
     update: {},
     create: {
       email: 'akaza@example.com',
@@ -98,6 +98,21 @@ async function main() {
         create: {
           firstName: 'Gavin',
           lastName: 'Satoru',
+        },
+      },
+    },
+  });
+
+  const user6 = await prisma.user.upsert({
+    where: { email: 'bdhdu28@example.com' },
+    update: {},
+    create: {
+      email: 'bdhdu38@example.com',
+      username: 'coucou',
+      profile: {
+        create: {
+          firstName: 'azaka',
+          lastName: 'test',
         },
       },
     },
