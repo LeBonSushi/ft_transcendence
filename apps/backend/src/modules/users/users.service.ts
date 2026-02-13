@@ -251,42 +251,26 @@ export class UsersService {
   }
 
   async searchUser(currentUserId: string, searchQuery: string) {
-    if (!searchQuery || searchQuery.trim().length === 0) {
+    if (!searchQuery || searchQuery.trim().length === 0)
       return [];
-    }
 
-    const users = await this.prisma.user.findMany({
-      where: {
-        AND: [
-			{
-				id: { not: currentUserId },
-			},
-			{
-				OR: [
-					{ username: { contains: searchQuery, mode: 'insensitive' } },
-					{ profile: { firstName: { contains: searchQuery, mode: 'insensitive' }, }, },
-					{ profile: { lastName: { contains: searchQuery, mode: 'insensitive' }, }, },
-				],
-			},
-        ],
-      },
-      select: {
-        id: true,
-        username: true,
-        profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-            profilePicture: true,
-          },
-        },
-      },
-      orderBy: {
-        username: 'asc',
-      },
-      take: 5,
-    });
+    const users = await this.prisma.$queryRaw<SearchUser[]>`
+      SELECT 
+        u.id,
+        u.username,
+        jsonb_build_object(
+          'firstName', p."firstName",
+          'lastName', p."lastName",
+          'profilePicture', p."profilePicture"
+        ) as profile
+      FROM "User" u
+      LEFT JOIN "Profile" p ON u.id = p."userId"
+      WHERE u.id != ${currentUserId}
+        AND similarity(u.username, ${searchQuery}) > 0.02
+      ORDER BY similarity(u.username, ${searchQuery}) DESC
+      LIMIT 5
+    `;
 
-    return users as SearchUser[];
+    return users;
   }
 }
