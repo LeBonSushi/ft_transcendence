@@ -33,6 +33,7 @@ export const API_ROUTES = {
     ME_ROOMS: '/users/me/rooms',
     GET_CURRENT: '/users/me',
     GET: (id: string) => `/users/${id}`,
+    SEARCH: (query: string) => `/users/search?query=${query}`,
     UPDATE: (id: string) => `/users/${id}`,
     ROOMS: (id: string) => `/users/${id}/rooms`,
     FRIENDS: (id: string) => `/users/${id}/friends`,
