@@ -7,7 +7,6 @@ import {
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 import { NotificationsService } from './notifications.service';
 // import { NotificationModel, } from './templates/type';
 import { Socket } from 'socket.io';
@@ -19,7 +18,6 @@ import {CreateNotificationDto, Notification} from "@travel-planner/shared"
     credentials: true,
   },
 })
-@UseGuards(WsAuthGuard)
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;
@@ -28,7 +26,6 @@ export class NotificationsGateway {
 
   async handleConnection(client: Socket) {
     try {
-      await WsAuthGuard.validateToken(client);
       console.log(`Client connected: ${client.id}`);
     } catch (error) {
       console.log(`Client rejected: ${client.id} - ${error.message}`);
@@ -104,13 +101,15 @@ export class NotificationsGateway {
   }
 
   @SubscribeMessage('sendNotif')
-  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: {notification: CreateNotificationDto })
+  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { targetUserId: string, notification: CreateNotificationDto })
   {
-    const userId = client.data.user.id;
-    const roomName = `user:${userId}:notifications`
-    const notif = await this.notificationsService.createNotification(userId, data.notification)
+    if (!data.targetUserId) {
+      client.emit('error', { message: 'targetUserId manquant' });
+      return;
+    }
+    const roomName = `user:${data.targetUserId}:notifications`
+    const notif = await this.notificationsService.createNotification(data.targetUserId, data.notification)
     this.server.to(roomName).emit('newNotification', notif)
-    //envoyer notif a newnotif
   }
 
   // async sendNotificationToUser(userId:string, notification:NotificationModel)
