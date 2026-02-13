@@ -62,10 +62,10 @@ export function useNotifications() {
     //         socket.emit('getNotifications', { userId: user?.id });
     //     }
     // }
-    const sendNotif = (notification: CreateNotificationDto) => {
+    const sendNotif = (targetUserId: string, notification: CreateNotificationDto) => {
         if (socket && isConnected && user?.id) {
-            console.log("Notif sent")
-            socket.emit('sendNotif', { notification })
+            console.log("Notif sent to", targetUserId)
+            socket.emit('sendNotif', { targetUserId, notification })
         }
     }
     const setReadNotification = (notifId: string) => {
