@@ -22,20 +22,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (!isSignedIn)
+    if (!isSignedIn || !session?.socketToken)
       return;
 
     const initSocket = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-        if (!apiUrl) {
-          console.error('NEXT_PUBLIC_API_URL is not defined');
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:4000";
+        if (!wsUrl) {
+          console.error('NEXT_PUBLIC_WS_URL is not defined');
           return;
         }
 
-        const token = session?.accessToken || '';
-        const newSocket = io(apiUrl, {
-          auth: { token },
+        const newSocket = io(wsUrl, {
+          auth: { token: session.socketToken },
         });
 
         const onConnect = () => {
@@ -67,7 +66,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         socketRef.current.disconnect();
       }
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, session?.socketToken]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

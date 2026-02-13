@@ -1,11 +1,9 @@
 "use client"
 
-// import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-import { Socket } from 'socket.io-client';
 import { useSocket } from './useSocket';
 import { useSession } from "next-auth/react";
+import { CreateNotificationDto, Notification } from '@travel-planner/shared';
 
 export function useNotifications() {
     // cosnt 
@@ -14,7 +12,7 @@ export function useNotifications() {
     const user = session?.user
     const { socket, isConnected } = useSocket()
     // const [socket, setSocket] = useState<Socket | null>(null)
-    const [notifications, setNotifications] = useState<any[]>([])
+    const [notifications, setNotifications] = useState<Notification[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -24,24 +22,24 @@ export function useNotifications() {
         }
         if (!socket || !isConnected)
         {
+            console.log('socket: ', socket, 'isConnected: ', isConnected)
             console.log("Problem with socket")
             return
         }
         console.log('User found');
-        socket.emit('subscribeToNotifications', { userId: user.id })
+        socket.emit('subscribeToNotifications')
         console.log("User subscribed to room")
-        socket.emit('getNotifications', { userId: user.id })
-        const handleNotif = (notifs: any[]) => {
-            // console.log(notifs)
+        socket.emit('getNotifications')
+        const handleNotif = (notifs: Notification[]) => {
             console.log("New notifs:", notifs)
             setNotifications(notifs)
             setLoading(false)
         }
-        const handleNewNotif = (notif: any) => {
+        const handleNewNotif = (notif: Notification) => {
             console.log("New notif:", notif)
             setNotifications(prev => [notif, ...prev])
         }
-        const handleError = (error: any) => {
+        const handleError = (error: unknown) => {
             console.error(error)
             setLoading(false)
         }
@@ -66,22 +64,22 @@ export function useNotifications() {
     //         socket.emit('getNotifications', { userId: user?.id });
     //     }
     // }
-    const sendNotif = (notifToSend: any) => {
+    const sendNotif = (notification: CreateNotificationDto) => {
         if (socket && isConnected && user?.id) {
             console.log("Notif sent")
-            socket.emit('sendNotif', { userId: user.id, notification: notifToSend })
+            socket.emit('sendNotif', { notification })
         }
     }
     const readNotification = (notifId: string) => {
         if (socket && isConnected && user?.id) {
             setLoading(true)
-            socket.emit('readnotification', { userId: user?.id, notifId: notifId })
+            socket.emit('readnotification', { notifId })
         }
     }
     const answerNotification = (notifId: string, answer: boolean) => {
         if (socket && isConnected && user?.id) {
             setLoading(true)
-            socket.emit('answernotification', { userId: user?.id, notifId: notifId, answer: answer })
+            socket.emit('answernotification', { notifId, answer })
         }
     }
     return {

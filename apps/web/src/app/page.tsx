@@ -1,11 +1,18 @@
+'use client';
+
 import Footer from '@/components/ui/footer';
 
 
 import {NotificationPannel} from "@/components/notificationPannel"
+import { apiClient } from '@/lib/api';
+import { API_ROUTES, NotificationType } from '@travel-planner/shared';
+import { useNotifications } from '@/hooks/notif';
 
 // import { Profile } from "@/components/ui/userUi/Profile";
 
+
 export default function Home() {
+  const { sendNotif, readNotification } = useNotifications();
   return (
     <div className="flex h-screen flex-col">
       < NotificationPannel />
@@ -28,6 +35,12 @@ export default function Home() {
             >
               Learn More
             </a>
+
+            <button onClick={() => {
+              sendNotif({ message: "test", title: "Test", type: NotificationType.FRIEND_REQUEST });
+            }}>
+              Test Notif
+            </button>
           </div>
         </div>
       </div>

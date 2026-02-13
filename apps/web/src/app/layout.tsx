@@ -7,6 +7,7 @@ import { auth } from '@/auth';
 import './globals.css';
 
 import { SocketProvider } from '@/providers/socket-provider';
+import DismissableToast from '@/components/DismissableToast';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -42,7 +43,7 @@ export default async function RootLayout({
               {children}
             </SocketProvider>
           </SessionProvider>
-          <Toaster position="top-right" />
+          <DismissableToast />
         </ThemeProvider>
       </body>
     </html>
