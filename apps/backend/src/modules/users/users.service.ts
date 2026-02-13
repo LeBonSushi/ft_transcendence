@@ -281,6 +281,9 @@ export class UsersService {
           },
         },
       },
+      orderBy: {
+        username: 'asc',
+      },
       take: 5,
     });
 

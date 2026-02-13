@@ -7,6 +7,7 @@ import { auth } from '@/auth';
 import './globals.css';
 
 import { SocketProvider } from '@/providers/socket-provider';
+import { SessionGuard } from '@/components/SessionGuard';
 import DismissableToast from '@/components/DismissableToast';
 
 const playfair = Playfair_Display({
@@ -38,10 +39,12 @@ export default async function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body className={`${playfair.variable} ${dmSans.variable} font-sans antialiased `}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <SessionProvider session={session}>
-            <SocketProvider>
-              {children}
-            </SocketProvider>
+          <SessionProvider session={session} refetchOnWindowFocus={true} refetchInterval={5 * 60}>
+            <SessionGuard>
+              <SocketProvider>
+                {children}
+              </SocketProvider>
+            </SessionGuard>
           </SessionProvider>
           <DismissableToast />
         </ThemeProvider>
