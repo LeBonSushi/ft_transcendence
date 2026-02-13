@@ -2,6 +2,7 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
+import { SearchUser } from '@travel-planner/shared';
 
 interface CreateUserDto {
   id: string;
@@ -247,5 +248,42 @@ export class UsersService {
       throw new NotFoundException('User not found');
 
     return user;
+  }
+
+  async searchUser(currentUserId: string, searchQuery: string) {
+    if (!searchQuery || searchQuery.trim().length === 0) {
+      return [];
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        AND: [
+			{
+				id: { not: currentUserId },
+			},
+			{
+				OR: [
+					{ username: { contains: searchQuery, mode: 'insensitive' } },
+					{ profile: { firstName: { contains: searchQuery, mode: 'insensitive' }, }, },
+					{ profile: { lastName: { contains: searchQuery, mode: 'insensitive' }, }, },
+				],
+			},
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            profilePicture: true,
+          },
+        },
+      },
+      take: 5,
+    });
+
+    return users as SearchUser[];
   }
 }

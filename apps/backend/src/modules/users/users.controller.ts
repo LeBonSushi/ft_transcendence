@@ -11,6 +11,7 @@ import {
   Logger,
   HttpException,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { UpdateUserDto, PublicUserResponse } from './dto/user.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
@@ -50,6 +51,11 @@ export class UsersController {
     return this.usersService.getRoomsByUser(userId);
   }
 
+  @Get('search')
+  async searchUsers(@GetUser('id') userId: string, @Query('query') searchQuery: string) {
+    return this.usersService.searchUser(userId, searchQuery);
+  }
+
   @Put('me')
   async updateMe(@GetUser('id') userId: string, @Body() body: UpdateUserDto) {
     return this.usersService.modifyUser(userId, body);
@@ -78,14 +84,9 @@ export class UsersController {
   }
 
   @Put(':id')
-  async modifyUser(
-    @GetUser('id') userId: string,
-    @Param('id') id: string,
-    @Body() body: UpdateUserDto,
-  ) {
-    if (userId !== id) {
+  async modifyUser(@GetUser('id') userId: string, @Param('id') id: string, @Body() body: UpdateUserDto ) {
+    if (userId !== id)
       throw new HttpException('Not authorized to modify this user', HttpStatus.FORBIDDEN);
-    }
 
     return this.usersService.modifyUser(id, body);
   }

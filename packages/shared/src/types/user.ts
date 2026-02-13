@@ -41,3 +41,12 @@ export interface Friendship {
   createdAt: Date;
   updatedAt: Date;
 }
+export interface SearchUser {
+  id : string;
+  username: string;
+  profile: { 
+    firstName: string;
+    lastName: string;
+    profilePicture?: string;
+  }
+}
