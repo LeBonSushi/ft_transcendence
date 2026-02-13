@@ -28,13 +28,13 @@ const prisma = new PrismaClient({
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create test users - id is required (Clerk ID as primary key)
+  // Create test users - id is required (ID as primary key)
   const user1 = await prisma.user.upsert({
-    where: { email: 'jane+clerk_test@example.com' },
+    where: { email: 'jane_test@example.com' },
     update: {},
     create: {
-      id: 'user_test_jane_001', // Clerk ID simulé
-      email: 'jane+clerk_test@example.com',
+      id: 'user_test_jane_001', // ID simulé
+      email: 'jane_test@example.com',
       username: 'jane',
       profile: {
         create: {
@@ -51,7 +51,7 @@ async function main() {
     where: { email: 'bob@example.com' },
     update: {},
     create: {
-      id: 'user_test_bob_002', // Clerk ID simulé
+      id: 'user_test_bob_002', // ID simulé
       email: 'bob@example.com',
       username: 'bob',
       profile: {
@@ -69,7 +69,7 @@ async function main() {
     where: { email: 'charlie@example.com' },
     update: {},
     create: {
-      id: 'user_test_charlie_003', // Clerk ID simulé
+      id: 'user_test_charlie_003', // ID simulé
       email: 'charlie@example.com',
       username: 'charlie',
       profile: {

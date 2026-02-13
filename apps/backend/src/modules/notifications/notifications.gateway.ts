@@ -7,7 +7,6 @@ import {
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 import { NotificationsService } from './notifications.service';
 // import { NotificationModel, } from './templates/type';
 import { Socket } from 'socket.io';
@@ -19,7 +18,6 @@ import {CreateNotificationDto, Notification} from "@travel-planner/shared"
     credentials: true,
   },
 })
-@UseGuards(WsAuthGuard)
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;
@@ -28,7 +26,6 @@ export class NotificationsGateway {
 
   async handleConnection(client: Socket) {
     try {
-      await WsAuthGuard.validateToken(client);
       console.log(`Client connected: ${client.id}`);
     } catch (error) {
       console.log(`Client rejected: ${client.id} - ${error.message}`);

@@ -20,10 +20,6 @@ export const env = {
   // Database
   DATABASE_URL: requiredEnv('DATABASE_URL'),
 
-  // Clerk
-  CLERK_SECRET_KEY: optionalEnv('CLERK_SECRET_KEY', ''),
-  CLERK_WEBHOOK_SECRET: optionalEnv('CLERK_WEBHOOK_SECRET', ''),
-
   // Redis
   REDIS_HOST: optionalEnv('REDIS_HOST', 'localhost'),
   REDIS_PORT: optionalEnv('REDIS_PORT', '6379'),

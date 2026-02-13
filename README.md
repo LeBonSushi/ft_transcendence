@@ -179,12 +179,12 @@ Here is a list of features and the people who worked on them
 | Realtime feature (WebSocket)           | Major  |   2    | Njard, Nbrecque        | Enables instant notifications and messaging for real-time UX         | Used socket.io, managed events and templates   |
 | Frameworks (NestJS, Next.js)           | Major  |   2    | All team               | Robust, scalable, productive fullstack foundation                    | Main project architecture and dev              |
 | Users interactions                     | Major  |   2    | All team               | Social features (friends, chat, blocking) are core to the app        | Add/remove/block friends, private/group chat   |
-| User authentication and management     | Major  |   2    | Macorso, Ggirault      | Security and user management for persistence and compliance          | Clerk auth, GDPR management, admin interface   |
+| User authentication and management     | Major  |   2    | Macorso, Ggirault      | Security and user management for persistence and compliance          | Next auth, GDPR management, admin interface   |
 | Public API                             | Major  |   2    | Macorso                | Allows external integrations and extensibility                       | Secure REST endpoints, documentation           |
 | ORM (Prisma)                           | Minor  |   1    | Macorso, Ggirault      | Simplifies and secures database access                               | Schema modeling, type-safe queries             |
 | Notifications system                   | Minor  |   1    | Njard                  | Completes the user interaction experience                            | Real-time notification system                  |
-| OAuth 2.0                              | Minor  |   1    | Macorso                | Simplifies login via external providers                              | Clerk OAuth integration                        |
-| 2FA                                    | Minor  |   1    | Macorso                | Enhances account security                                            | 2FA via Clerk                                  |
+| OAuth 2.0                              | Minor  |   1    | Macorso                | Simplifies login via external providers                              | Next OAuth integration                        |
+| 2FA                                    | Minor  |   1    | Macorso                | Enhances account security                                            | 2FA via Next                                  |
 | Custom design (min 10 components)      | Minor  |   1    | All team               | Improves user experience and visual identity                         | Reusable UI components (shadcn/ui, Tailwind)   |
 | Advanced chat features                 | Minor  |   1    | All team               | Improves user experience with richer chat                            | Support for images, audio, user blocking       |
 | GDPR compliance                        | Minor  |   1    | Ggirault, Macorso      | Legal compliance and data security                                   | Terms page, GDPR management in profile         |

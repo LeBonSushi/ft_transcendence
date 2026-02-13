@@ -101,7 +101,7 @@ x-mock-user-id: user_test_jane_001
 ###
 # Test (Lister les proposals)
 GET http://localhost:4000/api/rooms/e7dd147c-9a19-4ff0-89db-5cdec15074da/proposals
-Authorization: Bearer TON_TOKEN_CLERK
+Authorization: Bearer TON_TOKEN
 x-mock-user-id: user_test_jane_001
 
 ###

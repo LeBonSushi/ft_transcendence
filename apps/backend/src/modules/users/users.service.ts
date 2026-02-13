@@ -234,11 +234,9 @@ export class UsersService {
     return userWithRooms.roomMemberships.map((m) => m.room);
   }
 
-
-  // a remodifier je pense 
-  async getFriends(clerkId: string) {
+  async getFriends(id: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id: clerkId },
+      where: { id: id },
       include: {
         sentFriendRequests: true,
         receivedFriendRequests: true,
