@@ -4,13 +4,22 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./types": "./dist/types/index.js",
-    "./constants": "./dist/constants/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "default": "./dist/constants/index.js"
+    }
   },
   "scripts": {
     "build": "tsc",
-    "build:watch": "tsc -w",
+    "build:watch": "tsc --watch --preserveWatchOutput",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },
