@@ -9,8 +9,9 @@ import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 import { NotificationsService } from './notifications.service';
-import { NotificationModel } from './templates/type';
+// import { NotificationModel, } from './templates/type';
 import { Socket } from 'socket.io';
+import {CreateNotificationDto, Notification} from "@travel-planner/shared"
 
 @WebSocketGateway({
   cors: {
@@ -103,7 +104,7 @@ export class NotificationsGateway {
   }
 
   @SubscribeMessage('sendNotif')
-  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string, notification: NotificationModel })
+  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: {notification: CreateNotificationDto })
   {
     const userId = client.data.user.id;
     const roomName = `user:${userId}:notifications`

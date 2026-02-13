@@ -12,7 +12,6 @@ import { useNotifications } from '@/hooks/notif';
 
 
 export default function Home() {
-  const { sendNotif, readNotification } = useNotifications();
   return (
     <div className="flex h-screen flex-col">
       < NotificationPannel />
@@ -36,11 +35,6 @@ export default function Home() {
               Learn More
             </a>
 
-            <button onClick={() => {
-              sendNotif({ message: "test", title: "Test", type: NotificationType.FRIEND_REQUEST });
-            }}>
-              Test Notif
-            </button>
           </div>
         </div>
       </div>

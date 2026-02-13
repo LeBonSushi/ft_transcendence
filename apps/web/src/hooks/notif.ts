@@ -6,8 +6,6 @@ import { useSession } from "next-auth/react";
 import { CreateNotificationDto, Notification } from '@travel-planner/shared';
 
 export function useNotifications() {
-    // cosnt 
-    // const { user } = useUser();
     const { data: session, status } = useSession();
     const user = session?.user
     const { socket, isConnected } = useSocket()
@@ -29,7 +27,7 @@ export function useNotifications() {
         console.log('User found');
         socket.emit('subscribeToNotifications')
         console.log("User subscribed to room")
-        socket.emit('getNotifications')
+        socket.emit('getUnreadNotifications')
         const handleNotif = (notifs: Notification[]) => {
             console.log("New notifs:", notifs)
             setNotifications(notifs)
@@ -70,7 +68,7 @@ export function useNotifications() {
             socket.emit('sendNotif', { notification })
         }
     }
-    const readNotification = (notifId: string) => {
+    const setReadNotification = (notifId: string) => {
         if (socket && isConnected && user?.id) {
             setLoading(true)
             socket.emit('readnotification', { notifId })
@@ -88,7 +86,7 @@ export function useNotifications() {
         isConnected,
         setNotifications,
         sendNotif,
-        readNotification,
+        setReadNotification,
         answerNotification
         // refreshNotifications
     }

@@ -1,9 +1,7 @@
-import { NotificationType } from "@prisma/client"
-import { NotificationModel } from "./type"
-
+import {CreateNotificationDto, NotificationType} from "@travel-planner/shared"
 // Record is like a python dictionnary en javascript
 export class NotificationTemplates {
-    private static templates: Record<NotificationType, (data: any) => NotificationModel> =
+    private static templates: Record<NotificationType, (data: any) => CreateNotificationDto> =
         {
             [NotificationType.TEXT_EXEMPLE]: (data: {
                 message: string,
