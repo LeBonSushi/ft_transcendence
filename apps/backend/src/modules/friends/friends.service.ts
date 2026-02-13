@@ -2,6 +2,7 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 import { Injectable, NotFoundException, UnauthorizedException, Logger } from '@nestjs/common';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { NotificationTemplates } from '@/modules/notifications/templates/templates';
+import { NotificationType } from '@travel-planner/shared';
 
 @Injectable()
 export class FriendsService {
@@ -39,8 +40,8 @@ export class FriendsService {
       }
     });
 
-    const notif = NotificationTemplates.getTemplate("FRIEND_REQUEST", {
-        username: "test", title: "Friend request"
+    const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_REQUEST, {
+        username: "test", title: "Friend request", friendId: friendId
     });
     
     await this.notificationsService.createNotification(friendId, notif);
@@ -69,13 +70,6 @@ export class FriendsService {
 
     if (acceptFriend.count === 0)
         throw new NotFoundException('No pending friend request found from this user');
-
-    const notif = NotificationTemplates.getTemplate("FRIEND_REQUEST", {
-        username: "test", title: "Accepted" 
-    });
-
-    // attendre que noan update son code 
-    // await this.notificationsService.AnswerToNotification(friendId, notif);
 
     return { success: true };
   }
