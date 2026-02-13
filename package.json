@@ -31,5 +31,5 @@
     "pnpm": "^10.28.1",
     "prisma": "^7.2.0"
   },
-  "packageManager": "pnpm@10.25.0"
+  "packageManager": "pnpm@10.29.3"
 }
