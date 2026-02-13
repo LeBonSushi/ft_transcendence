@@ -1,5 +1,5 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { Injectable, NotFoundException, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, Logger, forwardRef, Inject } from '@nestjs/common';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { NotificationTemplates } from '@/modules/notifications/templates/templates';
 import { NotificationType } from '@travel-planner/shared';
@@ -10,6 +10,7 @@ export class FriendsService {
 
   constructor(
     private prisma: PrismaService,
+    @Inject (forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService
   ) {}
 
@@ -41,10 +42,10 @@ export class FriendsService {
     });
 
     const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_REQUEST, {
-        username: "test", title: "Friend request", friendId: friendId
+        username: "test", title: "Friend request", friendId: friendRequest.id, toUserId:friendId
     });
     
-    await this.notificationsService.createNotification(friendId, notif);
+    await this.notificationsService.createNotification(notif);
 
     return { success: true, friendRequest };
   }

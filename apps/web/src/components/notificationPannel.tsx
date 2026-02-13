@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "motion/react"
 import { useTheme } from "next-themes"
 import { Modal } from "./ui"
 import { NotificationType } from "@travel-planner/shared"
+import { useSession } from "next-auth/react"
+
 
 function timeAgo(time:any) {
     const now:any = new Date()
@@ -86,6 +88,8 @@ export function NotificationPannel() {
     const { notifications, setNotifications, loading, isConnected, sendNotif, setReadNotification, answerNotification } = useNotifications()
     const panelRef = useRef<HTMLDivElement>(null)
     const { setTheme, theme } = useTheme();
+    const { data: session, status } = useSession();
+    const user = session?.user
     // setTheme('dark');
 
     useEffect(() => {
@@ -109,7 +113,7 @@ export function NotificationPannel() {
     return (
         <>
         <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
-        onClick={() => sendNotif({title:"test",message:"this is a message", type:NotificationType.FRIEND_REQUEST})}>try</button>
+        onClick={() => sendNotif({toUserId:user?.id!, title:"test",message:"this is a message", type:NotificationType.FRIEND_REQUEST})}>try</button>
             {!isVisible && (
                 <>
                     <div className="absolute right-1.5 w-10 h-10 flex justify-center items-center bg-secondary top-1.5 rounded-lg cursor-pointer hover:opacity-70" onClick={() => setIsVisible(true)}>
@@ -144,7 +148,7 @@ export function NotificationPannel() {
                                     </div>
                                     <p className="absolute text-white/50 text-sm ml-2 right-2 top-2">{timeAgo(item.createdAt)}</p>
                                     {(item.type === 'ROOM_DELETED' || item.type === 'NEW_MESSAGE'
-                                        || item.type === 'WELCOME_MSG' || item.type === "TEXT_EXEMPLE" && (
+                                        || item.type === 'WELCOME_MSG' ||  item.type === "FRIEND_ACCEPTED" && (
 
                                             <div className="absolute right-3 hover:opacity-70 cursor-pointer"
                                                 onClick={() => { setReadNotification(item.id); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
