@@ -1,9 +1,7 @@
-import { NotificationType } from "@prisma/client"
-import { NotificationModel } from "./type"
-
+import {CreateNotificationDto, NotificationType} from "@travel-planner/shared"
 // Record is like a python dictionnary en javascript
 export class NotificationTemplates {
-    private static templates: Record<NotificationType, (data: any) => NotificationModel> =
+    private static templates: Record<NotificationType, (data: any) => CreateNotificationDto> =
         {
             [NotificationType.TEXT_EXEMPLE]: (data: {
                 message: string,
@@ -36,12 +34,14 @@ export class NotificationTemplates {
                 title: `New invitation`
             }),
             [NotificationType.FRIEND_REQUEST]: (data: {
-                username : string
+                username : string,
+                friendId : string,
                 title: string
             }) => ({
                 type: NotificationType.FRIEND_REQUEST,
                 message: `${data.username} asked you as a friend.`,
-                title: 'New friend request'
+                title: 'New friend request',
+                friendId : data.friendId
             }),
             [NotificationType.ROOM_DELETED]: (data: {
                 roomName : string
@@ -49,6 +49,13 @@ export class NotificationTemplates {
                 type: NotificationType.FRIEND_REQUEST,
                 message: `The ${data.roomName} has been deleted.`,
                 title: 'Room deleted :('
+            }),
+            [NotificationType.FRIEND_ACCEPTED]: (data: {
+                userName : string
+            }) => ({
+                type: NotificationType.FRIEND_ACCEPTED,
+                message: `${data.userName} has accepted your friend request.`,
+                title: 'You have a new friend!'
             })
         }
     static getTemplate(type: NotificationType, data: any): any {

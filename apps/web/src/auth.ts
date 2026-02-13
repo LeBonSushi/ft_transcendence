@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
-import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -102,7 +102,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id as string;
+        token.sub = user.id as string;
         token.email = user.email;
         token.username = user.username;
         token.createdAt = user.createdAt?.toISOString?.() || new Date().toISOString();
@@ -123,6 +124,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.createdAt = new Date(token.createdAt as string);
         session.user.profile = token.profile as any;
         session.accessToken = token.accessToken as string;
+        session.socketToken = jwt.sign(
+          { sub: token.id, email: token.email, username: token.username },
+          process.env.NEXTAUTH_SECRET!,
+          { expiresIn: "7d" }
+        );
       }
       return session;
     },

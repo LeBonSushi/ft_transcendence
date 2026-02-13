@@ -234,6 +234,7 @@ enum NotificationType {
   ROOM_DELETED
   FRIEND_REQUEST
   NEW_MESSAGE
+  FRIEND_ACCEPTED
 }
 
 

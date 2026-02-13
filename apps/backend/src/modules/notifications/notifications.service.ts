@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '@/common/redis/redis.service';
-import {NotificationModel} from "./templates/type"
 import { PrismaService } from '@/common/prisma/prisma.service';
 
+import { Notification, CreateNotificationDto } from '@travel-planner/shared';
 
 @Injectable()
 export class NotificationsService {
   constructor(private redis: RedisService, private Prisma:PrismaService) {}
 
-  async createNotification(userId: string, notificationtemplate:NotificationModel ) {
+  async createNotification(userId: string, notificationtemplate:CreateNotificationDto ) {
     const notif = await this.Prisma.notification.create({
       data : {
         userId,
         title:notificationtemplate.title,
         message:notificationtemplate.message,
-        type:notificationtemplate.type
+        type:notificationtemplate.type,
+        friendshipId: notificationtemplate.friendId
       }
     })
 

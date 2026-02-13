@@ -8,10 +8,11 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "motion/react"
 import { useTheme } from "next-themes"
 import { Modal } from "./ui"
+import { NotificationType } from "@travel-planner/shared"
 
-function timeAgo(time) {
-    const now = new Date()
-    const createdAt = new Date(time)
+function timeAgo(time:any) {
+    const now:any = new Date()
+    const createdAt:any = new Date(time)
     const seconds = Math.floor((now - createdAt) / 1000) + 1
     if (seconds < 60) {
         return seconds + " sec ago"
@@ -82,8 +83,8 @@ export function AcceptIcon({
 export function NotificationPannel() {
     const [mounted, setMounted] = useState(false);
     const [isVisible, setIsVisible] = useState(false)
-    const { notifications, setNotifications, loading, isConnected, refreshNotifications, sendNotif, readNotification, answerNotification } = useNotifications()
-    const panelRef = useRef()
+    const { notifications, setNotifications, loading, isConnected, sendNotif, setReadNotification, answerNotification } = useNotifications()
+    const panelRef = useRef<HTMLDivElement>(null)
     const { setTheme, theme } = useTheme();
     // setTheme('dark');
 
@@ -91,7 +92,7 @@ export function NotificationPannel() {
         setMounted(true)
     }, [])
     useEffect(() => {
-        function handleClickOutside(event) {
+        function handleClickOutside(event:any) {
             if (panelRef.current && !panelRef.current.contains(event.target)) {
                 setIsVisible(false)
             }
@@ -107,8 +108,8 @@ export function NotificationPannel() {
     }
     return (
         <>
-        {/* <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
-        onClick={() => sendNotif({title:"test",message:"this is a message", type:"FRIEND_REQUEST"})}>try</button> */}
+        <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
+        onClick={() => sendNotif({title:"test",message:"this is a message", type:NotificationType.FRIEND_REQUEST})}>try</button>
             {!isVisible && (
                 <>
                     <div className="absolute right-1.5 w-10 h-10 flex justify-center items-center bg-secondary top-1.5 rounded-lg cursor-pointer hover:opacity-70" onClick={() => setIsVisible(true)}>
@@ -146,7 +147,7 @@ export function NotificationPannel() {
                                         || item.type === 'WELCOME_MSG' || item.type === "TEXT_EXEMPLE" && (
 
                                             <div className="absolute right-3 hover:opacity-70 cursor-pointer"
-                                                onClick={() => { readNotification(item.id); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
+                                                onClick={() => { setReadNotification(item.id); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
                                                 <CloseIcon />
                                             </div>
                                         )

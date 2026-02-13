@@ -9,8 +9,9 @@ import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
 import { NotificationsService } from './notifications.service';
-import { NotificationModel } from './templates/type';
+// import { NotificationModel, } from './templates/type';
 import { Socket } from 'socket.io';
+import {CreateNotificationDto, Notification} from "@travel-planner/shared"
 
 @WebSocketGateway({
   cors: {
@@ -40,82 +41,74 @@ export class NotificationsGateway {
   }
 
   @SubscribeMessage('subscribeToNotifications')
-  async handleSubscribe(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string }) {
-    const roomName = `user:${data.userId}:notifications`
+  async handleSubscribe(@ConnectedSocket() client: Socket) {
+    const userId = client.data.user.id;
+    const roomName = `user:${userId}:notifications`
     client.join(roomName)
-    console.log("User just subscribed")
+    console.log(`User ${userId} subscribed to notifications`)
   }
 
   // @UseGuards(WsAuthGuard) // a remettre
   @SubscribeMessage('getNotifications')
-  async handleGetNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string }) {
+  async handleGetNotifications(@ConnectedSocket() client: Socket) {
     try {
-
-      if (!data.userId) {
-        client.emit('error', { message: 'userId manquant' });
-        return;
-      }
-      console.log("heyyy")
-      const notifications = await this.notificationsService.getNotification(data.userId)
+      const userId = client.data.user.id;
+      const notifications = await this.notificationsService.getNotification(userId)
       client.emit('notifications', notifications)
     }
     catch (error) {
-      console.error("Error notif")
+      console.error("Error getNotifications:", error)
     }
   }
 
   @SubscribeMessage('getUnreadNotifications')
-  async handleGetUnreadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string }) {
+  async handleGetUnreadNotifications(@ConnectedSocket() client: Socket) {
     try {
-
-      if (!data.userId) {
-        client.emit('error', { message: 'userId manquant' });
-        return;
-      }
-      console.log("heyyy")
-      const notifications = await this.notificationsService.getUnreadNotification(data.userId)
+      const userId = client.data.user.id;
+      const notifications = await this.notificationsService.getUnreadNotification(userId)
       client.emit('notifications', notifications)
     }
     catch (error) {
-      console.error("Error notif")
+      console.error("Error getUnreadNotifications:", error)
     }
   }
 
   @SubscribeMessage('readnotification')
-  async handleReadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string , notifId:string}) {
+  async handleReadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { notifId: string }) {
     try {
-
-      if (!data.userId || !data.notifId) {
-        client.emit('error', { message: 'id manquant' });
+      const userId = client.data.user.id;
+      if (!data.notifId) {
+        client.emit('error', { message: 'notifId manquant' });
         return;
       }
-      await this.notificationsService.ChangeNotificationToRead(data.userId, data.notifId)
+      await this.notificationsService.ChangeNotificationToRead(userId, data.notifId)
     }
     catch (error) {
-      console.error("Error notif")
+      console.error("Error readnotification:", error)
     }
   }
 
   @SubscribeMessage('answernotification')
-  async handleAnsweredNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string , notifId:string, answer:boolean}) {
+  async handleAnsweredNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { notifId: string, answer: boolean }) {
     try {
-
-      if (!data.userId || !data.notifId) {
-        client.emit('error', { message: 'id manquant' });
+      const userId = client.data.user.id;
+      if (!data.notifId) {
+        client.emit('error', { message: 'notifId manquant' });
         return;
       }
-      await this.notificationsService.AnswerToNotification(data.userId, data.notifId, data.answer)
+      await this.notificationsService.AnswerToNotification(userId, data.notifId, data.answer)
     }
     catch (error) {
-      console.error("Error notif")
+      console.error("Error answernotification:", error)
     }
   }
 
   @SubscribeMessage('sendNotif')
-  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string, notification: NotificationModel })
+  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: {notification: CreateNotificationDto })
   {
-    const roomName = `user:${data.userId}:notifications`
-    const notif = await this.notificationsService.createNotification(data.userId,data.notification)
+    const userId = client.data.user.id;
+    const roomName = `user:${userId}:notifications`
+    const notif = await this.notificationsService.createNotification(userId, data.notification)
     this.server.to(roomName).emit('newNotification', notif)
     //envoyer notif a newnotif
   }

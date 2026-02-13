@@ -1,13 +1,20 @@
+'use client';
+
 import Footer from '@/components/ui/footer';
 
 
 import {NotificationPannel} from "@/components/notificationPannel"
+import { apiClient } from '@/lib/api';
+import { API_ROUTES, NotificationType } from '@travel-planner/shared';
+import { useNotifications } from '@/hooks/notif';
 
 // import { Profile } from "@/components/ui/userUi/Profile";
+
 
 export default function Home() {
   return (
     <div className="flex h-screen flex-col">
+      < NotificationPannel />
       <div className="flex-1 flex flex-col items-center justify-center p-24">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">🌍 Travel Planner</h1>
@@ -27,6 +34,7 @@ export default function Home() {
             >
               Learn More
             </a>
+
           </div>
         </div>
       </div>
