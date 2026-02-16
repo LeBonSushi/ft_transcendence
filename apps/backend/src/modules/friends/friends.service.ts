@@ -42,7 +42,7 @@ export class FriendsService {
     });
 
     const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_REQUEST, {
-        username: "test", title: "Friend request", friendId: friendRequest.id, toUserId:friendId
+        username: user.username,  friendshipId: friendRequest.id, toUserId: friend.id
     });
     
     await this.notificationsService.createNotification(notif);
@@ -50,18 +50,17 @@ export class FriendsService {
     return { success: true, friendRequest };
   }
 
-  async acceptRequest(id: string, friendId: string) {
-    const friend = await this.prisma.user.findUnique({
-        where: { id: friendId}
+  async acceptRequest(id: string, friendshipId: string) {
+    const friendship = await this.prisma.friendship.findUnique({
+        where: { id: friendshipId}
     });
 
-    if (!friend)
+    if (!friendship)
         throw new UnauthorizedException('Cannot add user that no exist');
 
     const acceptFriend = await this.prisma.friendship.updateMany({
         where: {
-            userId: friendId,
-            friendId: id,
+            id: friendshipId,
             status: "PENDING",
         },
         data: {

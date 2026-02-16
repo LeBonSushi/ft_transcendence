@@ -43,14 +43,14 @@ export class NotificationTemplates {
             }),
             [NotificationType.FRIEND_REQUEST]: (data: {
                 username : string,
-                friendId : string,
+                friendshipId : string,
                 title: string,
                 toUserId:string
             }) => ({
                 type: NotificationType.FRIEND_REQUEST,
                 message: `${data.username} asked you as a friend.`,
                 title: 'New friend request',
-                friendId : data.friendId,
+                friendshipId : data.friendshipId,
                 toUserId:data.toUserId
             }),
             [NotificationType.ROOM_DELETED]: (data: {

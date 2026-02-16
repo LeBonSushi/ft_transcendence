@@ -113,7 +113,7 @@ export function NotificationPannel() {
     return (
         <>
         <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer" 
-        onClick={() => sendNotif({toUserId:user?.id!, title:"test",message:"this is a message", type:NotificationType.FRIEND_REQUEST})}>try</button>
+        onClick={() => sendNotif("1172b830-eae3-41b1-9a27-82ce7015634b" ,{toUserId:"1172b830-eae3-41b1-9a27-82ce7015634b", friendshipId: "15291648-03b4-4204-adbb-b073a945128f", title:"test",message:"this is a message", type:NotificationType.FRIEND_REQUEST})}>try</button>
             {!isVisible && (
                 <>
                     <div className="absolute right-1.5 w-10 h-10 flex justify-center items-center bg-secondary top-1.5 rounded-lg cursor-pointer hover:opacity-70" onClick={() => setIsVisible(true)}>
