@@ -108,6 +108,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.username = user.username;
         token.createdAt = user.createdAt?.toISOString?.() || new Date().toISOString();
         token.profile = user.profile;
+        token.socketToken = jwt.sign(
+          { sub: user.id, email: user.email, username: user.username },
+          process.env.NEXTAUTH_SECRET!,
+          { expiresIn: "7d" }
+        );
       }
 
       return token;
@@ -119,13 +124,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.username = token.username as string;
         session.user.createdAt = new Date(token.createdAt as string);
         session.user.profile = token.profile as any;
-        const signedToken = jwt.sign(
-          { sub: token.id, email: token.email, username: token.username },
-          process.env.NEXTAUTH_SECRET!,
-          { expiresIn: "7d" }
-        );
-        session.accessToken = signedToken;
-        session.socketToken = signedToken;
+        session.accessToken = token.socketToken as string;
+        session.socketToken = token.socketToken as string;
       }
       return session;
     },

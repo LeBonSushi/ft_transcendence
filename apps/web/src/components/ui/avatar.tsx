@@ -9,6 +9,7 @@ interface AvatarProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
   ringColor?: string;
+  pictureColor?: string;
 }
 
 const sizeClasses = {
@@ -26,6 +27,7 @@ export function Avatar({
   size = "md",
   className,
   ringColor = "ring-border",
+  pictureColor = "bg-primary",
 }: AvatarProps) {
   const initial = fallback?.charAt(0)?.toUpperCase() || "?";
 
@@ -45,7 +47,7 @@ export function Avatar({
           className="h-full w-full object-cover block"
         />
       ) : (
-        <div className="h-full w-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+        <div className={cn("h-full w-full", pictureColor, "flex items-center justify-center text-primary-foreground font-semibold")}>
           {initial}
         </div>
       )}

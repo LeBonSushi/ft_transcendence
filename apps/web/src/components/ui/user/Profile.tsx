@@ -146,12 +146,6 @@ function ProfileDropdownMenu({ user, createdAt, onClose, onOpenSettings, onSignO
           <span className="truncate">{user.email}</span>
         </div>
         {createdAt && (
-          <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4 shrink-0" />
-            <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
-          </div>
-        )}
-        {createdAt && (
             <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 shrink-0" />
               <span>Membre depuis {createdAt}</span>
@@ -355,8 +349,8 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         ) : (
           <>
             <div className="space-y-1">
-              <InfoRow label="Prénom" value={user.firstName || '-'} />
-              <InfoRow label="Nom" value={user.lastName || '-'} />
+              <InfoRow label="Prénom" value={user.profile?.firstName || '-'} />
+              <InfoRow label="Nom" value={user.profile?.lastName || '-'} />
               <InfoRow label="Nom d'utilisateur" value={user.username ? `@${user.username}` : '-'} />
             </div>
             <Button variant="outline" className="mt-4 w-full sm:w-auto" onClick={startEditing}>
