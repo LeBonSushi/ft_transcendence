@@ -93,7 +93,7 @@ export function NotificationPannel() {
 
     const emojis: Record<NotificationType, string> = {
         FRIEND_ACCEPTED : "👬",
-        FRIEND_REQUEST : "👬",
+        FRIEND_REQUEST : "👥",
         ROOM_DELETED : "🗑️",
         ROOM_INVITE : "📩",
         NEW_MESSAGE: "🗨️",
@@ -190,7 +190,6 @@ export function NotificationPannel() {
                                         )
                                         )
                                         }
-
                                     </div>
                                 ))
                             )}
