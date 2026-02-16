@@ -266,11 +266,11 @@ export class UsersService {
       FROM "User" u
       LEFT JOIN "Profile" p ON u.id = p."userId"
       WHERE u.id != ${currentUserId}
-        AND similarity(u.username, ${searchQuery}) > 0.02
+        AND similarity(u.username, ${searchQuery}) > 0.1
       ORDER BY similarity(u.username, ${searchQuery}) DESC
       LIMIT 5
     `;
 
-    return users;
+      return users || [];
   }
 }
