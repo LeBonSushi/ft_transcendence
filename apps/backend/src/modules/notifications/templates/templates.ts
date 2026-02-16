@@ -5,57 +5,71 @@ export class NotificationTemplates {
         {
             [NotificationType.TEXT_EXEMPLE]: (data: {
                 message: string,
-                title: string
+                title: string,
+                toUserId:string
             }) => ({
                 type: NotificationType.TEXT_EXEMPLE,
                 message: data.message,
-                title: data.title
+                title: data.title,
+                toUserId:data.toUserId
             }),
             [NotificationType.WELCOME_MSG]: (data: {
-                firstName: string
+                firstName: string,
+                toUserId:string
             }) => ({
                 type: NotificationType.WELCOME_MSG,
                 message: `Hey ${data.firstName},thank you for signing up.`,
-                title:  "Welcome!"
+                title:  "Welcome!",
+                toUserId:data.toUserId
 
             }),
             [NotificationType.NEW_MESSAGE]: (data: {
-                room: string
+                room: string,
+                toUserId:string
             }) => ({
                 type: NotificationType.NEW_MESSAGE,
                 message: `You have a new message from the ${data.room} room.`,
-                title: `Room messages`
+                title: `Room messages`,
+                toUserId:data.toUserId
             }),
             [NotificationType.ROOM_INVITE]: (data: {
-                username:string
+                username:string,
+                toUserId:string
             }) => ({
                 type: NotificationType.ROOM_INVITE,
                 message: `You have an invitation from ${data.username}.`,
-                title: `New invitation`
+                title: `New invitation`,
+                toUserId:data.toUserId
             }),
             [NotificationType.FRIEND_REQUEST]: (data: {
                 username : string,
                 friendId : string,
-                title: string
+                title: string,
+                toUserId:string
             }) => ({
                 type: NotificationType.FRIEND_REQUEST,
                 message: `${data.username} asked you as a friend.`,
                 title: 'New friend request',
-                friendId : data.friendId
+                friendId : data.friendId,
+                toUserId:data.toUserId
             }),
             [NotificationType.ROOM_DELETED]: (data: {
                 roomName : string
+                toUserId:string
             }) => ({
                 type: NotificationType.FRIEND_REQUEST,
                 message: `The ${data.roomName} has been deleted.`,
-                title: 'Room deleted :('
+                title: 'Room deleted :(',
+                toUserId:data.toUserId
             }),
             [NotificationType.FRIEND_ACCEPTED]: (data: {
-                userName : string
+                userName : string,
+                toUserId:string
             }) => ({
                 type: NotificationType.FRIEND_ACCEPTED,
                 message: `${data.userName} has accepted your friend request.`,
-                title: 'You have a new friend!'
+                title: 'You have a new friend!',
+                toUserId:data.toUserId
             })
         }
     static getTemplate(type: NotificationType, data: any): any {

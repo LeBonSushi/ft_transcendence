@@ -9,10 +9,11 @@ export enum NotificationType {
 }
 
 export interface CreateNotificationDto {
+  toUserId:string,
   title: string;
   message: string;
   type: NotificationType;
-  friendId?: string;
+  friendshipId?: string;
   roomId?: string;
 }
 
