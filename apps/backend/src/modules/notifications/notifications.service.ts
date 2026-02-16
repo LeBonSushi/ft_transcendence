@@ -63,6 +63,7 @@ export class NotificationsService {
       }
     })
   }
+
   async AnswerToNotification(userId:string, notifId:string, answer:boolean)
   {
     const notif = await this.Prisma.notification.update({
@@ -81,5 +82,4 @@ export class NotificationsService {
       await this.friendsService.acceptRequest(userId, notif.friendshipId)
     }
   }
-
 }

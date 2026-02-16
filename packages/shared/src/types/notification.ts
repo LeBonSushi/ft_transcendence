@@ -1,5 +1,4 @@
 export enum NotificationType {
-  TEXT_EXEMPLE = 'TEXT_EXEMPLE',
   WELCOME_MSG = 'WELCOME_MSG',
   ROOM_INVITE = 'ROOM_INVITE',
   ROOM_DELETED = 'ROOM_DELETED',

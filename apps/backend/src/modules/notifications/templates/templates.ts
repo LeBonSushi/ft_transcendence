@@ -3,16 +3,6 @@ import {CreateNotificationDto, NotificationType} from "@travel-planner/shared"
 export class NotificationTemplates {
     private static templates: Record<NotificationType, (data: any) => CreateNotificationDto> =
         {
-            [NotificationType.TEXT_EXEMPLE]: (data: {
-                message: string,
-                title: string,
-                toUserId:string
-            }) => ({
-                type: NotificationType.TEXT_EXEMPLE,
-                message: data.message,
-                title: data.title,
-                toUserId:data.toUserId
-            }),
             [NotificationType.WELCOME_MSG]: (data: {
                 firstName: string,
                 toUserId:string
@@ -70,6 +60,7 @@ export class NotificationTemplates {
                 message: `${data.userName} has accepted your friend request.`,
                 title: 'You have a new friend!',
                 toUserId:data.toUserId
+                
             })
         }
     static getTemplate(type: NotificationType, data: any): any {
