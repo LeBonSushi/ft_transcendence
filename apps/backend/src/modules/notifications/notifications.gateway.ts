@@ -38,7 +38,7 @@ export class NotificationsGateway implements OnGatewayInit {
       const notif = JSON.parse(message);
       this.server.to(roomName).emit('newNotification', notif);
     });
-    console.log('✅ Notifications gateway subscribed to Redis');
+    console.log('Notifications gateway subscribed to Redis');
   }
 
   async handleConnection(client: Socket) {

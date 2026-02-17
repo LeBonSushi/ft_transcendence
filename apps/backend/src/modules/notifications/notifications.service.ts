@@ -83,5 +83,11 @@ export class NotificationsService {
     {
       await this.friendsService.acceptRequest(userId, notif.friendshipId)
     }
+
+    else if (notif.request_accepted === false && notif.type === NotificationType.FRIEND_REQUEST
+      && notif.friendshipId )
+    {
+      await this.friendsService.rejectRequest(userId, notif.friendshipId)
+    }
   }
 }

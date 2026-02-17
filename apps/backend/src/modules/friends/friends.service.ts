@@ -112,12 +112,11 @@ export class FriendsService {
     return { success: true };
   }
 
-  async rejectRequest(id: string, friendId: string) {
+  async rejectRequest(id: string, friendshipId: string) {
     const rejected = await this.prisma.friendship.deleteMany({
         where: {
-            userId: friendId,
-            friendId: id,
-            status: "PENDING",
+          id: friendshipId,
+          status: 'PENDING',
         }
     });
 
@@ -127,12 +126,12 @@ export class FriendsService {
     return { success: true, message: 'Friend request rejected' };
   }
 
-  async blockRequest(id: string, friendId: string) {
+  async blockRequest(id: string, friendshipId: string) {
     const friends = await this.prisma.friendship.updateMany({
-        where: {
+        where: { id: friendshipId,
             OR: [
-                { userId: id, friendId: friendId },
-                { userId: friendId, friendId: id }
+                { userId: id},
+                { friendId: id }
             ],
         },
         data: {
