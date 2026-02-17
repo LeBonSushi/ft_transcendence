@@ -29,7 +29,8 @@ export class NotificationsGateway {
 
   async handleConnection(client: Socket) {
     try {
-      console.log(`Client connected: ${client.id}`);
+      await WsAuthGuard.validateToken(client);
+      console.log(`Client connected: ${client.id} (user: ${client.data.user.id})`);
     } catch (error) {
       console.log(`Client rejected: ${client.id} - ${error.message}`);
       client.disconnect();

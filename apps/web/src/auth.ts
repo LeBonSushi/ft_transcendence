@@ -100,7 +100,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
         token.sub = user.id as string;
@@ -108,10 +108,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.username = user.username;
         token.createdAt = user.createdAt?.toISOString?.() || new Date().toISOString();
         token.profile = user.profile;
-      }
-
-      if (account?.access_token) {
-        token.accessToken = account.access_token;
       }
 
       return token;
@@ -123,12 +119,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.username = token.username as string;
         session.user.createdAt = new Date(token.createdAt as string);
         session.user.profile = token.profile as any;
-        session.accessToken = token.accessToken as string;
-        session.socketToken = jwt.sign(
+        const signedToken = jwt.sign(
           { sub: token.id, email: token.email, username: token.username },
           process.env.NEXTAUTH_SECRET!,
           { expiresIn: "7d" }
         );
+        session.accessToken = signedToken;
+        session.socketToken = signedToken;
       }
       return session;
     },

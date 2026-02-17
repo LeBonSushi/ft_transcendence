@@ -10,7 +10,7 @@ export function FriendSearchBar() {
   useEffect(() => {
     if (search.length <= 0) return;
 
-    const res = apiClient.get<any>(API_ROUTES.USERS.SEARCH(search)).then((res) => {
+    apiClient.get<any>(API_ROUTES.USERS.SEARCH(search)).then((res) => {
       console.log(res);
     }).catch((err) => {
       console.error(err);
