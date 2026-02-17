@@ -3,10 +3,11 @@
 import Footer from '@/components/ui/footer';
 
 
-import {NotificationPannel} from "@/components/notificationPannel"
+import {NotificationPannel} from "@/components/notificationPannel";
 import { apiClient } from '@/lib/api';
 import { API_ROUTES, NotificationType } from '@travel-planner/shared';
 import { useNotifications } from '@/hooks/notif';
+import Page from './test-search/page';
 
 // import { Profile } from "@/components/ui/userUi/Profile";
 
@@ -16,6 +17,7 @@ export default function Home() {
     <div className="flex h-screen flex-col">
       < NotificationPannel />
       <div className="flex-1 flex flex-col items-center justify-center p-24">
+        <Page />
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">🌍 Travel Planner</h1>
           <p className="text-xl text-muted-foreground mb-8">

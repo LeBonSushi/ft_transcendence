@@ -13,7 +13,7 @@ export default auth((req) => {
     "/reset-password",
     "/about",
     "/rgpd",
-    "/terms",
+    "/condition",
     "/privacy",
   ];
 
