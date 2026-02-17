@@ -271,6 +271,6 @@ export class UsersService {
       LIMIT 5
     `;
 
-    return users;
+      return users || [];
   }
 }

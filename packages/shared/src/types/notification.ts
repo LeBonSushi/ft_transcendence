@@ -1,5 +1,4 @@
 export enum NotificationType {
-  TEXT_EXEMPLE = 'TEXT_EXEMPLE',
   WELCOME_MSG = 'WELCOME_MSG',
   ROOM_INVITE = 'ROOM_INVITE',
   ROOM_DELETED = 'ROOM_DELETED',
@@ -9,10 +8,11 @@ export enum NotificationType {
 }
 
 export interface CreateNotificationDto {
+  toUserId:string,
   title: string;
   message: string;
   type: NotificationType;
-  friendId?: string;
+  friendshipId?: string;
   roomId?: string;
 }
 

@@ -1,5 +1,5 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { Injectable, NotFoundException, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, Logger, forwardRef, Inject } from '@nestjs/common';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { NotificationTemplates } from '@/modules/notifications/templates/templates';
 import { NotificationType } from '@travel-planner/shared';
@@ -10,6 +10,7 @@ export class FriendsService {
 
   constructor(
     private prisma: PrismaService,
+    @Inject (forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService
   ) {}
 
@@ -73,26 +74,25 @@ export class FriendsService {
     });
 
     const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_REQUEST, {
-        username: user.username, title: "Friend request", friendId: friendRequest.id
+        username: user.username,  friendshipId: friendRequest.id, toUserId: friend.id
     });
-
-    await this.notificationsService.createNotification(friendId, notif);
+    
+    await this.notificationsService.createNotification(notif);
 
     return { success: true, friendRequest };
   }
 
-  async acceptRequest(id: string, friendId: string) {
-    const friend = await this.prisma.user.findUnique({
-        where: { id: friendId}
+  async acceptRequest(id: string, friendshipId: string) {
+    const friendship = await this.prisma.friendship.findUnique({
+        where: { id: friendshipId}
     });
 
-    if (!friend)
+    if (!friendship)
         throw new UnauthorizedException('Cannot add user that no exist');
 
     const acceptFriend = await this.prisma.friendship.updateMany({
         where: {
-            userId: friendId,
-            friendId: id,
+            id: friendshipId,
             status: "PENDING",
         },
         data: {

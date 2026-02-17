@@ -11,7 +11,7 @@ import { NotificationsService } from './notifications.service';
 // import { NotificationModel, } from './templates/type';
 import { Socket } from 'socket.io';
 import {CreateNotificationDto, Notification} from "@travel-planner/shared"
-import { WsAuthGuard } from '../../common/guards/ws-clerk.guard';
+import { WsAuthGuard } from '@/common/guards/ws-auth.guard';
 
 @WebSocketGateway({
   cors: {
@@ -19,11 +19,13 @@ import { WsAuthGuard } from '../../common/guards/ws-clerk.guard';
     credentials: true,
   },
 })
+
+@UseGuards(WsAuthGuard)
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private notificationsService: NotificationsService) { }
+  constructor(private notificationsService: NotificationsService) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -47,7 +49,6 @@ export class NotificationsGateway {
     console.log(`User ${userId} subscribed to notifications`)
   }
 
-  // @UseGuards(WsAuthGuard) // a remettre
   @SubscribeMessage('getNotifications')
   async handleGetNotifications(@ConnectedSocket() client: Socket) {
     try {
@@ -103,22 +104,11 @@ export class NotificationsGateway {
   }
 
   @SubscribeMessage('sendNotif')
-  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { targetUserId: string, notification: CreateNotificationDto })
+  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { notification: CreateNotificationDto })
   {
-    if (!data.targetUserId) {
-      client.emit('error', { message: 'targetUserId manquant' });
-      return;
-    }
-    const roomName = `user:${data.targetUserId}:notifications`
-    const notif = await this.notificationsService.createNotification(data.targetUserId, data.notification)
+    const roomName = `user:${data.notification.toUserId}:notifications`
+    const notif = await this.notificationsService.createNotification(data.notification)
     this.server.to(roomName).emit('newNotification', notif)
   }
 
-  // async sendNotificationToUser(userId:string, notification:NotificationModel)
-  // {
-  //   const roomName = `user:${userId}:notifications`
-  //   const notif = await this.notificationsService.createNotification(userId,notification)
-  //   this.server.to(roomName).emit('newNotifications', notification)
-  //   //envoyer notif a newnotif
-  // }
 }

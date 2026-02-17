@@ -10,7 +10,7 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { WsAuthGuard } from '@/common/guards/ws-clerk.guard';
+import { WsAuthGuard } from '@/common/guards/ws-auth.guard';
 
 @WebSocketGateway({
   cors: {

@@ -62,10 +62,10 @@ export function useNotifications() {
     //         socket.emit('getNotifications', { userId: user?.id });
     //     }
     // }
-    const sendNotif = (targetUserId: string, notification: CreateNotificationDto) => {
+    const sendNotif = (notification: CreateNotificationDto) => {
         if (socket && isConnected && user?.id) {
-            console.log("Notif sent to", targetUserId)
-            socket.emit('sendNotif', { targetUserId, notification })
+            // console.log("Notif sent to", targetUserId)
+            socket.emit('sendNotif', { notification })
         }
     }
     const setReadNotification = (notifId: string) => {
@@ -88,6 +88,5 @@ export function useNotifications() {
         sendNotif,
         setReadNotification,
         answerNotification
-        // refreshNotifications
     }
 }
