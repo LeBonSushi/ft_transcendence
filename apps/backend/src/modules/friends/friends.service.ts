@@ -32,6 +32,38 @@ export class FriendsService {
       throw new NotFoundException('User not found');
     }
 
+    const existing = await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { userId: id, friendId: friendId },
+          { userId: friendId, friendId: id },
+        ],
+      },
+    });
+
+    if (existing && existing.status === 'ACCEPTED') {
+      throw new NotFoundException('Already friends');
+    }
+
+    // L'autre user a déjà envoyé une demande -> on accepte automatiquement
+    if (existing && existing.status === 'PENDING' && existing.userId === friendId) {
+      await this.prisma.friendship.update({
+        where: { id: existing.id },
+        data: { status: 'ACCEPTED' },
+      });
+
+      const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_ACCEPTED, {
+        userName: user.username,
+      });
+      await this.notificationsService.createNotification(friendId, notif);
+
+      return { success: true, autoAccepted: true };
+    }
+
+    if (existing) {
+      throw new NotFoundException('Friend request already exists');
+    }
+
     const friendRequest = await this.prisma.friendship.create({
       data: {
         userId: id,
@@ -41,9 +73,9 @@ export class FriendsService {
     });
 
     const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_REQUEST, {
-        username: "test", title: "Friend request", friendId: friendId
+        username: user.username, title: "Friend request", friendId: friendRequest.id
     });
-    
+
     await this.notificationsService.createNotification(friendId, notif);
 
     return { success: true, friendRequest };
