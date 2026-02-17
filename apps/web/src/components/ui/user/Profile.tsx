@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import  QRCode from 'react-qr-code';
 import { motion, AnimatePresence } from "motion/react";
-import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
+import { signOut as nextAuthSignOut } from "next-auth/react";
 import { useUserStore } from "@/stores/useUserStore";
 import {
   Settings,
@@ -51,9 +51,7 @@ import { storageApi } from "@/lib/api";
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
-  const { status } = useSession();
   const { user, isLoading } = useUserStore();
-  const isLoaded = status !== "loading" && !isLoading;
   const signOut = () => nextAuthSignOut();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -62,14 +60,14 @@ export function Profile() {
 
   useClickOutside(dropdownRef, () => setIsOpen(false), isOpen);
 
-  if (!isLoaded || !user) {
+  if (isLoading || !user) {
     return <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />;
   }
 
   const createdAt = user.createdAt ? formatDate(new Date(user.createdAt)) : null;
   const displayName = user.profile?.firstName && user.profile?.lastName 
     ? `${user.profile.firstName} ${user.profile.lastName}`
-    : user.name || user.username;
+    : user.profile.firstName || user.username;
 
   return (
     <>
@@ -82,9 +80,9 @@ export function Profile() {
           className="flex items-center gap-2 p-1.5 rounded-full hover:bg-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           <Avatar
-            src={user.profile?.profilePicture || user.image || ''}
+            src={user.profile?.profilePicture || ''}
             alt={displayName}
-            fallback={user.profile?.firstName || user.name || user.email || 'U'}
+            fallback={user.profile?.firstName || user.email || 'U'}
             size="sm"
           />
           <ChevronDown
@@ -201,9 +199,7 @@ const TABS = [
 ];
 
 export function ProfilePage({ onClose }: { onClose: () => void }) {
-  const { status } = useSession();
   const { user, isLoading } = useUserStore();
-  const isLoaded = status !== "loading" && !isLoading;
   const signOut = () => nextAuthSignOut();
 
   const [activeTab, setActiveTab] = useState<Tab>('account');
@@ -215,7 +211,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
 
   const { sessions, currentSession, revoking, revokeSession } = useSessions({ user });
 
-  if (!isLoaded || !user) {
+  if (isLoading || !user) {
     return (
       <Modal isOpen onClose={onClose} size="xl">
         <div className="flex items-center justify-center min-h-100">
@@ -236,17 +232,17 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
             onClick={() => setOpenChangeProfilePicture(!openChangeProfilePicture)}
           >
             <Avatar
-              src={user.profile?.profilePicture || user.image || ''}
-              alt={user.name || 'Avatar'}
-              fallback={user.profile?.firstName || user.name || user.email || 'U'}
+              src={user.profile?.profilePicture || ''}
+              alt={user.username || 'Avatar'}
+              fallback={user.profile?.firstName || user.email || 'U'}
               size="md"
               className="sm:hidden"
               ringColor="ring-primary/20"
             />
             <Avatar
-              src={user.profile?.profilePicture || user.image || ''}
-              alt={user.name || 'Avatar'}
-              fallback={user.profile?.firstName || user.name || user.email || 'U'}
+              src={user.profile?.profilePicture || ''}
+              alt={user.username || 'Avatar'}
+              fallback={user.profile?.firstName || user.email || 'U'}
               size="lg"
               className="hidden sm:flex"
               ringColor="ring-primary/20"
@@ -311,7 +307,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
           <h1 className="text-base sm:text-2xl font-bold text-foreground truncate">
             {user.profile?.firstName && user.profile?.lastName
               ? `${user.profile.firstName} ${user.profile.lastName}`
-              : user.name || 'Utilisateur'}
+              : user.username || 'Utilisateur'}
           </h1>
           <p className="text-muted-foreground text-xs sm:text-base truncate">
             @{user.username || user.id?.slice(0, 8)}
@@ -381,6 +377,8 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
   const [themeSelectOpen, setThemeSelectOpen] = useState(false);
 
   useClickOutside(themeSelectRef, () => setThemeSelectOpen(false), themeSelectOpen);
+
+
 
   return (
     <>

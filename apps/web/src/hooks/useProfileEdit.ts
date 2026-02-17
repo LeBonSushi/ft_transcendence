@@ -63,11 +63,13 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
     setError(null);
 
     try {
-      const updateData: Record<string, string> = {};
-      if (firstName !== (user.profile?.firstName || '')) updateData.firstName = firstName;
-      if (lastName !== (user.profile?.lastName || '')) updateData.lastName = lastName;
-      if (username !== user.username && username) updateData.username = username;
+      const updateData = {
+        firstName,
+        lastName,
+        username,
+      };
 
+      
       if (Object.keys(updateData).length > 0) {
         const response = await usersApi.updateUser(user.id, updateData);
         
