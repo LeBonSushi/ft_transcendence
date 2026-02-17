@@ -267,6 +267,15 @@ export class UsersService {
       LEFT JOIN "Profile" p ON u.id = p."userId"
       WHERE u.id != ${currentUserId}
         AND u.username ILIKE ${searchQuery + '%'}
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "Friendship" f
+          WHERE (
+            (f."userId" = ${currentUserId} AND f."friendId" = u.id)
+            OR (f."userId" = u.id AND f."friendId" = ${currentUserId})
+          )
+          AND f.status = 'ACCEPTED'
+        )
       ORDER BY similarity(u.username, ${searchQuery}) DESC
       LIMIT 5
     `;
