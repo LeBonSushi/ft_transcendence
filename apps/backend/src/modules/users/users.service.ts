@@ -255,7 +255,7 @@ export class UsersService {
       return [];
 
     const users = await this.prisma.$queryRaw<SearchUser[]>`
-      SELECT 
+      SELECT
         u.id,
         u.username,
         jsonb_build_object(
@@ -266,7 +266,7 @@ export class UsersService {
       FROM "User" u
       LEFT JOIN "Profile" p ON u.id = p."userId"
       WHERE u.id != ${currentUserId}
-        AND similarity(u.username, ${searchQuery}) > 0.1
+        AND u.username ILIKE ${searchQuery + '%'}
       ORDER BY similarity(u.username, ${searchQuery}) DESC
       LIMIT 5
     `;

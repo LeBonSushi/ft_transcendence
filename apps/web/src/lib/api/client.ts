@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { getSession } from 'next-auth/react';
+import { getSession, signOut } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -26,6 +26,17 @@ class BrowserApiClient {
         return config;
       },
       (error) => Promise.reject(error)
+    );
+
+    // Redirect to signin on 401 responses (expired/invalid token)
+    this.client.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401) {
+          await signOut({ redirectTo: '/signin' });
+        }
+        return Promise.reject(error);
+      }
     );
   }
 
