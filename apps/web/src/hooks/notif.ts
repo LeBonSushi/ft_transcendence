@@ -19,14 +19,8 @@ export function useNotifications() {
             return
         }
         if (!socket || !isConnected)
-        {
-            console.log('socket: ', socket, 'isConnected: ', isConnected)
-            console.log("Problem with socket")
             return
-        }
-        console.log('User found');
         socket.emit('subscribeToNotifications')
-        console.log("User subscribed to room")
         socket.emit('getUnreadNotifications')
         const handleNotif = (notifs: Notification[]) => {
             console.log("New notifs:", notifs)
@@ -42,7 +36,7 @@ export function useNotifications() {
             setLoading(false)
         }
         socket.onAny((eventName, ...args) => {
-            console.log('🎯 ÉVÉNEMENT REÇU:', eventName, args);
+            console.log('ÉVÉNEMENT REÇU:', eventName, args);
         });
         socket.on('notifications', handleNotif)
         // socket.on('getNotifications', handleNotif)

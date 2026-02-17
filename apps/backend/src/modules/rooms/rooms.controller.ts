@@ -10,7 +10,6 @@ import {
   HttpStatus
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
-// import { ClerkGuard } from '@/common/guards/clerk.guard';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { 
   CreateRoomDto, 

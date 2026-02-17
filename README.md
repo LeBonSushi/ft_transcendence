@@ -84,7 +84,7 @@ Write code for assigned features. Participate in code reviews. Test their implem
 
 ### ggirault [[ po ](#product-owner-po)][[ dev ](#developer)]:
 - All the little annoying things
-- Backend users
+- Backend users/friends
 - Archi design with macorso
 - DB design
 - front
@@ -167,6 +167,9 @@ Here is a list of features and the people who worked on them
 	<p>to be completed</p>
 
 * Profile (Macorso / Ggirault):
+	<p>to be completed</p>
+
+* Friends (Ggirault):
 	<p>to be completed</p>
 
 * 2-factor authentication (Macorso)
