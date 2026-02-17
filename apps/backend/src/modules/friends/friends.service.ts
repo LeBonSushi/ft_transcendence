@@ -52,7 +52,7 @@ export class FriendsService {
       });
 
       const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_ACCEPTED, {
-        username: user.username,  friendshipId: existing.id, toUserId: friend.id
+        userName: user.username, toUserId: friendId
       });
 
       await this.notificationsService.createNotification(notif);
@@ -100,6 +100,14 @@ export class FriendsService {
 
     if (acceptFriend.count === 0)
         throw new NotFoundException('No pending friend request found from this user');
+
+    const acceptor = await this.prisma.user.findUnique({ where: { id } });
+    if (acceptor) {
+      const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_ACCEPTED, {
+        userName: acceptor.username, toUserId: friendship.userId
+      });
+      await this.notificationsService.createNotification(notif);
+    }
 
     return { success: true };
   }

@@ -4,14 +4,15 @@ import {
   SubscribeMessage,
   ConnectedSocket,
   MessageBody,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { NotificationsService } from './notifications.service';
-// import { NotificationModel, } from './templates/type';
 import { Socket } from 'socket.io';
-import {CreateNotificationDto, Notification} from "@travel-planner/shared"
+import { CreateNotificationDto } from "@travel-planner/shared"
 import { WsAuthGuard } from '@/common/guards/ws-auth.guard';
+import { RedisService } from '@/common/redis/redis.service';
 
 @WebSocketGateway({
   cors: {
@@ -21,11 +22,24 @@ import { WsAuthGuard } from '@/common/guards/ws-auth.guard';
 })
 
 @UseGuards(WsAuthGuard)
-export class NotificationsGateway {
+export class NotificationsGateway implements OnGatewayInit {
   @WebSocketServer()
   server: Server;
 
-  constructor(private notificationsService: NotificationsService) {}
+  constructor(
+    private notificationsService: NotificationsService,
+    private redis: RedisService,
+  ) {}
+
+  afterInit() {
+    this.redis.subscriber.psubscribe('user:*:notifications');
+    this.redis.subscriber.on('pmessage', (_pattern, channel, message) => {
+      const roomName = channel;
+      const notif = JSON.parse(message);
+      this.server.to(roomName).emit('newNotification', notif);
+    });
+    console.log('✅ Notifications gateway subscribed to Redis');
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -104,11 +118,9 @@ export class NotificationsGateway {
   }
 
   @SubscribeMessage('sendNotif')
-  async sendNotif(@ConnectedSocket() client: Socket, @MessageBody() data: { notification: CreateNotificationDto })
+  async sendNotif(@ConnectedSocket() _client: Socket, @MessageBody() data: { notification: CreateNotificationDto })
   {
-    const roomName = `user:${data.notification.toUserId}:notifications`
-    const notif = await this.notificationsService.createNotification(data.notification)
-    this.server.to(roomName).emit('newNotification', notif)
+    await this.notificationsService.createNotification(data.notification)
   }
 
 }

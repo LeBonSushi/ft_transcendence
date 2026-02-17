@@ -2,15 +2,17 @@ import { forwardRef, Injectable, Inject } from '@nestjs/common';
 import { RedisService } from '@/common/redis/redis.service';
 import { PrismaService } from '@/common/prisma/prisma.service';
 
-import { Notification, CreateNotificationDto, NotificationType } from '@travel-planner/shared';
+import { CreateNotificationDto, NotificationType } from '@travel-planner/shared';
 import { FriendsService } from '../friends/friends.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private redis: RedisService, 
+  constructor(
+    private redis: RedisService,
     private Prisma:PrismaService,
-    @Inject (forwardRef(() => FriendsService))
-    private friendsService: FriendsService) {}
+    @Inject(forwardRef(() => FriendsService))
+    private friendsService: FriendsService,
+  ) {}
 
   async createNotification(notificationtemplate:CreateNotificationDto ) {
     const notif = await this.Prisma.notification.create({
@@ -26,7 +28,7 @@ export class NotificationsService {
     await this.redis.publish(
       `user:${notificationtemplate.toUserId}:notifications`,
       JSON.stringify(notif)
-    )
+    );
     return notif
   }
 
