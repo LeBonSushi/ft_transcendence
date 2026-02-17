@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useSocket } from './useSocket';
-import { useSession } from "next-auth/react";
+import { useUserStore } from '@/stores/useUserStore';
 import { CreateNotificationDto, Notification } from '@travel-planner/shared';
 
 export function useNotifications() {
-    const { data: session, status } = useSession();
-    const user = session?.user
+    const { user } = useUserStore();
     const { socket, isConnected } = useSocket()
     // const [socket, setSocket] = useState<Socket | null>(null)
     const [notifications, setNotifications] = useState<Notification[]>([])

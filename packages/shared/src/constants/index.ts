@@ -105,6 +105,9 @@ export const API_ROUTES = {
   },
 
   STORAGE: {
+    REMOVE: {
+      PROFILE_PICTURE: '/storage/remove/profile-picture',
+    },
     UPLOAD: {
       PROFILE_PICTURE: '/storage/upload/profile-picture',
       ROOM_IMAGE: '/storage/upload/room-image',

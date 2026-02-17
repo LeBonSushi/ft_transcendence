@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { API_ROUTES } from '@travel-planner/shared';
+import { useUserStore } from '@/stores/useUserStore';
 
 export interface UploadResponse {
   url: string;
@@ -7,11 +8,22 @@ export interface UploadResponse {
 }
 
 export const storageApi = {
+
+  removeProfilePicture: async () => {
+    const result = await apiClient.delete(API_ROUTES.STORAGE.REMOVE.PROFILE_PICTURE);
+    
+    // Update Zustand store immediately
+    const { updateProfile } = useUserStore.getState();
+    updateProfile({ profilePicture: undefined });
+    
+    return result;
+  },
+
   uploadProfilePicture: async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    return apiClient.post<UploadResponse>(
+    const response = await apiClient.post<UploadResponse>(
       API_ROUTES.STORAGE.UPLOAD.PROFILE_PICTURE,
       formData,
       {
@@ -20,6 +32,12 @@ export const storageApi = {
         },
       }
     );
+    
+    // Update Zustand store immediately
+    const { updateProfile } = useUserStore.getState();
+    updateProfile({ profilePicture: response.url });
+    
+    return response;
   },
 
   uploadRoomImage: async (file: File) => {

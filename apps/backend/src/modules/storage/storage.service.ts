@@ -95,6 +95,25 @@ export class StorageService {
     }
   }
 
+  async removeImage(key: string): Promise<void> {
+    if (!key || key.includes('..')) {
+      throw new BadRequestException('Invalid file key');
+    }
+
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+      );
+      this.logger.log(`File deleted successfully: ${key}`);
+    } catch (error) {
+      this.logger.error(`Failed to delete file: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to delete file');
+    }
+  }
+
   async deleteFile(key: string): Promise<void> {
     if (!key || key.includes('..')) {
       throw new BadRequestException('Invalid file key');
