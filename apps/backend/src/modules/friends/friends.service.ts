@@ -42,11 +42,9 @@ export class FriendsService {
       },
     });
 
-    if (existing && existing.status === 'ACCEPTED') {
+    if (existing && existing.status === 'ACCEPTED')
       throw new NotFoundException('Already friends');
-    }
 
-    // L'autre user a déjà envoyé une demande -> on accepte automatiquement
     if (existing && existing.status === 'PENDING' && existing.userId === friendId) {
       await this.prisma.friendship.update({
         where: { id: existing.id },
@@ -54,16 +52,16 @@ export class FriendsService {
       });
 
       const notif = NotificationTemplates.getTemplate(NotificationType.FRIEND_ACCEPTED, {
-        userName: user.username,
+        username: user.username,  friendshipId: existing.id, toUserId: friend.id
       });
-      await this.notificationsService.createNotification(friendId, notif);
+
+      await this.notificationsService.createNotification(notif);
 
       return { success: true, autoAccepted: true };
     }
 
-    if (existing) {
+    if (existing)
       throw new NotFoundException('Friend request already exists');
-    }
 
     const friendRequest = await this.prisma.friendship.create({
       data: {
