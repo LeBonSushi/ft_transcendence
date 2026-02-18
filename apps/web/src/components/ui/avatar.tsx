@@ -34,7 +34,7 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center overflow-hidden ring-2",
+        "rounded-full flex items-center justify-center overflow-hidden ring-2 select-none",
         sizeClasses[size],
         ringColor,
         className
@@ -47,7 +47,7 @@ export function Avatar({
           className="h-full w-full object-cover block"
         />
       ) : (
-        <div className={cn("h-full w-full", pictureColor, "flex items-center justify-center text-primary-foreground font-semibold")}>
+        <div className={cn("h-full w-full select-none", pictureColor, "flex items-center justify-center text-primary-foreground font-semibold")}>
           {initial}
         </div>
       )}

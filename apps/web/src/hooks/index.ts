@@ -3,3 +3,4 @@ export { useProfileEdit } from './useProfileEdit';
 export { useSessions } from './useSessions';
 export { useDeleteAccount } from './useDeleteAccount';
 export { useSocket } from './useSocket';
+export { useRoomSocket } from './useRoomSocket';

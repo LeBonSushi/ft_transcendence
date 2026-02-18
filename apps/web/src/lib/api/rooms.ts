@@ -1,37 +1,32 @@
 import { apiClient } from './client';
 import { API_ROUTES } from '@travel-planner/shared';
-import type { Room, RoomMember, TripProposal } from '@travel-planner/shared';
-
-export interface CreateRoomDto {
-  name: string;
-  description?: string;
-  isPrivate?: boolean;
-  password?: string;
-}
-
-export interface CreateProposalDto {
-  destination: string;
-  startDate: string;
-  endDate: string;
-  description?: string;
-  estimatedBudget?: number;
-}
-
-export interface VoteDto {
-  voteType: 'YES' | 'NO' | 'MAYBE';
-}
+import type {
+  RoomMemberWithUser,
+  RoomWithDetails,
+  RoomWithMembers,
+  TripProposalWithRelations,
+  TripProposalWithVotesAndActivities,
+  TripVoteWithUser,
+  ActivitySuggestionWithUser,
+  CreateRoomDto,
+  UpdateRoomDto,
+  CreateProposalDto,
+  UpdateProposalDto,
+  CreateVoteDto,
+  CreateActivityDto,
+  UpdateActivityDto,
+  CreateAvailabilityDto,
+  UpdateAvailabilityDto,
+  UpdateRoleDto,
+  UserAvailabilityWithUser,
+} from '@travel-planner/shared';
 
 // Classe pour gérer les propositions d'une room
 class ProposalResource {
   constructor(private roomId: string, private proposalId: string) {}
 
-  async get() {
-    const proposals = await apiClient.get<TripProposal[]>(API_ROUTES.PROPOSALS.LIST(this.roomId));
-    return proposals.find(p => p.id === this.proposalId);
-  }
-
-  async update(data: Partial<CreateProposalDto>) {
-    return apiClient.put<TripProposal>(API_ROUTES.PROPOSALS.UPDATE(this.roomId, this.proposalId), data);
+  async update(data: UpdateProposalDto) {
+    return apiClient.put<TripProposalWithRelations>(API_ROUTES.PROPOSALS.UPDATE(this.roomId, this.proposalId), data);
   }
 
   async delete() {
@@ -39,15 +34,16 @@ class ProposalResource {
   }
 
   async select() {
-    return apiClient.post<TripProposal>(API_ROUTES.PROPOSALS.SELECT(this.roomId, this.proposalId));
+    return apiClient.post<TripProposalWithRelations>(API_ROUTES.PROPOSALS.SELECT(this.roomId, this.proposalId));
   }
 
-  async vote(vote: VoteDto) {
-    return apiClient.post(API_ROUTES.VOTES.VOTE(this.roomId, this.proposalId), vote);
+  // Votes
+  async vote(data: CreateVoteDto) {
+    return apiClient.post<TripVoteWithUser>(API_ROUTES.VOTES.VOTE(this.roomId, this.proposalId), data);
   }
 
-  async updateVote(vote: VoteDto) {
-    return apiClient.put(API_ROUTES.VOTES.UPDATE(this.roomId, this.proposalId), vote);
+  async updateVote(data: CreateVoteDto) {
+    return apiClient.put<TripVoteWithUser>(API_ROUTES.VOTES.UPDATE(this.roomId, this.proposalId), data);
   }
 
   async deleteVote() {
@@ -55,7 +51,24 @@ class ProposalResource {
   }
 
   async getVotes() {
-    return apiClient.get(API_ROUTES.VOTES.LIST(this.roomId, this.proposalId));
+    return apiClient.get<TripVoteWithUser[]>(API_ROUTES.VOTES.LIST(this.roomId, this.proposalId));
+  }
+
+  // Activities
+  async getActivities() {
+    return apiClient.get<ActivitySuggestionWithUser[]>(API_ROUTES.ACTIVITIES.LIST(this.roomId, this.proposalId));
+  }
+
+  async createActivity(data: CreateActivityDto) {
+    return apiClient.post<ActivitySuggestionWithUser>(API_ROUTES.ACTIVITIES.CREATE(this.roomId, this.proposalId), data);
+  }
+
+  async updateActivity(activityId: string, data: UpdateActivityDto) {
+    return apiClient.put<ActivitySuggestionWithUser>(API_ROUTES.ACTIVITIES.UPDATE(this.roomId, this.proposalId, activityId), data);
+  }
+
+  async deleteActivity(activityId: string) {
+    return apiClient.delete(API_ROUTES.ACTIVITIES.DELETE(this.roomId, this.proposalId, activityId));
   }
 }
 
@@ -64,11 +77,11 @@ class RoomResource {
   constructor(private roomId: string) {}
 
   async get() {
-    return apiClient.get<Room>(API_ROUTES.ROOMS.GET(this.roomId));
+    return apiClient.get<RoomWithDetails>(API_ROUTES.ROOMS.GET(this.roomId));
   }
 
-  async update(data: Partial<CreateRoomDto>) {
-    return apiClient.put<Room>(API_ROUTES.ROOMS.UPDATE(this.roomId), data);
+  async update(data: UpdateRoomDto) {
+    return apiClient.put<RoomWithMembers>(API_ROUTES.ROOMS.UPDATE(this.roomId), data);
   }
 
   async delete() {
@@ -76,7 +89,7 @@ class RoomResource {
   }
 
   async join() {
-    return apiClient.post<RoomMember>(API_ROUTES.ROOMS.JOIN(this.roomId));
+    return apiClient.post<RoomMemberWithUser>(API_ROUTES.ROOMS.JOIN(this.roomId));
   }
 
   async leave() {
@@ -84,24 +97,41 @@ class RoomResource {
   }
 
   async getMembers() {
-    return apiClient.get<RoomMember[]>(API_ROUTES.ROOMS.MEMBERS(this.roomId));
+    return apiClient.get<RoomMemberWithUser[]>(API_ROUTES.ROOMS.MEMBERS(this.roomId));
   }
 
-  async updateMemberRole(userId: string, role: 'ADMIN' | 'MEMBER') {
-    return apiClient.put(API_ROUTES.ROOMS.UPDATE_ROLE(this.roomId, userId), { role });
+  async updateMemberRole(userId: string, data: UpdateRoleDto) {
+    return apiClient.put<RoomMemberWithUser>(API_ROUTES.ROOMS.UPDATE_ROLE(this.roomId, userId), data);
   }
 
   async kickMember(userId: string) {
     return apiClient.delete(API_ROUTES.ROOMS.KICK(this.roomId, userId));
   }
 
+  // Availabilities
+  async getAvailabilities() {
+    return apiClient.get<UserAvailabilityWithUser[]>(API_ROUTES.AVAILABILITY.LIST(this.roomId));
+  }
+
+  async createAvailability(data: CreateAvailabilityDto) {
+    return apiClient.post<UserAvailabilityWithUser>(API_ROUTES.AVAILABILITY.CREATE(this.roomId), data);
+  }
+
+  async updateAvailability(id: string, data: UpdateAvailabilityDto) {
+    return apiClient.put<UserAvailabilityWithUser>(API_ROUTES.AVAILABILITY.UPDATE(this.roomId, id), data);
+  }
+
+  async deleteAvailability(id: string) {
+    return apiClient.delete(API_ROUTES.AVAILABILITY.DELETE(this.roomId, id));
+  }
+
   // Proposals
   async getProposals() {
-    return apiClient.get<TripProposal[]>(API_ROUTES.PROPOSALS.LIST(this.roomId));
+    return apiClient.get<TripProposalWithVotesAndActivities[]>(API_ROUTES.PROPOSALS.LIST(this.roomId));
   }
 
   async createProposal(data: CreateProposalDto) {
-    return apiClient.post<TripProposal>(API_ROUTES.PROPOSALS.CREATE(this.roomId), data);
+    return apiClient.post<TripProposalWithRelations>(API_ROUTES.PROPOSALS.CREATE(this.roomId), data);
   }
 
   proposal(proposalId: string) {
@@ -110,82 +140,9 @@ class RoomResource {
 }
 
 export const roomsApi = {
-  // Retourne une instance de room pour le chaînage
-  getRoom: (roomId: string) => {
-    return new RoomResource(roomId);
-  },
+  getRoom: (roomId: string) => new RoomResource(roomId),
 
-  // Méthodes directes
   create: async (data: CreateRoomDto) => {
-    return apiClient.post<Room>(API_ROUTES.ROOMS.CREATE, data);
-  },
-
-  // Compatibilité avec l'ancien code
-  createRoom: async (data: CreateRoomDto) => {
-    return apiClient.post<Room>(API_ROUTES.ROOMS.CREATE, data);
-  },
-
-  updateRoom: async (roomId: string, data: Partial<CreateRoomDto>) => {
-    return apiClient.put<Room>(API_ROUTES.ROOMS.UPDATE(roomId), data);
-  },
-
-  deleteRoom: async (roomId: string) => {
-    return apiClient.delete(API_ROUTES.ROOMS.DELETE(roomId));
-  },
-
-  joinRoom: async (roomId: string) => {
-    return apiClient.post<RoomMember>(API_ROUTES.ROOMS.JOIN(roomId));
-  },
-
-  leaveRoom: async (roomId: string) => {
-    return apiClient.post(API_ROUTES.ROOMS.LEAVE(roomId));
-  },
-
-  getRoomMembers: async (roomId: string) => {
-    return apiClient.get<RoomMember[]>(API_ROUTES.ROOMS.MEMBERS(roomId));
-  },
-
-  updateMemberRole: async (roomId: string, userId: string, role: 'ADMIN' | 'MEMBER') => {
-    return apiClient.put(API_ROUTES.ROOMS.UPDATE_ROLE(roomId, userId), { role });
-  },
-
-  kickMember: async (roomId: string, userId: string) => {
-    return apiClient.delete(API_ROUTES.ROOMS.KICK(roomId, userId));
-  },
-
-  createProposal: async (roomId: string, data: CreateProposalDto) => {
-    return apiClient.post<TripProposal>(API_ROUTES.PROPOSALS.CREATE(roomId), data);
-  },
-
-  getProposals: async (roomId: string) => {
-    return apiClient.get<TripProposal[]>(API_ROUTES.PROPOSALS.LIST(roomId));
-  },
-
-  updateProposal: async (roomId: string, proposalId: string, data: Partial<CreateProposalDto>) => {
-    return apiClient.put<TripProposal>(API_ROUTES.PROPOSALS.UPDATE(roomId, proposalId), data);
-  },
-
-  deleteProposal: async (roomId: string, proposalId: string) => {
-    return apiClient.delete(API_ROUTES.PROPOSALS.DELETE(roomId, proposalId));
-  },
-
-  selectProposal: async (roomId: string, proposalId: string) => {
-    return apiClient.post<TripProposal>(API_ROUTES.PROPOSALS.SELECT(roomId, proposalId));
-  },
-
-  voteOnProposal: async (roomId: string, proposalId: string, vote: VoteDto) => {
-    return apiClient.post(API_ROUTES.VOTES.VOTE(roomId, proposalId), vote);
-  },
-
-  updateVote: async (roomId: string, proposalId: string, vote: VoteDto) => {
-    return apiClient.put(API_ROUTES.VOTES.UPDATE(roomId, proposalId), vote);
-  },
-
-  deleteVote: async (roomId: string, proposalId: string) => {
-    return apiClient.delete(API_ROUTES.VOTES.DELETE(roomId, proposalId));
-  },
-
-  getProposalVotes: async (roomId: string, proposalId: string) => {
-    return apiClient.get(API_ROUTES.VOTES.LIST(roomId, proposalId));
+    return apiClient.post<RoomWithMembers>(API_ROUTES.ROOMS.CREATE, data);
   },
 };

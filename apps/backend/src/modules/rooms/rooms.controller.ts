@@ -12,15 +12,15 @@ import {
 import { RoomsService } from './rooms.service';
 // import { ClerkGuard } from '@/common/guards/clerk.guard';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { 
-  CreateRoomDto, 
-  UpdateRoomDto, 
-  UpdateRoleDto, 
-  CreateAvailabilityDto, 
-  UpdateAvailabilityDto, 
+import {
+  CreateRoomDto,
+  UpdateRoomDto,
+  UpdateRoleDto,
+  CreateAvailabilityDto,
+  UpdateAvailabilityDto,
   CreateProposalDto,
   UpdateProposalDto,
-  VoteDto,
+  CreateVoteDto,
   CreateActivityDto,
   UpdateActivityDto
 } from './dto/rooms.dto'
@@ -68,6 +68,15 @@ export class RoomsController {
     @GetUser('id') userId: string
   ) {
     return this.roomsService.joinRoom(roomId, userId);
+  }
+
+  @Post(':id/invite/:userId')
+  async inviteUser(
+    @Param('id') roomId: string,
+    @Param('userId') invitedUserId: string,
+    @GetUser('id') requesterId: string
+  ) {
+    return this.roomsService.inviteUser(roomId, invitedUserId, requesterId);
   }
 
   @Post(':id/leave')
@@ -197,7 +206,7 @@ export class RoomsController {
   async voteOnProposal(
     @Param('proposalId') proposalId: string,
     @GetUser('id') userId: string,
-    @Body() dto: VoteDto
+    @Body() dto: CreateVoteDto
   ) {
     return this.roomsService.voteOnProposal(proposalId, userId, dto.vote);
   }
@@ -206,7 +215,7 @@ export class RoomsController {
   async updateVote(
     @Param('proposalId') proposalId: string,
     @GetUser('id') userId: string,
-    @Body() dto: VoteDto
+    @Body() dto: CreateVoteDto
   ) {
     return this.roomsService.updateVote(proposalId, userId, dto.vote);
   }

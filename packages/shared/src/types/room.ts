@@ -27,8 +27,9 @@ export interface Room {
   id: string;
   name: string;
   creatorId: string;
-  description?: string;
+  description: string | null;
   status: RoomStatus;
+  isPrivate: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +41,13 @@ export interface RoomSummary {
   senderUsername: string | null;
   senderPicture: string | null;
   createdAt?: Date;
+}
+
+export interface RoomWithLastMessage extends Room {
+  lastMessage: string | null;
+  lastMessageDate: Date | null;
+  senderUsername: string | null;
+  senderPicture: string | null;
 }
 
 export interface RoomMember {
@@ -56,7 +64,7 @@ export interface UserAvailability {
   userId: string;
   startDate: Date;
   endDate: Date;
-  notes?: string;
+  notes: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,9 +75,9 @@ export interface TripProposal {
   destination: string;
   startDate: Date;
   endDate: Date;
-  budgetEstimate?: number;
+  budgetEstimate: number | null;
   description: string;
-  imageUrl?: string;
+  imageUrl: string | null;
   isSelected: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -86,10 +94,10 @@ export interface TripVote {
 export interface ActivitySuggestion {
   id: string;
   tripProposalId: string;
-  suggestedById?: string;
+  suggestedById: string | null;
   title: string;
   description: string;
   category: ActivityCategory;
-  estimatedPrice?: number;
+  estimatedPrice: number | null;
   createdAt: Date;
 }

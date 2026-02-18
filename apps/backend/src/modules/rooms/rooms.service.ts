@@ -1,27 +1,33 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { 
-  CreateRoomDto, 
-  UpdateRoomDto, 
-  CreateAvailabilityDto, 
+import {
+  CreateRoomDto,
+  UpdateRoomDto,
+  CreateAvailabilityDto,
   UpdateAvailabilityDto,
   CreateProposalDto,
   UpdateProposalDto,
   CreateActivityDto,
   UpdateActivityDto
  } from './dto/rooms.dto'
-import { VoteType, ActivityCategory, MemberRole, RoomStatus } from '@travel-planner/shared';
+import type { MemberRole, VoteType } from '@travel-planner/shared';
+import { RoomsGateway } from './rooms.gateway';
 
 @Injectable()
 export class RoomsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => RoomsGateway))
+    private roomsGateway: RoomsGateway,
+  ) {}
 
   // CRUD ROOM
   async create(userId: string, data: CreateRoomDto) {
-    return this.prisma.room.create({
+    const room = await this.prisma.room.create({
       data: {
         name: data.name,
         description: data.description,
+        isPrivate: data.isPrivate ?? false,
         creatorId: userId,
         members: {
           create: {
@@ -42,6 +48,8 @@ export class RoomsService {
         },
       },
     });
+
+    return room;
   }
 
   async findById(id: string) {
@@ -91,7 +99,7 @@ export class RoomsService {
       throw new ForbiddenException('Only admins can update the room');
     }
 
-    return this.prisma.room.update({
+    const updatedRoom = await this.prisma.room.update({
       where: {id: roomId},
       data: {
         name: data.name,
@@ -109,6 +117,10 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitRoomUpdated(roomId, updatedRoom);
+
+    return updatedRoom;
   }
 
   async deleteRoom(roomId: string, userId: string) {
@@ -118,29 +130,83 @@ export class RoomsService {
       throw new ForbiddenException('Only the creator can delete the room');
     }
 
+    this.roomsGateway.emitRoomDeleted(roomId);
+
     return this.prisma.room.delete({
       where: {
         id: roomId,
       }
-    })
+    });
   }
 
   // RoomMembers
   async joinRoom(roomId: string, userId: string) {
     const room = await this.findById(roomId);
 
+    // Vérifier si la room est privée
+    if (room.isPrivate) {
+      throw new ForbiddenException('Cette room est privée. Vous devez être invité pour la rejoindre.');
+    }
+
     const existingMember = room.members.find((m) => m.userId === userId);
     if (existingMember) {
       throw new ForbiddenException('Already a member of this room');
     }
 
-    return this.prisma.roomMember.create({
+    const member = await this.prisma.roomMember.create({
       data: {
         roomId,
         userId,
         role: 'MEMBER',
       },
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
     });
+
+    this.roomsGateway.emitMemberJoined(roomId, member);
+
+    return member;
+  }
+
+  async inviteUser(roomId: string, invitedUserId: string, requesterId: string) {
+    const room = await this.findById(roomId);
+
+    // Vérifier que le requester est membre de la room
+    const requesterMember = room.members.find((m) => m.userId === requesterId);
+    if (!requesterMember) {
+      throw new ForbiddenException('Vous devez être membre de cette room pour inviter');
+    }
+
+    // Vérifier que l'utilisateur n'est pas déjà membre
+    const existingMember = room.members.find((m) => m.userId === invitedUserId);
+    if (existingMember) {
+      throw new ForbiddenException('Cet utilisateur est déjà membre de cette room');
+    }
+
+    // Ajouter l'utilisateur à la room (fonctionne même si la room est privée)
+    const member = await this.prisma.roomMember.create({
+      data: {
+        roomId,
+        userId: invitedUserId,
+        role: 'MEMBER',
+      },
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+
+    this.roomsGateway.emitMemberInvited(roomId, member);
+
+    return member;
   }
 
   async leaveRoom(roomId: string, userId: string) {
@@ -159,11 +225,15 @@ export class RoomsService {
       throw new ForbiddenException('Admin must transfer role before leaving');
     }
 
-    return this.prisma.roomMember.delete({
+    const result = await this.prisma.roomMember.delete({
       where: {
         id: member.id,
       },
     });
+
+    this.roomsGateway.emitMemberLeft(roomId, userId);
+
+    return result;
   }
 
   async getMembers(roomId: string) {
@@ -179,7 +249,7 @@ export class RoomsService {
         },
       },
       orderBy: {
-        joinedAt: 'asc', // Du plus au moins recnet
+        joinedAt: 'asc',
       },
     });
   }
@@ -191,25 +261,25 @@ export class RoomsService {
     requesterId: string
   ) {
     const room = await this.findById(roomId);
-    
+
     const requester = room.members.find(m => m.userId === requesterId);
     if (!requester || requester.role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can change member roles');
     }
-    
+
     const targetMember = room.members.find(m => m.userId === targetUserId);
     if (!targetMember) {
       throw new NotFoundException('Target user is not a member of this room');
     }
-    
+
     if (requesterId === targetUserId && role === 'MEMBER') {
       const adminCount = room.members.filter(m => m.role === 'ADMIN').length;
       if (adminCount === 1) {
         throw new ForbiddenException('Cannot demote the last admin');
       }
     }
-    
-    return this.prisma.roomMember.update({
+
+    const updatedMember = await this.prisma.roomMember.update({
       where: { id: targetMember.id },
       data: { role },
       include: {
@@ -220,6 +290,10 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitMemberRoleUpdated(roomId, updatedMember);
+
+    return updatedMember;
   }
 
   async kickMember(
@@ -228,30 +302,34 @@ export class RoomsService {
     requesterId: string
   ) {
     const room = await this.findById(roomId);
-    
+
     const requester = room.members.find(m => m.userId === requesterId);
     if (!requester || requester.role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can kick members');
     }
-    
+
     const targetMember = room.members.find(m => m.userId === targetUserId);
     if (!targetMember) {
       throw new NotFoundException('Target user is not a member of this room');
     }
-    
+
     if (requesterId === targetUserId) {
       throw new ForbiddenException('Cannot kick yourself, use leave instead');
     }
-    
-    return this.prisma.roomMember.delete({
+
+    const result = await this.prisma.roomMember.delete({
       where: { id: targetMember.id },
     });
+
+    this.roomsGateway.emitMemberKicked(roomId, targetUserId);
+
+    return result;
   }
 
   // Availabilities
   async getAvailabilities(roomId: string) {
     await this.findById(roomId);
-    
+
     return this.prisma.userAvailability.findMany({
       where: { roomId },
       include: {
@@ -273,8 +351,8 @@ export class RoomsService {
     data: CreateAvailabilityDto
   ) {
     await this.checkMembership(roomId, userId);
-    
-    return this.prisma.userAvailability.create({
+
+    const availability = await this.prisma.userAvailability.create({
       data: {
         roomId,
         userId,
@@ -290,6 +368,10 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitAvailabilityCreated(roomId, availability);
+
+    return availability;
   }
 
   async updateAvailability(
@@ -300,16 +382,16 @@ export class RoomsService {
     const availability = await this.prisma.userAvailability.findUnique({
       where: { id: availabilityId },
     });
-    
+
     if (!availability) {
       throw new NotFoundException('Availability not found');
     }
-    
+
     if (availability.userId !== userId) {
       throw new ForbiddenException('You can only edit your own availability');
     }
-    
-    return this.prisma.userAvailability.update({
+
+    const updated = await this.prisma.userAvailability.update({
       where: { id: availabilityId },
       data: {
         startDate: data.startDate ? new Date(data.startDate) : undefined,
@@ -324,31 +406,39 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitAvailabilityUpdated(availability.roomId, updated);
+
+    return updated;
   }
 
   async deleteAvailability(availabilityId: string, userId: string) {
     const availability = await this.prisma.userAvailability.findUnique({
       where: { id: availabilityId },
     });
-    
+
     if (!availability) {
       throw new NotFoundException('Availability not found');
     }
-    
+
     if (availability.userId !== userId) {
       throw new ForbiddenException('You can only delete your own availability');
     }
-    
-    return this.prisma.userAvailability.delete({
+
+    const result = await this.prisma.userAvailability.delete({
       where: { id: availabilityId },
     });
+
+    this.roomsGateway.emitAvailabilityDeleted(availability.roomId, availabilityId);
+
+    return result;
   }
 
   // Proposal
 
   async getProposals(roomId: string) {
     await this.findById(roomId);
-    
+
     return this.prisma.tripProposal.findMany({
       where: { roomId },
       include: {
@@ -375,8 +465,8 @@ export class RoomsService {
     data: CreateProposalDto
   ) {
     await this.checkMembership(roomId, userId);
-    
-    return this.prisma.tripProposal.create({
+
+    const proposal = await this.prisma.tripProposal.create({
       data: {
         roomId,
         destination: data.destination,
@@ -392,6 +482,10 @@ export class RoomsService {
         activities: true,
       },
     });
+
+    this.roomsGateway.emitProposalCreated(roomId, proposal);
+
+    return proposal;
   }
 
   async updateProposal(
@@ -409,18 +503,17 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     const member = proposal.room.members.find(m => m.userId === userId);
     if (!member) {
       throw new ForbiddenException('You are not a member of this room');
     }
-    
-    
-    return this.prisma.tripProposal.update({
+
+    const updated = await this.prisma.tripProposal.update({
       where: { id: proposalId },
       data: {
         destination: data.destination,
@@ -435,6 +528,10 @@ export class RoomsService {
         activities: true,
       },
     });
+
+    this.roomsGateway.emitProposalUpdated(proposal.roomId, updated);
+
+    return updated;
   }
 
   async deleteProposal(proposalId: string, userId: string) {
@@ -448,23 +545,27 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     const member = proposal.room.members.find(m => m.userId === userId);
     if (!member) {
       throw new ForbiddenException('You are not a member of this room');
     }
-    
+
     if (member.role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can delete proposals');
     }
-    
-    return this.prisma.tripProposal.delete({
+
+    const result = await this.prisma.tripProposal.delete({
       where: { id: proposalId },
     });
+
+    this.roomsGateway.emitProposalDeleted(proposal.roomId, proposalId);
+
+    return result;
   }
 
   async selectProposal(proposalId: string, userId: string) {
@@ -478,16 +579,16 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     const member = proposal.room.members.find(m => m.userId === userId);
     if (!member || member.role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can select a proposal');
     }
-    
+
     await this.prisma.tripProposal.updateMany({
       where: {
         roomId: proposal.roomId,
@@ -497,8 +598,8 @@ export class RoomsService {
         isSelected: false,
       },
     });
-    
-    return this.prisma.tripProposal.update({
+
+    const selected = await this.prisma.tripProposal.update({
       where: { id: proposalId },
       data: {
         isSelected: true,
@@ -507,7 +608,12 @@ export class RoomsService {
         votes: true,
         activities: true,
       },
-  })};
+    });
+
+    this.roomsGateway.emitProposalSelected(proposal.roomId, selected);
+
+    return selected;
+  }
 
 
   // Vote
@@ -515,11 +621,11 @@ export class RoomsService {
     const proposal = await this.prisma.tripProposal.findUnique({
       where: { id: proposalId },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     return this.prisma.tripVote.findMany({
       where: { tripProposalId: proposalId },
       include: {
@@ -550,17 +656,17 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     const member = proposal.room.members.find(m => m.userId === userId);
     if (!member) {
       throw new ForbiddenException('You must be a member to vote');
     }
-    
-    return this.prisma.tripVote.upsert({
+
+    const result = await this.prisma.tripVote.upsert({
       where: {
         tripProposalId_userId: {
           tripProposalId: proposalId,
@@ -583,6 +689,10 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitVoteCreated(proposal.roomId, proposalId, result);
+
+    return result;
   }
 
   async updateVote(
@@ -598,12 +708,16 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!existingVote) {
       throw new NotFoundException('Vote not found');
     }
-    
-    return this.prisma.tripVote.update({
+
+    const proposal = await this.prisma.tripProposal.findUnique({
+      where: { id: proposalId },
+    });
+
+    const result = await this.prisma.tripVote.update({
       where: {
         tripProposalId_userId: {
           tripProposalId: proposalId,
@@ -619,6 +733,12 @@ export class RoomsService {
         },
       },
     });
+
+    if (proposal) {
+      this.roomsGateway.emitVoteUpdated(proposal.roomId, proposalId, result);
+    }
+
+    return result;
   }
 
   async deleteVote(proposalId: string, userId: string) {
@@ -630,12 +750,16 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!existingVote) {
       throw new NotFoundException('Vote not found');
     }
-    
-    return this.prisma.tripVote.delete({
+
+    const proposal = await this.prisma.tripProposal.findUnique({
+      where: { id: proposalId },
+    });
+
+    const result = await this.prisma.tripVote.delete({
       where: {
         tripProposalId_userId: {
           tripProposalId: proposalId,
@@ -643,6 +767,12 @@ export class RoomsService {
         },
       },
     });
+
+    if (proposal) {
+      this.roomsGateway.emitVoteDeleted(proposal.roomId, proposalId, userId);
+    }
+
+    return result;
   }
 
   // Activities
@@ -650,11 +780,11 @@ export class RoomsService {
     const proposal = await this.prisma.tripProposal.findUnique({
       where: { id: proposalId },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     return this.prisma.activitySuggestion.findMany({
       where: { tripProposalId: proposalId },
       include: {
@@ -685,22 +815,22 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!proposal) {
       throw new NotFoundException('Proposal not found');
     }
-    
+
     const member = proposal.room.members.find(m => m.userId === userId);
     if (!member) {
       throw new ForbiddenException('You must be a member to suggest activities');
     }
-    
-    return this.prisma.activitySuggestion.create({
+
+    const activity = await this.prisma.activitySuggestion.create({
       data: {
         tripProposalId: proposalId,
         suggestedById: userId,
         title: data.title,
-        description: data.description,
+        description: data.description ?? '',
         category: data.category,
         estimatedPrice: data.estimatedPrice,
       },
@@ -712,6 +842,10 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitActivityCreated(proposal.roomId, proposalId, activity);
+
+    return activity;
   }
 
   async updateActivity(
@@ -733,21 +867,21 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!activity) {
       throw new NotFoundException('Activity not found');
     }
-    
+
     const member = activity.tripProposal.room.members.find(m => m.userId === userId);
     if (!member) {
       throw new ForbiddenException('You are not a member of this room');
     }
-    
+
     if (activity.suggestedById !== userId && member.role !== 'ADMIN') {
       throw new ForbiddenException('Only the creator or an admin can edit this activity');
     }
-    
-    return this.prisma.activitySuggestion.update({
+
+    const updated = await this.prisma.activitySuggestion.update({
       where: { id: activityId },
       data: {
         title: data.title,
@@ -763,6 +897,14 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitActivityUpdated(
+      activity.tripProposal.roomId,
+      activity.tripProposalId,
+      updated,
+    );
+
+    return updated;
   }
 
   async deleteActivity(activityId: string, userId: string) {
@@ -780,23 +922,31 @@ export class RoomsService {
         },
       },
     });
-    
+
     if (!activity) {
       throw new NotFoundException('Activity not found');
     }
-    
+
     const member = activity.tripProposal.room.members.find(m => m.userId === userId);
     if (!member) {
       throw new ForbiddenException('You are not a member of this room');
     }
-    
+
     if (activity.suggestedById !== userId && member.role !== 'ADMIN') {
       throw new ForbiddenException('Only the creator or an admin can delete this activity');
     }
-    
-    return this.prisma.activitySuggestion.delete({
+
+    const result = await this.prisma.activitySuggestion.delete({
       where: { id: activityId },
     });
+
+    this.roomsGateway.emitActivityDeleted(
+      activity.tripProposal.roomId,
+      activity.tripProposalId,
+      activityId,
+    );
+
+    return result;
   }
 
   // Utils

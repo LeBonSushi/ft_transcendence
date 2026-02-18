@@ -10,7 +10,7 @@ export interface User {
   email: string;
   oauthProvider?: string;
   oauthId?: string;
-  profile: Profile;
+  profile: Profile | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,10 +25,10 @@ export interface Profile {
   userId: string;
   firstName: string;
   lastName: string;
-  profilePicture?: string;
-  bio?: string;
-  location?: string;
-  birthdate?: Date;
+  profilePicture: string | null;
+  bio: string | null;
+  location: string | null;
+  birthdate: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

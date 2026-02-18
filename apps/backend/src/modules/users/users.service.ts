@@ -2,7 +2,7 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { SearchUser } from '@travel-planner/shared';
+import { SearchUser, RoomWithLastMessage } from '@travel-planner/shared';
 
 interface CreateUserDto {
   id: string;
@@ -218,9 +218,28 @@ export class UsersService {
                 name: true,
                 description: true,
                 status: true,
+                isPrivate: true,
                 creatorId: true,
                 createdAt: true,
                 updatedAt: true,
+                messages: {
+                  select: {
+                    content: true,
+                    createdAt: true,
+                    sender: {
+                      select: {
+                        username: true,
+                        profile: {
+                          select: {
+                            profilePicture: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                  orderBy: { createdAt: 'desc' },
+                  take: 1,
+                },
               },
             },
           },
@@ -232,7 +251,17 @@ export class UsersService {
       return [];
     }
 
-    return userWithRooms.roomMemberships.map((m) => m.room);
+    return userWithRooms.roomMemberships.map((m) => {
+      const lastMsg = m.room.messages[0] ?? null;
+      const { messages, ...room } = m.room;
+      return {
+        ...room,
+        lastMessage: lastMsg?.content ?? null,
+        lastMessageDate: lastMsg?.createdAt ?? null,
+        senderUsername: lastMsg?.sender.username ?? null,
+        senderPicture: lastMsg?.sender.profile?.profilePicture ?? null,
+      };
+    });
   }
 
   async getFriends(id: string) {

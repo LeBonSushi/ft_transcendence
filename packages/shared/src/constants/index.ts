@@ -11,6 +11,36 @@ export const SOCKET_EVENTS = {
   ROOM_LEAVE: 'room:leave',
   ROOM_UPDATE: 'room:update',
 
+  // Room gateway events
+  ROOM_SUBSCRIBE: 'room:subscribe',
+  ROOM_UNSUBSCRIBE: 'room:unsubscribe',
+  ROOM_CREATED: 'room:created',
+  ROOM_UPDATED: 'room:updated',
+  ROOM_DELETED: 'room:deleted',
+
+  MEMBER_JOINED: 'member:joined',
+  MEMBER_INVITED: 'member:invited',
+  MEMBER_LEFT: 'member:left',
+  MEMBER_KICKED: 'member:kicked',
+  MEMBER_ROLE_UPDATED: 'member:role_updated',
+
+  AVAILABILITY_CREATED: 'availability:created',
+  AVAILABILITY_UPDATED: 'availability:updated',
+  AVAILABILITY_DELETED: 'availability:deleted',
+
+  PROPOSAL_CREATED: 'proposal:created',
+  PROPOSAL_UPDATED: 'proposal:updated',
+  PROPOSAL_DELETED: 'proposal:deleted',
+  PROPOSAL_SELECTED: 'proposal:selected',
+
+  VOTE_CREATED: 'vote:created',
+  VOTE_UPDATED: 'vote:updated',
+  VOTE_DELETED: 'vote:deleted',
+
+  ACTIVITY_CREATED: 'activity:created',
+  ACTIVITY_UPDATED: 'activity:updated',
+  ACTIVITY_DELETED: 'activity:deleted',
+
   USER_ONLINE: 'user:online',
   USER_OFFLINE: 'user:offline',
 

@@ -84,6 +84,7 @@ model Room {
 	creator     User     @relation("RoomCreator", fields: [creatorId], references: [id])
 	description String?
 	status      RoomStatus @default(PLANNING)
+	isPrivate   Boolean  @default(false)
 
 	// Relations
 	members         RoomMember[]
