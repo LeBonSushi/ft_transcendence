@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usersApi } from '@/lib/api';
+import { useUserStore } from '@/stores/useUserStore';
 
 interface ProfileData {
   firstName: string;
@@ -8,10 +10,12 @@ interface ProfileData {
 
 interface UseProfileEditOptions {
   user: {
-    firstName?: string | null;
-    lastName?: string | null;
+    id: string;
+    profile?: {
+      firstName?: string | null;
+      lastName?: string | null;
+    } | null;
     username?: string | null;
-    update: (data: Record<string, string>) => Promise<void>;
   };
   onSuccess?: () => void;
 }
@@ -39,14 +43,16 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const { updateUser, updateProfile } = useUserStore();
 
-  const [firstName, setFirstName] = useState(user.firstName || '');
-  const [lastName, setLastName] = useState(user.lastName || '');
+  const [firstName, setFirstName] = useState(user.profile?.firstName || '');
+  const [lastName, setLastName] = useState(user.profile?.lastName || '');
   const [username, setUsername] = useState(user.username || '');
 
   useEffect(() => {
-    setFirstName(user.firstName || '');
-    setLastName(user.lastName || '');
+    setFirstName(user.profile?.firstName || '');
+    setLastName(user.profile?.lastName || '');
     setUsername(user.username || '');
   }, [user]);
 
@@ -57,20 +63,38 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
     setError(null);
 
     try {
-      const updateData: Record<string, string> = {};
-      if (firstName !== user.firstName) updateData.firstName = firstName;
-      if (lastName !== user.lastName) updateData.lastName = lastName;
-      if (username !== user.username && username) updateData.username = username;
+      const updateData = {
+        firstName,
+        lastName,
+        username,
+      };
 
+      
       if (Object.keys(updateData).length > 0) {
-        await user.update(updateData);
+        const response = await usersApi.updateUser(user.id, updateData);
+        
+        // Update Zustand store immediately with the response
+        if (response.user) {
+          const { user: updatedUser } = response;
+          
+          // Update user-level fields
+          if (updatedUser.username) updateUser({ username: updatedUser.username });
+          if (updatedUser.email) updateUser({ email: updatedUser.email });
+          
+          // Update profile fields
+          if (updatedUser.profile) {
+            updateProfile({
+              firstName: updatedUser.profile.firstName,
+              lastName: updatedUser.profile.lastName,
+            });
+          }
+        }
       }
 
       setIsEditing(false);
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err?.errors?.[0]?.longMessage
-        || err?.errors?.[0]?.message
+      const errorMessage = err?.response?.data?.message
         || err?.message
         || 'Erreur lors de la mise à jour';
       setError(errorMessage);
@@ -80,8 +104,8 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
   };
 
   const handleCancel = () => {
-    setFirstName(user.firstName || '');
-    setLastName(user.lastName || '');
+    setFirstName(user.profile?.firstName || '');
+    setLastName(user.profile?.lastName || '');
     setUsername(user.username || '');
     setError(null);
     setIsEditing(false);

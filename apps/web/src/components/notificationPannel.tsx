@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState, useRef } from "react"
 import { useNotifications } from "../hooks/notif"
 import notifLightIcon from "../../public/notiflight.svg"
@@ -8,7 +6,7 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "motion/react"
 import { useTheme } from "next-themes"
 import { NotificationType } from "@travel-planner/shared"
-import { useSession } from "next-auth/react"
+import { useUserStore } from "@/stores/useUserStore"
 
 
 function timeAgo(time: any) {
@@ -87,8 +85,7 @@ export function NotificationPannel() {
     const { notifications, setNotifications, loading, isConnected, sendNotif, setReadNotification, answerNotification } = useNotifications()
     const panelRef = useRef<HTMLDivElement>(null)
     const { setTheme, theme } = useTheme();
-    const { data: session, status } = useSession();
-    const user = session?.user
+    const { user } = useUserStore();
     // setTheme('dark');
 
     const emojis: Record<NotificationType, string> = {

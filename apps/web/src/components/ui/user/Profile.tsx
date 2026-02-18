@@ -2,7 +2,9 @@
 
 import { useState, useRef } from "react";
 import  QRCode from 'react-qr-code';
-import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
+import { motion, AnimatePresence } from "motion/react";
+import { signOut as nextAuthSignOut } from "next-auth/react";
+import { useUserStore } from "@/stores/useUserStore";
 import {
   Settings,
   ChevronDown,
@@ -30,6 +32,7 @@ import {
   ChevronUp,
   Section,
   MoonIcon,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -44,12 +47,11 @@ import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useTheme } from "next-themes";
+import { storageApi } from "@/lib/api";
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
-  const { data: session, status } = useSession();
-  const user = session?.user;
-  const isLoaded = status !== "loading";
+  const { user, isLoading } = useUserStore();
   const signOut = () => nextAuthSignOut();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -58,14 +60,14 @@ export function Profile() {
 
   useClickOutside(dropdownRef, () => setIsOpen(false), isOpen);
 
-  if (!isLoaded || !user) {
+  if (isLoading || !user) {
     return <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />;
   }
 
   const createdAt = user.createdAt ? formatDate(new Date(user.createdAt)) : null;
   const displayName = user.profile?.firstName && user.profile?.lastName 
     ? `${user.profile.firstName} ${user.profile.lastName}`
-    : user.name || user.username;
+    : user.profile.firstName || user.username;
 
   return (
     <>
@@ -78,9 +80,9 @@ export function Profile() {
           className="flex items-center gap-2 p-1.5 rounded-full hover:bg-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           <Avatar
-            src={user.profile?.profilePicture || user.image || ''}
+            src={user.profile?.profilePicture || ''}
             alt={displayName}
-            fallback={user.profile?.firstName || user.name || user.email || 'U'}
+            fallback={user.profile?.firstName || user.email || 'U'}
             size="sm"
           />
           <ChevronDown
@@ -197,17 +199,19 @@ const TABS = [
 ];
 
 export function ProfilePage({ onClose }: { onClose: () => void }) {
-  const { data: session, status } = useSession();
-  const user = session?.user;
-  const isLoaded = status !== "loading";
+  const { user, isLoading } = useUserStore();
   const signOut = () => nextAuthSignOut();
 
   const [activeTab, setActiveTab] = useState<Tab>('account');
   const [showBackupCodes, setShowBackupCodes] = useState(false);
+  const [openChangeProfilePicture, setOpenChangeProfilePicture] = useState(false);
+  const profilePictureRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(profilePictureRef, () => setOpenChangeProfilePicture(false), openChangeProfilePicture);
 
   const { sessions, currentSession, revoking, revokeSession } = useSessions({ user });
 
-  if (!isLoaded || !user) {
+  if (isLoading || !user) {
     return (
       <Modal isOpen onClose={onClose} size="xl">
         <div className="flex items-center justify-center min-h-100">
@@ -222,32 +226,101 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
   return (
     <Modal isOpen onClose={onClose} size="xl" className="p-4 sm:p-6 md:px-12 lg:px-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8 p-4 sm:p-6 rounded-2xl bg-card border border-border mt-8 sm:mt-0">
-        <Avatar
-          src={user.profile?.profilePicture || user.image || ''}
-          alt={user.name || 'Avatar'}
-          fallback={user.profile?.firstName || user.name || user.email || 'U'}
-          size="lg"
-          ringColor="ring-primary/20"
-        />
-        <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+      <div className="flex flex-row items-center gap-3 sm:gap-6 mb-6 sm:mb-8 p-3 sm:p-6 rounded-2xl bg-card border mt-8 sm:mt-0">
+        <div className="relative shrink-0" ref={profilePictureRef}>
+          <button className="flex relative cursor-pointer rounded-full"
+            onClick={() => setOpenChangeProfilePicture(!openChangeProfilePicture)}
+          >
+            <Avatar
+              src={user.profile?.profilePicture || ''}
+              alt={user.username || 'Avatar'}
+              fallback={user.profile?.firstName || user.email || 'U'}
+              size="md"
+              className="sm:hidden"
+              ringColor="ring-primary/20"
+            />
+            <Avatar
+              src={user.profile?.profilePicture || ''}
+              alt={user.username || 'Avatar'}
+              fallback={user.profile?.firstName || user.email || 'U'}
+              size="lg"
+              className="hidden sm:flex"
+              ringColor="ring-primary/20"
+            />
+            <div className="flex absolute justify-center items-center gap-0.5 bg-popover border border-accent! px-1 py-0.5 sm:px-1.5 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-[-25%] bottom-0 rounded-md translate-y-1/3 text-xs sm:text-sm">
+              <Pencil className="w-3 h-3 sm:w-4 sm:h-4"/>
+              Edit
+            </div>
+          </button>
+          <AnimatePresence>
+            {openChangeProfilePicture && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute left-0 mt-2 w-36 sm:w-48 rounded-lg border border-border bg-popover shadow-lg z-50 overflow-hidden"
+              >
+                <button
+                  className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-foreground hover:bg-muted transition-colors"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/jpeg,image/png,image/webp,image/gif';
+                    input.onchange = async (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (!file) return;
+
+                      try {
+                        await storageApi.uploadProfilePicture(file);
+                        setOpenChangeProfilePicture(false);
+                      } catch (err) {
+                        console.error('Failed to upload profile picture:', err);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Upload a photo...
+                </button>
+                <div className="border-t border-border" />
+                <button
+                  className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  onClick={async () => {
+                    try {
+                      await storageApi.removeProfilePicture();
+                      setOpenChangeProfilePicture(false);
+                    } catch (err) {
+                      console.error('Failed to remove profile picture:', err);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove photo
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <h1 className="text-base sm:text-2xl font-bold text-foreground truncate">
             {user.profile?.firstName && user.profile?.lastName
               ? `${user.profile.firstName} ${user.profile.lastName}`
-              : user.name || 'Utilisateur'}
+              : user.username || 'Utilisateur'}
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
+          <p className="text-muted-foreground text-xs sm:text-base truncate">
             @{user.username || user.id?.slice(0, 8)}
           </p>
           {createdAt && (
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
               Membre depuis {createdAt}
             </p>
           )}
         </div>
-        <Button variant="outline" onClick={() => signOut()} className="w-full sm:w-auto">
-          <LogOut className="h-4 w-4 mr-2" />
-          <span className="sm:inline">Se déconnecter</span>
+        <Button variant="outline" size="sm" onClick={() => signOut()} className="shrink-0 sm:size-default">
+          <LogOut className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Se déconnecter</span>
         </Button>
       </div>
 
@@ -304,6 +377,8 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
   const [themeSelectOpen, setThemeSelectOpen] = useState(false);
 
   useClickOutside(themeSelectRef, () => setThemeSelectOpen(false), themeSelectOpen);
+
+
 
   return (
     <>
@@ -402,131 +477,6 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
   );
 }
 
-function TwoFaVerif({
-  qrCodeUri,
-  secret,
-  onClose,
-  onSuccess
-}: {
-  qrCodeUri: string;
-  secret: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [code, setCode] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleVerify = async (codeToVerify: string) => {
-    if (codeToVerify.length !== 6) return;
-
-    setIsVerifying(true);
-    setError(null);
-
-    try {
-      // TODO: Verify TOTP with your auth system
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      setError(err?.errors?.[0]?.message || 'Code invalide. Veuillez réessayer.');
-      setCode('');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleCodeChange = (newCode: string) => {
-    setCode(newCode);
-    setError(null);
-
-    if (newCode.length === 6 && !isVerifying) {
-      handleVerify(newCode);
-    }
-  };
-
-  return (
-    <Modal isOpen onClose={onClose} size="sm" showCloseButton={false}>
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-full bg-primary/10">
-            <Smartphone className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Activer la 2FA</h2>
-            <p className="text-sm text-muted-foreground">Scannez le QR code avec votre app</p>
-          </div>
-        </div>
-
-        {/* QR Code */}
-        <div className="flex justify-center p-4 bg-white rounded-lg mb-4">
-          <QRCode size={180} value={qrCodeUri} />
-        </div>
-
-        {/* Secret manuel */}
-        <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
-          <p className="text-xs text-muted-foreground mb-1">Ou entrez ce code manuellement :</p>
-          <code className="text-sm font-mono text-foreground break-all">{secret}</code>
-        </div>
-
-        {/* Code input */}
-        <div className="flex flex-col items-center m-8">
-          <h1 className="block text-sm font-medium text-foreground mb-2">
-            Entrez le code à 6 chiffres de votre app :
-          </h1>
-
-          <InputOTP
-            maxLength={6}
-            value={code}
-            onChange={handleCodeChange}
-            autoFocus
-            pattern={REGEXP_ONLY_DIGITS}
-            disabled={isVerifying}
-            className="text-center text-lg tracking-widest font-mono">
-            <InputOTPGroup>
-              <InputOTPSlot index={0}/>
-              <InputOTPSlot index={1}/>
-              <InputOTPSlot index={2}/>
-              <InputOTPSlot index={3}/>
-              <InputOTPSlot index={4}/>
-              <InputOTPSlot index={5}/>
-            </InputOTPGroup>
-          </InputOTP>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isVerifying} className="flex-1">
-            Annuler
-          </Button>
-          <Button
-            onClick={() => handleVerify(code)}
-            disabled={code.length !== 6 || isVerifying}
-            className="flex-1"
-          >
-            {isVerifying ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                Vérification...
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Activer
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
 
 // ============ SECURITY SECTION ============
 function SecuritySection({
@@ -553,29 +503,8 @@ function SecuritySection({
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [isLoadingCodes, setIsLoadingCodes] = useState(false);
 
-  const handleEnable2FA = async () => {
-    // TODO: Implement 2FA enable with your auth system
-  }
-
-  const handleDisable2FA = async () => {
-    // TODO: Implement 2FA disable with your auth system
-  };
-
   return (
     <>
-      {isEnabling2FA && totpData && (
-        <TwoFaVerif
-          qrCodeUri={totpData.uri}
-          secret={totpData.secret}
-          onClose={() => {
-            setisEnabling2FA(false);
-            setTotpData(null);
-          }}
-          onSuccess={() => {
-          }}
-        />
-      )}
-
       <SectionCard title="Authentification à deux facteurs (2FA)" icon={Smartphone}>
         <div className="space-y-3 sm:space-y-4">
           <ListItem
@@ -583,7 +512,7 @@ function SecuritySection({
             title="Application d'authentification"
             description="Google Authenticator, Authy, etc."
             action={
-              <Button size="sm" onClick={() => {handleEnable2FA()}}>
+              <Button size="sm" onClick={() => {}}>
                 <Plus className="h-4 w-4 mr-1" /> Activer
               </Button>
             }
@@ -620,31 +549,6 @@ function SecuritySection({
   );
 }
 
-// ============ HELPER COMPONENTS ============
-function ActivityItem({
-  icon,
-  title,
-  description,
-  time
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  time: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-muted/50">
-      <div className="p-1.5 sm:p-2 rounded-lg bg-muted shrink-0">
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground text-xs sm:text-sm">{title}</p>
-        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{description}</p>
-      </div>
-      <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">{time}</span>
-    </div>
-  );
-}
 
 // ============ DELETE ACCOUNT MODAL ============
 function DeleteAccountModal({ onClose }: { onClose: () => void }) {

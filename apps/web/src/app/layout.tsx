@@ -7,6 +7,7 @@ import { auth } from '@/auth';
 import './globals.css';
 
 import { SocketProvider } from '@/providers/socket-provider';
+import { UserProvider } from '@/providers/user-provider';
 import { SessionGuard } from '@/components/SessionGuard';
 import DismissableToast from '@/components/DismissableToast';
 
@@ -41,9 +42,11 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <SessionProvider session={session} refetchOnWindowFocus={true} refetchInterval={5 * 60}>
             <SessionGuard>
-              <SocketProvider>
-                {children}
-              </SocketProvider>
+              <UserProvider>
+                <SocketProvider>
+                  {children}
+                </SocketProvider>
+              </UserProvider>
             </SessionGuard>
           </SessionProvider>
           <DismissableToast />

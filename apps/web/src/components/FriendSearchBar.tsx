@@ -2,23 +2,30 @@
 
 import { apiClient } from "@/lib/api";
 import { API_ROUTES, SearchUser } from "@travel-planner/shared";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { UserRoundPlus } from "lucide-react";
 import { Avatar } from "./ui";
 import { motion } from "motion/react";
+import { useClickOutside } from "@/hooks";
 
 export function FriendSearchBar() {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(searchRef, () => setShowResults(false), showResults);
 
   useEffect(() => {
     if (search.length < 1) {
       setUsers([]);
+      setShowResults(false);
       return;
     }
 
     apiClient.get<SearchUser[]>(API_ROUTES.USERS.SEARCH(search)).then((res) => {
       setUsers(res);
+      setShowResults(res.length > 0);
     }).catch((err) => {
       console.error(err);
     })
@@ -36,14 +43,16 @@ export function FriendSearchBar() {
   }
 
   return (
-    <div className="flex relative items-center bg-popover p-2 sm:p-4 pl-3 sm:pl-8 w-full border-2 border-border rounded-full text-sm sm:text-lg">
+    <div ref={searchRef} className="flex relative items-center bg-popover p-2 sm:p-4 pl-3 sm:pl-8 w-full border-2 border-border rounded-full text-sm sm:text-lg">
       <span className="text-muted-foreground pr-1">@</span>
       <input
+        value={search}
         onChange={(e) => setSearch(e.target.value)}
+        onFocus={() => users.length > 0 && setShowResults(true)}
         placeholder="Username"
         className="w-full bg-transparent outline-none placeholder:text-muted-foreground"
       />
-      {users.length > 0 && (
+      {showResults && users.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.2 } }}
