@@ -8,17 +8,22 @@ import type { Room, RoomWithLastMessage } from "@travel-planner/shared";
 import { Separator } from "@/components/ui/separator";
 import { Avatar } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
+import { Profile } from "@/components/ui/user/Profile";
 
 function RoomListHeader({ rooms = [] } : { rooms?: RoomWithLastMessage[] }) {
   const { user } = useUserStore();
 
   return (
-    <div className="flex items-center p-8">
-      <Avatar src={user?.profile?.profilePicture ?? null} fallback={user?.username?.charAt(0).toUpperCase() ?? "U"}/>
+    <div className="flex items-center p-5 ml-3">
+      {/* <Avatar src={user?.profile?.profilePicture ?? null} fallback={user?.username?.charAt(0).toUpperCase() ?? "U"}/> */}
+      <Profile />
       <div className="flex flex-col justify-center ml-4">
-        <p className="font-semibold">{user?.username}</p>
+        <div className="flex flex-col ">
+          <p className="font-bold text-xl">{user?.profile?.firstName} {user?.profile?.lastName}</p>
+          <p className="font-light text-md opacity-50">@{user?.username}</p>
+        </div>
         <div className="flex gap-1">
-          <p className="font-bold pt-px">{rooms.length}</p>
+          <p className="font-extrabold pt-px">{rooms.length}</p>
           <p className="font-light">groupes de voyage actifs</p>
         </div>
       </div>
@@ -28,6 +33,7 @@ function RoomListHeader({ rooms = [] } : { rooms?: RoomWithLastMessage[] }) {
 
 export default function Home() {
   const [rooms, setRooms] = useState<RoomWithLastMessage[]>([]);
+  // const [privateMsg, setPrivateMsg] = useState<
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,8 +97,8 @@ export default function Home() {
             onClick={() => setSelectedRoomId("1")}
           />
         </aside>
-        <Separator orientation="vertical" className="hidden sm:inline" />
       </div>
+      <Separator orientation="vertical"  />
 
 
       {/* Right panel - Room content */}
