@@ -29,6 +29,7 @@ export class RoomsService {
         description: data.description,
         isPrivate: data.isPrivate ?? false,
         creatorId: userId,
+        type: data.type,
         members: {
           create: {
             userId,
@@ -48,6 +49,8 @@ export class RoomsService {
         },
       },
     });
+
+    this.roomsGateway.emitRoomCreated(room);
 
     return room;
   }

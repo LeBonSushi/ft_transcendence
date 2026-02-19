@@ -3,6 +3,7 @@ import { VoteType, MemberRole } from './room';
 // Room DTOs
 export interface CreateRoomDto {
   name: string;
+  type: 'GROUP' | 'DIRECT_MESSAGE';
   description?: string;
   isPrivate?: boolean;
 }

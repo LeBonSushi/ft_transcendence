@@ -20,6 +20,28 @@ const sizeClasses = {
   xl: "h-20 w-20 text-2xl sm:h-24 sm:w-24 sm:text-3xl",
 };
 
+// Palette de couleurs lisibles en light et dark
+const AVATAR_COLORS: [string, string][] = [
+  ["#e07b54", "#fff"],
+  ["#d4956a", "#fff"],
+  ["#c47a3f", "#fff"],
+  ["#a85c3a", "#fff"],
+  ["#7c9e6f", "#fff"],
+  ["#5b8c72", "#fff"],
+  ["#4a7fa8", "#fff"],
+  ["#5b6fa8", "#fff"],
+  ["#7c6db0", "#fff"],
+  ["#a06090", "#fff"],
+  ["#c0607a", "#fff"],
+  ["#7a8c6a", "#fff"],
+];
+
+function getAvatarColor(str: string | undefined): [string, string] {
+  if (!str) return AVATAR_COLORS[0];
+  const sum = str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+}
+
 export function Avatar({
   src,
   alt = "Avatar",
@@ -27,9 +49,10 @@ export function Avatar({
   size = "md",
   className,
   ringColor = "ring-border",
-  pictureColor = "bg-primary",
+  pictureColor,
 }: AvatarProps) {
   const initial = fallback?.charAt(0)?.toUpperCase() || "?";
+  const [bg, fg] = pictureColor ? [pictureColor, "#fff"] : getAvatarColor(fallback);
 
   return (
     <div
@@ -47,7 +70,10 @@ export function Avatar({
           className="h-full w-full object-cover block"
         />
       ) : (
-        <div className={cn("h-full w-full select-none", pictureColor, "flex items-center justify-center text-primary-foreground font-semibold")}>
+        <div
+          className="h-full w-full flex items-center justify-center font-semibold select-none"
+          style={{ backgroundColor: bg, color: fg }}
+        >
           {initial}
         </div>
       )}

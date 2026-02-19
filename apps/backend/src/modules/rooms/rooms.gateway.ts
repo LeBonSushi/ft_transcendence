@@ -76,6 +76,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // Room
+  emitRoomCreated(room: any) {
+    this.server.emit(SOCKET_EVENTS.ROOM_CREATED, { room });
+  }
+
   emitRoomUpdated(roomId: string, room: any) {
     this.emitToRoom(roomId, SOCKET_EVENTS.ROOM_UPDATED, { room });
   }

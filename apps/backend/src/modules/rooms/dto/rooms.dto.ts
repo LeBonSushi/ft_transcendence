@@ -25,6 +25,9 @@ export class CreateRoomDto implements ICreateRoomDto {
     @IsString()
     description?: string;
 
+    @IsEnum(['GROUP', 'DIRECT_MESSAGE'])
+    type: 'GROUP' | 'DIRECT_MESSAGE';
+
     @IsOptional()
     @IsBoolean()
     isPrivate?: boolean;
