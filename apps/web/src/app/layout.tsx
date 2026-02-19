@@ -10,6 +10,7 @@ import { SocketProvider } from '@/providers/socket-provider';
 import { UserProvider } from '@/providers/user-provider';
 import { SessionGuard } from '@/components/SessionGuard';
 import DismissableToast from '@/components/DismissableToast';
+import { Header } from '@/components/ui/header';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -44,6 +45,7 @@ export default async function RootLayout({
             <SessionGuard>
               <UserProvider>
                 <SocketProvider>
+                  <Header />
                   {children}
                 </SocketProvider>
               </UserProvider>
