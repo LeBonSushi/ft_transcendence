@@ -83,11 +83,11 @@ Defines technical architecture. Makes technology stack decisions. Ensures code q
 Write code for assigned features. Participate in code reviews. Test their implementations. Document their work.
 
 ### ggirault [[ po ](#product-owner-po)][[ dev ](#developer)]:
-- All the little annoying things
+- All the little annoying things (legal pages, readme ...)
 - Backend users/friends
 - Archi design with macorso
 - DB design
-- front
+- 
 
 ### macorso [[ tech lead ](#tech-lead)][[ dev ](#developer)]:
 - api
@@ -97,7 +97,7 @@ Write code for assigned features. Participate in code reviews. Test their implem
 - 
 
 ### nbrecque [[ dev ](#developer)]:
-- Backend chat
+- Backend chat/room
 - WebSocket
 - front
 -
@@ -138,7 +138,7 @@ Teamwork was organized in a structured way to ensure good project progress track
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white&style=for-the-badge)](https://kubernetes.io/)
 [![TS](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
 [![JS](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=222&style=for-the-badge)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
-[![ngrok](https://img.shields.io/badge/ngrok-1F1F1F?logo=ngrok&logoColor=white&style=for-the-badge)](https://ngrok.com/)
+<!-- [![ngrok](https://img.shields.io/badge/ngrok-1F1F1F?logo=ngrok&logoColor=white&style=for-the-badge)](https://ngrok.com/) -->
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -167,10 +167,10 @@ Here is a list of features and the people who worked on them
 	<p>to be completed</p>
 
 * Profile (Macorso / Ggirault):
-	<p>to be completed</p>
+	<p>We worked on having a profile page, being able to modify your information and do the basic actions, delete your account, modify your theme, activate 2fa...</p>
 
 * Friends (Ggirault):
-	<p>to be completed</p>
+	<p>Backend management of adding/removing/blocking/unblocking friends and sends notifications of addition/acceptance</p>
 
 * 2-factor authentication (Macorso)
 	<p>to be completed</p>
@@ -222,5 +222,8 @@ Below is a summary of the main project areas and contributions.
 ## WebSocket
 - to be completed
 
-## Other Features
+## Chat
+- to be completed
+
+## AJOUTER TOUTE LES FEATURES SUR LEQUELLES VOUS AVEZ TRAVAILLER DANS LE MEME FORMAT QU'AU DESSUS
 - to be completed
