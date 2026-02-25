@@ -32,6 +32,7 @@ export interface Room {
   isPrivate: boolean;
   createdAt: Date;
   updatedAt: Date;
+  type: 'DIRECT_MESSAGE' | 'GROUP';
 }
 
 export interface RoomSummary {

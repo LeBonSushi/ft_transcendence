@@ -5,7 +5,7 @@ import { usersApi, roomsApi } from '@/lib/api';
 import { useSocket } from './useSocket';
 import { useRoomSocket } from './useRoomSocket';
 import { SOCKET_EVENTS } from '@travel-planner/shared';
-import type { RoomWithLastMessage } from '@travel-planner/shared';
+import type { RoomWithLastMessage, UpdateRoomDto } from '@travel-planner/shared';
 
 export function useRooms() {
   const [rooms, setRooms] = useState<RoomWithLastMessage[]>([]);
@@ -46,6 +46,10 @@ export function useRooms() {
     },
   });
 
+  const updateRoom = async (roomId: string, data: UpdateRoomDto) => {
+    return roomsApi.getRoom(roomId).update(data);
+  };
+
   const createRoom = async (name: string, type: 'DIRECT_MESSAGE' | 'GROUP') => {
     return roomsApi.create({ name, type });
   };
@@ -57,5 +61,6 @@ export function useRooms() {
     loading,
     selectRoom: setSelectedRoomId,
     createRoom,
+    updateRoom,
   };
 }

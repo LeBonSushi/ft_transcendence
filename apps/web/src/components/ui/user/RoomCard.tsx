@@ -1,4 +1,4 @@
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, getAvatarColor } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface RoomCardProps {
@@ -29,7 +29,9 @@ function formatTime(date: Date | null): string {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
 }
 
-export function RoomCard({ name, lastMessage, lastMessageDate, senderUsername, senderPicture, isSelected, onClick }: RoomCardProps) {
+export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsername, senderPicture, isSelected, onClick }: RoomCardProps) {
+  const [roomColor] = getAvatarColor(id);
+
   return (
     <button
       onClick={onClick}
@@ -44,6 +46,7 @@ export function RoomCard({ name, lastMessage, lastMessageDate, senderUsername, s
         fallback={name}
         size="sm"
         ringColor="ring-transparent"
+        pictureColor={roomColor}
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">

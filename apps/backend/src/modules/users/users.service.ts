@@ -202,11 +202,6 @@ export class UsersService {
   }
 
   async getRoomsByUser(userId: string) {
-    const user = await this.getUserById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
     const userWithRooms = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -216,6 +211,7 @@ export class UsersService {
               select: {
                 id: true,
                 name: true,
+                type: true,
                 description: true,
                 status: true,
                 isPrivate: true,

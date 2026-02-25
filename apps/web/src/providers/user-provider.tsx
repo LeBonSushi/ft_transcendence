@@ -3,14 +3,19 @@
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserStore } from '@/stores/useUserStore';
-import { usersApi } from '@/lib/api';
+import { usersApi, apiClient } from '@/lib/api';
 
 /**
  * UserProvider - Initializes and syncs user data from backend to Zustand store
  * Loads user data when authenticated and keeps store in sync
  */
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+
+  // Sync the access token into the API client cache to avoid getSession() on every request
+  useEffect(() => {
+    apiClient.setToken(session?.accessToken ?? null);
+  }, [session?.accessToken]);
   const { setUser, setLoading, setError, clearUser } = useUserStore();
 
   useEffect(() => {
