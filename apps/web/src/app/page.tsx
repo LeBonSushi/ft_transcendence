@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRooms } from "@/hooks/useRooms";
 import { RoomCard } from "@/components/ui/user/RoomCard";
@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useUserStore } from "@/stores/useUserStore";
 import { Profile } from "@/components/ui/user/Profile";
 import type { RoomWithLastMessage } from "@travel-planner/shared";
-import { Paperclip } from "lucide-react";
+import { Paperclip, Send } from "lucide-react";
 
 function RoomListHeader({ rooms = [] } : { rooms?: RoomWithLastMessage[] }) {
   const { user } = useUserStore();
@@ -47,10 +47,14 @@ export default function Home() {
   const [isHoveringName, setIsHoveringName] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+  const imagesToUpload = useRef<Record<string, File[]>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [isMaxMessageSizeExceeded, setIsMaxMessageSizeExceeded] = useState(false);
 
   const MAX_ROOM_NAME_LENGTH = 30;
-
-  const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_IMAGES_PER_MESSAGE = 5;
+  const MAX_MESSAGE_SIZE = 2000; // 2000 characters
 
   useEffect(() => {
     setRoomName(selectedRoom?.name ?? '');
@@ -202,7 +206,7 @@ export default function Home() {
                       <motion.span
                         style={{ fontFamily: 'var(--font-serif)', originX: 0 }}
                         className="text-2xl font-semibold tracking-tight"
-                        animate={isHoveringName ? { color: cssVar('--primary'), scale: 1.02 } : { color: cssVar('--foreground'), scale: 1 }}
+                        animate={isHoveringName ? { color: 'var(--primary)', scale: 1.02 } : { color: 'var(--foreground)', scale: 1 }}
                         transition={{ duration: 0.2 }}
                       >
                         {roomName}
@@ -217,7 +221,7 @@ export default function Home() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className="shrink-0"
-                        animate={isHoveringName ? { color: cssVar('--primary') } : { color: cssVar('--muted-foreground') }}
+                        animate={isHoveringName ? { color: 'var(--primary)' } : { color: 'var(--muted-foreground)' }}
                         transition={{ duration: 0.2 }}
                       >
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -235,11 +239,69 @@ export default function Home() {
                 )}
               </AnimatePresence>
             </div>
-            <motion.div className="mt-auto mx-5 rounded-md mb-3 flex justify-between items-center bg-muted border border-border p-4">
-              <motion.button className="flex w-5 h-5 justify-center items-center">
-                <Paperclip />
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 py-4">
+              {/* Zone messages */}
+            </div>
+            <motion.div
+              animate={isMaxMessageSizeExceeded ? { x: [0, -4, 4, -4, 4, -2, 2, 0] } : { x: 0 }}
+              className="flex items-end gap-4 mx-5 mb-8 px-5 py-3 rounded-3xl bg-muted border border-border">
+              <motion.button
+                className="shrink-0 w-5 h-5 mb-0.5"
+                whileHover={{ scale: 1.1, color: 'var(--primary)' }}
+                transition={{ duration: 0.2 }}
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.multiple = true;
+                  input.onchange = (e) => {
+                    const files = (e.target as HTMLInputElement).files;
+                    if (files) {
+                      if (files.length + (imagesToUpload.current[selectedRoom.id]?.length || 0) > MAX_IMAGES_PER_MESSAGE) {
+                        setError(`Vous ne pouvez pas envoyer plus de ${MAX_IMAGES_PER_MESSAGE} images par message.`);
+                        return;
+                      }
+                      for (let i = 0; i < files.length; i++) {
+                        if (files[i].size > MAX_IMAGE_SIZE) {
+                          setError(`Un ou plusieurs fichiers sont trop volumineux.`);
+                          return;
+                        } else {
+                          imagesToUpload.current[selectedRoom.id] = imagesToUpload.current[selectedRoom.id] || [];
+                          imagesToUpload.current[selectedRoom.id].push(files[i]);
+                        }
+                      }
+                    }
+                  };
+                  input.click();
+                }}
+              >
+                <Paperclip className="w-full h-full" />
               </motion.button>
-              {/* <motion.input placeholder="test" className="w-full "/> */}
+              <textarea
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    console.log('Envoyer message :', e.currentTarget.value);
+                  }
+                }}
+                onChange={(e) => {
+                  if (e.target.value.length > MAX_MESSAGE_SIZE) {
+                    e.target.value = e.target.value.slice(0, MAX_MESSAGE_SIZE);
+                    setIsMaxMessageSizeExceeded(true);
+                    setTimeout(() => setIsMaxMessageSizeExceeded(false), 500);
+                  }
+                }}
+                className="w-full max-h-40 outline-none bg-transparent resize-none field-sizing-content leading-relaxed text-sm placeholder:text-muted-foreground"
+                placeholder="Écrivez votre message..."
+              />
+              <motion.button
+                className="shrink-0 w-5 h-5 mb-0.5"
+                whileHover={{ scale: 1.1, color: 'var(--primary)' }}
+                transition={{ duration: 0.2 }}
+                onClick={() => console.log('Envoyer message')}
+              >
+                <Send className="w-full h-full" />
+              </motion.button>
             </motion.div>
           </>
         ) : (

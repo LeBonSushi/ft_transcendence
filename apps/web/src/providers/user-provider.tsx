@@ -12,13 +12,12 @@ import { usersApi, apiClient } from '@/lib/api';
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
 
-  // Sync the access token into the API client cache to avoid getSession() on every request
-  useEffect(() => {
-    apiClient.setToken(session?.accessToken ?? null);
-  }, [session?.accessToken]);
   const { setUser, setLoading, setError, clearUser } = useUserStore();
 
   useEffect(() => {
+    // Sync token first, then load user data
+    apiClient.setToken(session?.accessToken ?? null);
+
     const loadUserData = async () => {
       if (status === 'loading') {
         setLoading(true);
@@ -31,6 +30,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (status === 'authenticated') {
+        if (!session?.accessToken) return;
         try {
           setLoading(true);
           const userData = await usersApi.getCurrentUser().getProfile();
@@ -43,7 +43,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
 
     loadUserData();
-  }, [status, setUser, setLoading, setError, clearUser]);
+  }, [status, session?.accessToken, setUser, setLoading, setError, clearUser]);
 
   return <>{children}</>;
 }
