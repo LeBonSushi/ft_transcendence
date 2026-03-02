@@ -83,6 +83,7 @@ model Room {
 	creatorId   String
 	creator     User     @relation("RoomCreator", fields: [creatorId], references: [id])
 	description String?
+	imageUrl    String?
 	status      RoomStatus @default(PLANNING)
 	isPrivate   Boolean  @default(false)
 
@@ -191,6 +192,7 @@ model ActivitySuggestion {
   description    String
   category       ActivityCategory
   estimatedPrice Decimal?         @db.Decimal(10, 2)
+  link           String?
 
   createdAt DateTime @default(now())
 

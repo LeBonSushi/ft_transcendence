@@ -22,8 +22,9 @@ export function useChatSocket(roomId: string | null, callbacks: ChatSocketCallba
   useEffect(() => {
     if (!socket || !isConnected || !roomId) return;
 
-    // Join the chat room
+    // Join the chat room and request history
     socket.emit('room:join', { roomId });
+    socket.emit('messages:get', { roomId });
 
     const handlers: Array<[string, (data: any) => void]> = [
       ['message:receive',  (data) => callbacksRef.current.onMessageReceive?.(data)],

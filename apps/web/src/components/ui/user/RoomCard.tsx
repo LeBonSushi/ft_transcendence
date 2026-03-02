@@ -8,7 +8,7 @@ interface RoomCardProps {
   lastMessage: string | null;
   lastMessageDate: Date | null;
   senderUsername: string | null;
-  senderPicture: string | null;
+  roomPicture: string | null;
   createdAt?: Date;
   isSelected?: boolean;
   onClick?: () => void;
@@ -29,7 +29,7 @@ function formatTime(date: Date | null): string {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
 }
 
-export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsername, senderPicture, isSelected, onClick }: RoomCardProps) {
+export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsername, roomPicture, isSelected, onClick }: RoomCardProps) {
   const [roomColor] = getAvatarColor(id);
 
   return (
@@ -41,7 +41,7 @@ export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsernam
       )}
     >
       <Avatar
-        src={senderPicture ?? ''}
+        src={roomPicture ?? ''}
         alt={name}
         fallback={name}
         size="sm"

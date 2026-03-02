@@ -54,6 +54,9 @@ logs-prod:
 db-seed:
 	pnpm db:seed
 
+db-generate:
+	pnpm db:generate
+
 db-reset:
 	pnpm db:reset
 

@@ -27,12 +27,23 @@ export function useRooms() {
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    const handler = ({ room }: { room: RoomWithLastMessage }) => {
+    const onRoomCreated = ({ room }: { room: RoomWithLastMessage }) => {
       setRooms(prev => prev.some(r => r.id === room.id) ? prev : [...prev, room]);
     };
 
-    socket.on(SOCKET_EVENTS.ROOM_CREATED, handler);
-    return () => { socket.off(SOCKET_EVENTS.ROOM_CREATED, handler); };
+    const onMessageReceive = (message: { roomId: string; content: string; createdAt: Date }) => {
+      setRooms(prev => prev.map(r => r.id === message.roomId
+        ? { ...r, lastMessage: message.content, lastMessageDate: message.createdAt }
+        : r
+      ));
+    };
+
+    socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
+    socket.on('message:receive', onMessageReceive);
+    return () => {
+      socket.off(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
+      socket.off('message:receive', onMessageReceive);
+    };
   }, [socket, isConnected]);
 
   // Subscribe to socket events for the selected room

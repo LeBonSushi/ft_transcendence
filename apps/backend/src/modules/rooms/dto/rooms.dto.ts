@@ -41,6 +41,10 @@ export class UpdateRoomDto implements IUpdateRoomDto {
     @IsOptional()
     @IsString()
     description?: string;
+
+    @IsOptional()
+    @IsString()
+    imageUrl?: string;
 }
 
 // roomMembers
@@ -151,6 +155,10 @@ export class CreateActivityDto implements ICreateActivityDto {
     @IsOptional()
     @IsNumber()
     estimatedPrice?: number;
+
+    @IsOptional()
+    @IsString()
+    link?: string;
 }
 
 export class UpdateActivityDto implements IUpdateActivityDto {
@@ -169,4 +177,8 @@ export class UpdateActivityDto implements IUpdateActivityDto {
     @IsOptional()
     @IsNumber()
     estimatedPrice?: number;
+
+    @IsOptional()
+    @IsString()
+    link?: string;
 }

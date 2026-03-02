@@ -106,7 +106,8 @@ export class RoomsService {
       where: {id: roomId},
       data: {
         name: data.name,
-        description: data.description
+        description: data.description,
+        imageUrl: data.imageUrl,
       },
       include: {
         members: {
@@ -836,6 +837,7 @@ export class RoomsService {
         description: data.description ?? '',
         category: data.category,
         estimatedPrice: data.estimatedPrice,
+        link: data.link,
       },
       include: {
         suggestedBy: {

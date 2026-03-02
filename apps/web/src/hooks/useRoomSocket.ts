@@ -10,6 +10,7 @@ import type {
   TripProposal,
   TripVote,
   ActivitySuggestion,
+  Message,
 } from '@travel-planner/shared';
 
 // --- Event payload types ---
@@ -33,9 +34,14 @@ interface VoteDeletedPayload { proposalId: string; userId: string }
 interface ActivityPayload { proposalId: string; activity: ActivitySuggestion }
 interface ActivityDeletedPayload { proposalId: string; activityId: string }
 
+interface MessageReceivedPayload { message: Message }
+
 // --- Callbacks interface ---
 
 export interface RoomSocketCallbacks {
+  // Messages
+  onMessageReceived?: (data: MessageReceivedPayload) => void;
+
   // Room
   onRoomUpdated?: (data: RoomUpdatedPayload) => void;
   onRoomDeleted?: (data: RoomDeletedPayload) => void;
@@ -84,6 +90,7 @@ export function useRoomSocket(roomId: string | null, callbacks: RoomSocketCallba
 
     // Map: socket event → callback key
     const eventMap: Array<[string, keyof RoomSocketCallbacks]> = [
+      [SOCKET_EVENTS.MESSAGE_RECEIVE, 'onMessageReceived'],
       [SOCKET_EVENTS.ROOM_UPDATED, 'onRoomUpdated'],
       [SOCKET_EVENTS.ROOM_DELETED, 'onRoomDeleted'],
       [SOCKET_EVENTS.MEMBER_JOINED, 'onMemberJoined'],
