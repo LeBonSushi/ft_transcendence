@@ -104,7 +104,7 @@ async function main() {
   });
 
   const user6 = await prisma.user.upsert({
-    where: { email: 'bdhdu28@example.com' },
+    where: { email: 'bdhdu38@example.com' },
     update: {},
     create: {
       email: 'bdhdu38@example.com',
@@ -155,7 +155,84 @@ async function main() {
     },
   });
 
-  console.log('✅ Created 2 rooms');
+  const room3 = await prisma.room.create({
+    data: {
+      name: 'Case A - Impossible No Overlap',
+      type: 'GROUP',
+      creatorId: user1.id,
+      description: 'Edge case: every user has availability but no common overlap',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  const room4 = await prisma.room.create({
+    data: {
+      name: 'Case B - Boundary Touching',
+      type: 'GROUP',
+      creatorId: user2.id,
+      description: 'Edge case: ranges touch at boundaries only ([start, end) behavior)',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  const room5 = await prisma.room.create({
+    data: {
+      name: 'Case C - Fallback 70',
+      type: 'GROUP',
+      creatorId: user3.id,
+      description: 'Tricky case: 4/5 users overlap, one far outlier',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  const room6 = await prisma.room.create({
+    data: {
+      name: 'Case D - Fallback 50 Split Groups',
+      type: 'GROUP',
+      creatorId: user4.id,
+      description: 'Two user clusters with no global overlap',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  const room7 = await prisma.room.create({
+    data: {
+      name: 'Case E - Multi Windows Per User',
+      type: 'GROUP',
+      creatorId: user1.id,
+      description: 'Users have multiple windows, tests sweep-line event counting',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  const room8 = await prisma.room.create({
+    data: {
+      name: 'Case F - Invalid User Availability',
+      type: 'GROUP',
+      creatorId: user2.id,
+      description: 'Contains invalid range startDate >= endDate to test validation path',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  const room9 = await prisma.room.create({
+    data: {
+      name: 'Case G - Not Enough Users Available',
+      type: 'GROUP',
+      creatorId: user3.id,
+      description: 'Room has many members but only one user added availability',
+      status: 'PLANNING',
+      isPrivate: false,
+    },
+  });
+
+  console.log('✅ Created 9 rooms (normal + matching edge cases)');
 
   // Add members to rooms
   await prisma.roomMember.createMany({
@@ -170,11 +247,46 @@ async function main() {
       { roomId: room2.id, userId: user1.id, role: 'MEMBER' },
       { roomId: room2.id, userId: user5.id, role: 'MEMBER' },
       { roomId: room2.id, userId: user6.id, role: 'MEMBER' },
+      // Room 3 members (impossible overlap)
+      { roomId: room3.id, userId: user1.id, role: 'ADMIN' },
+      { roomId: room3.id, userId: user2.id, role: 'MEMBER' },
+      { roomId: room3.id, userId: user3.id, role: 'MEMBER' },
+      { roomId: room3.id, userId: user4.id, role: 'MEMBER' },
+      // Room 4 members (boundary touching)
+      { roomId: room4.id, userId: user2.id, role: 'ADMIN' },
+      { roomId: room4.id, userId: user1.id, role: 'MEMBER' },
+      { roomId: room4.id, userId: user3.id, role: 'MEMBER' },
+      // Room 5 members (fallback 70)
+      { roomId: room5.id, userId: user3.id, role: 'ADMIN' },
+      { roomId: room5.id, userId: user1.id, role: 'MEMBER' },
+      { roomId: room5.id, userId: user2.id, role: 'MEMBER' },
+      { roomId: room5.id, userId: user4.id, role: 'MEMBER' },
+      { roomId: room5.id, userId: user5.id, role: 'MEMBER' },
+      // Room 6 members (fallback 50 split)
+      { roomId: room6.id, userId: user4.id, role: 'ADMIN' },
+      { roomId: room6.id, userId: user1.id, role: 'MEMBER' },
+      { roomId: room6.id, userId: user2.id, role: 'MEMBER' },
+      { roomId: room6.id, userId: user3.id, role: 'MEMBER' },
+      { roomId: room6.id, userId: user5.id, role: 'MEMBER' },
+      // Room 7 members (multiple windows)
+      { roomId: room7.id, userId: user1.id, role: 'ADMIN' },
+      { roomId: room7.id, userId: user2.id, role: 'MEMBER' },
+      { roomId: room7.id, userId: user3.id, role: 'MEMBER' },
+      { roomId: room7.id, userId: user6.id, role: 'MEMBER' },
+      // Room 8 members (invalid range)
+      { roomId: room8.id, userId: user2.id, role: 'ADMIN' },
+      { roomId: room8.id, userId: user4.id, role: 'MEMBER' },
+      { roomId: room8.id, userId: user5.id, role: 'MEMBER' },
+      // Room 9 members (not enough users with availability)
+      { roomId: room9.id, userId: user3.id, role: 'ADMIN' },
+      { roomId: room9.id, userId: user1.id, role: 'MEMBER' },
+      { roomId: room9.id, userId: user2.id, role: 'MEMBER' },
+      { roomId: room9.id, userId: user6.id, role: 'MEMBER' },
     ],
     skipDuplicates: true,
   });
 
-  console.log('✅ Added room members');
+  console.log('✅ Added room members (including edge-case rooms)');
 
   // Add messages
   await prisma.message.createMany({
@@ -226,13 +338,9 @@ async function main() {
     ],
   });
 
-  console.log('✅ Created messages');
+  console.log('✅ Created base chat messages');
 
-  // Add user availabilities
-  const today = new Date();
-  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-  const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0);
-  
+  // Add user availabilities (normal + edge-case scenarios for matching)
   await prisma.userAvailability.createMany({
     data: [
       // Room 1 availabilities
@@ -293,10 +401,220 @@ async function main() {
         endDate: new Date(2026, 4, 15),  // May 15
         notes: 'Only available in May',
       },
+
+      // Room 3 - Impossible overlap (no two users overlap)
+      {
+        roomId: room3.id,
+        userId: user1.id,
+        startDate: new Date(2026, 0, 1),
+        endDate: new Date(2026, 0, 3),
+        notes: 'Slot A',
+      },
+      {
+        roomId: room3.id,
+        userId: user2.id,
+        startDate: new Date(2026, 0, 4),
+        endDate: new Date(2026, 0, 6),
+        notes: 'Slot B',
+      },
+      {
+        roomId: room3.id,
+        userId: user3.id,
+        startDate: new Date(2026, 0, 7),
+        endDate: new Date(2026, 0, 9),
+        notes: 'Slot C',
+      },
+      {
+        roomId: room3.id,
+        userId: user4.id,
+        startDate: new Date(2026, 0, 10),
+        endDate: new Date(2026, 0, 12),
+        notes: 'Slot D',
+      },
+
+      // Room 4 - Boundary touching only: [start, end) should not overlap at exact boundary
+      {
+        roomId: room4.id,
+        userId: user1.id,
+        startDate: new Date(2026, 1, 1),
+        endDate: new Date(2026, 1, 5),
+        notes: 'Ends exactly when Bob starts',
+      },
+      {
+        roomId: room4.id,
+        userId: user2.id,
+        startDate: new Date(2026, 1, 5),
+        endDate: new Date(2026, 1, 10),
+        notes: 'Starts at Alice end boundary',
+      },
+      {
+        roomId: room4.id,
+        userId: user3.id,
+        startDate: new Date(2026, 1, 10),
+        endDate: new Date(2026, 1, 14),
+        notes: 'Starts at Bob end boundary',
+      },
+
+      // Room 5 - Fallback 70% expected: 4 users overlap, 1 user is far away
+      {
+        roomId: room5.id,
+        userId: user1.id,
+        startDate: new Date(2026, 5, 8),
+        endDate: new Date(2026, 5, 20),
+        notes: 'Core overlap group',
+      },
+      {
+        roomId: room5.id,
+        userId: user2.id,
+        startDate: new Date(2026, 5, 10),
+        endDate: new Date(2026, 5, 19),
+        notes: 'Core overlap group',
+      },
+      {
+        roomId: room5.id,
+        userId: user3.id,
+        startDate: new Date(2026, 5, 9),
+        endDate: new Date(2026, 5, 15),
+        notes: 'Core overlap group',
+      },
+      {
+        roomId: room5.id,
+        userId: user4.id,
+        startDate: new Date(2026, 5, 11),
+        endDate: new Date(2026, 5, 16),
+        notes: 'Core overlap group',
+      },
+      {
+        roomId: room5.id,
+        userId: user5.id,
+        startDate: new Date(2026, 7, 1),
+        endDate: new Date(2026, 7, 12),
+        notes: 'Outlier user (forces fallback)',
+      },
+
+      // Room 6 - Split groups, tests weaker fallback levels
+      {
+        roomId: room6.id,
+        userId: user1.id,
+        startDate: new Date(2026, 8, 1),
+        endDate: new Date(2026, 8, 8),
+        notes: 'Group A',
+      },
+      {
+        roomId: room6.id,
+        userId: user2.id,
+        startDate: new Date(2026, 8, 2),
+        endDate: new Date(2026, 8, 7),
+        notes: 'Group A',
+      },
+      {
+        roomId: room6.id,
+        userId: user3.id,
+        startDate: new Date(2026, 8, 15),
+        endDate: new Date(2026, 8, 22),
+        notes: 'Group B',
+      },
+      {
+        roomId: room6.id,
+        userId: user4.id,
+        startDate: new Date(2026, 8, 14),
+        endDate: new Date(2026, 8, 21),
+        notes: 'Group B',
+      },
+      {
+        roomId: room6.id,
+        userId: user5.id,
+        startDate: new Date(2026, 8, 30),
+        endDate: new Date(2026, 9, 2),
+        notes: 'Isolated user',
+      },
+
+      // Room 7 - Multiple windows per user, with overlapping ranges and duplicates risk
+      {
+        roomId: room7.id,
+        userId: user1.id,
+        startDate: new Date(2026, 10, 1),
+        endDate: new Date(2026, 10, 4),
+        notes: 'Window 1',
+      },
+      {
+        roomId: room7.id,
+        userId: user1.id,
+        startDate: new Date(2026, 10, 8),
+        endDate: new Date(2026, 10, 12),
+        notes: 'Window 2',
+      },
+      {
+        roomId: room7.id,
+        userId: user2.id,
+        startDate: new Date(2026, 10, 2),
+        endDate: new Date(2026, 10, 6),
+        notes: 'Window 1',
+      },
+      {
+        roomId: room7.id,
+        userId: user2.id,
+        startDate: new Date(2026, 10, 9),
+        endDate: new Date(2026, 10, 11),
+        notes: 'Window 2',
+      },
+      {
+        roomId: room7.id,
+        userId: user3.id,
+        startDate: new Date(2026, 10, 3),
+        endDate: new Date(2026, 10, 5),
+        notes: 'Narrow overlap in early window',
+      },
+      {
+        roomId: room7.id,
+        userId: user3.id,
+        startDate: new Date(2026, 10, 10),
+        endDate: new Date(2026, 10, 14),
+        notes: 'Broader overlap in late window',
+      },
+      {
+        roomId: room7.id,
+        userId: user6.id,
+        startDate: new Date(2026, 10, 9),
+        endDate: new Date(2026, 10, 13),
+        notes: 'Late window participant',
+      },
+
+      // Room 8 - Invalid availability to trigger validation exception
+      {
+        roomId: room8.id,
+        userId: user2.id,
+        startDate: new Date(2026, 2, 18),
+        endDate: new Date(2026, 2, 16),
+        notes: 'Invalid: startDate after endDate',
+      },
+      {
+        roomId: room8.id,
+        userId: user4.id,
+        startDate: new Date(2026, 2, 15),
+        endDate: new Date(2026, 2, 20),
+        notes: 'Valid range',
+      },
+      {
+        roomId: room8.id,
+        userId: user5.id,
+        startDate: new Date(2026, 2, 17),
+        endDate: new Date(2026, 2, 23),
+        notes: 'Valid range',
+      },
+
+      // Room 9 - Only one user has availability (should fail min users check)
+      {
+        roomId: room9.id,
+        userId: user1.id,
+        startDate: new Date(2026, 11, 5),
+        endDate: new Date(2026, 11, 12),
+        notes: 'Only availability in this room',
+      },
     ],
   });
 
-  console.log('✅ Created user availabilities');
+  console.log('✅ Created user availabilities (normal + impossible + tricky cases)');
   console.log('🎉 Database seeded successfully!');
 }
 

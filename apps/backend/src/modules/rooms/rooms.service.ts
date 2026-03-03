@@ -951,44 +951,145 @@ export class RoomsService {
   }
 
   async matchingDate(roomId: string) {
-    const room = await this.prisma.room.findUnique({ where: { id: roomId }});
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: {
+        members: {
+          select: {
+            userId: true,
+          }
+        }
+      },
+    });
 
     if (!room)
       throw new NotFoundException('Room doesn\'t exist');
 
     const availabilities = await this.prisma.userAvailability.findMany({
-      where: { roomId: room.id }
+      where: { roomId: room.id },
+      orderBy: {
+        startDate: "asc"
+      },
     });
 
     if (!availabilities.length)
       throw new NotFoundException('No availabilities found for this room');
 
-    if (availabilities.length < 2)
-        throw new ConflictException('We need a minimum of 2 person to match the date');
+    // Set of members that belong to the room
+    const memberId = new Set(room.members.map((m) => m.userId));
 
-    let commonStart: Date = availabilities[0].startDate;
-    let commonEnd: Date = availabilities[0].endDate;
-
-    availabilities.map((date) => {
-      if (date.startDate >= date.endDate)
-          throw new ConflictException(`Date are invalid for ${date.userId}`);
-      if (date.startDate > commonStart)
-        commonStart = date.startDate;
-      if (date.endDate < commonEnd)
-        commonEnd = date.endDate;
-      console.log("start: ", date.startDate, " end: ", date.endDate);
+    // Keep only availabilities from room members, then validate date ranges
+    const valideMembers = availabilities.filter((a) => memberId.has(a.userId));
+    valideMembers.forEach((a) => {
+      if (a.startDate >= a.endDate)
+          throw new ConflictException(`Date are invalid for ${a.userId}`);
     });
 
-    if (commonStart >= commonEnd)
-      throw new ConflictException('No common availability found between all members');
+    // Users that have at least one valid availability in this room
+    const userAvailable = new Set(valideMembers.map((a) => a.userId));
+    if (userAvailable.size < 2)
+      throw new ConflictException('We need a minimum of 2 person to match the date');
 
-    const res = {
-      startDate:  commonStart,
-      endDate:    commonEnd,
-      duration: Math.ceil((commonEnd.getTime() - commonStart.getTime()) / (1000 * 60 * 60 * 24)),
-      memberCount: availabilities.length,
+    // Sweep-line events: +1 when user enters availability, -1 when user leaves
+    type Event = { at: number; userId: string; isHere: 1 | -1 }
+    const events: Event[] = [];
+    for (const a of valideMembers) {
+      events.push({ at: a.startDate.getTime(), userId: a.userId, isHere: 1 });
+      events.push({ at: a.endDate.getTime(), userId: a.userId, isHere: -1 });
     }
-    console.log("Matching date found: ", res);
+
+    // Sort by time, then by event type.
+    // With [start, end) intervals, handling -1 before +1 at same timestamp avoids fake overlap.
+    events.sort((first, second) => (first.at - second.at) || (first.isHere - second.isHere));
+
+    // Track active users while scanning the timeline
+    const activeCount = new Map<string, number>();
+    const activeUsers = new Set<string>();
+
+    type Segment = { start: number, end: number, users: Set<string> };
+    const segments: Segment[] = [];
+
+    let i = 0;
+    while (i < events.length) {
+      const time = events[i].at;
+
+      // Apply all events at the same timestamp
+      while (i < events.length && events[i].at === time) {
+        const event = events[i];
+        const next = (activeCount.get(event.userId) ?? 0) + event.isHere;
+
+        if (next <= 0) {
+          activeCount.delete(event.userId);
+          activeUsers.delete(event.userId);
+        }
+        else {
+          activeCount.set(event.userId, next);
+          activeUsers.add(event.userId);
+        }
+        i++;
+      }
+      
+      // check that the next entrie is superior and if the number of active user for this state is above 0
+      // then save all the users available for this segment
+      if (i < events.length) {
+        const nextTime = events[i].at;
+        if (nextTime > time && activeUsers.size > 0)
+          segments.push({ start: time, end: nextTime, users: new Set(activeUsers) });
+      }
+    }
+
+    if (!segments.length)
+      throw new ConflictException('Not matching date find');
+
+    const totalUsers = userAvailable.size;
+    const fallback70 = Math.max(2, Math.ceil(totalUsers * 0.7)); //2: min users matching | 0.7: percentage of user in the match
+    const fallback50 = Math.max(2, Math.ceil(totalUsers * 0.5)); //2: min users matching | 0.5: percentage of user in the match
+    const fallback30 = Math.max(2, Math.ceil(totalUsers * 0.3)); //2: min users matching | 0.3: percentage of user in the match
+
+    // 3 fallback (70 percent of the user or 50 or 30)
+    const segment100 = segments.filter((s) => s.users.size === totalUsers);
+    const segment70 = segments.filter((s) => s.users.size >= fallback70);
+    const segment50 = segments.filter((s) => s.users.size >= fallback50);
+    const segment30 = segments.filter((s) => s.users.size >= fallback30);
+    
+    let finalSegment: Segment[];
+
+    if (segment100.length)
+        finalSegment = segment100;
+    else if (segment70.length)
+        finalSegment = segment70;
+    else if (segment50.length)
+        finalSegment = segment50;
+    else if (segment30.length)
+        finalSegment = segment30;
+    else
+      throw new ConflictException('No slot found with each configuration tested, no matching date can be calculated');
+
+    // Pick the best segment by priority:
+    // 1) more users, 2) longer duration, 3) earlier start
+    const isBetter = (a: Segment, b: Segment) => {
+      if (a.users.size !== b.users.size)
+        return a.users.size > b.users.size;
+
+      const aDuration = a.end - a.start;
+      const bDuration = b.end - b.start;
+
+      if (aDuration !== bDuration)
+          return aDuration > bDuration;
+      return a.start < b.start;
+    };
+
+    let best = finalSegment[0];
+    for (const s of finalSegment) {
+      if (isBetter(s, best))
+        best = s;
+    }
+
+    return {
+      startDate: new Date(best.start),
+      endDate: new Date(best.end),
+      duration: Math.ceil((best.end - best.start) / (1000 * 60 * 60 * 24)),
+    };
   }
 
   // Utils
