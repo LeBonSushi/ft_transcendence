@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by [ggriault](https://github.com/AkAzA509), [macorso](https://github.com/LeBonSushi), [nbrecque](https://github.com/Brecqueville), [njard](https://github.com/noanjrd).*
+*This project has been created as part of the 42 curriculum by [ggirault](https://github.com/AkAzA509), [macorso](https://github.com/LeBonSushi), [nbrecque](https://github.com/Brecqueville), [njard](https://github.com/noanjrd).*
 
 # Project Overview
 
