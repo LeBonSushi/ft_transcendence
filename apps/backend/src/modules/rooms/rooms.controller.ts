@@ -261,4 +261,9 @@ export class RoomsController {
     return this.roomsService.deleteActivity(activityId, userId);
   }
 
+  @Get(':roomId/matchingDate')
+  async matchingDate(@Param('roomId') roomId: string) {
+    return this.roomsService.matchingDate(roomId)
+  }
+
 }

@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import {
   CreateRoomDto,
@@ -12,6 +12,7 @@ import {
  } from './dto/rooms.dto'
 import type { MemberRole, VoteType } from '@travel-planner/shared';
 import { RoomsGateway } from './rooms.gateway';
+import { start } from 'repl';
 
 @Injectable()
 export class RoomsService {
@@ -947,6 +948,47 @@ export class RoomsService {
     );
 
     return result;
+  }
+
+  async matchingDate(roomId: string) {
+    const room = await this.prisma.room.findUnique({ where: { id: roomId }});
+
+    if (!room)
+      throw new NotFoundException('Room doesn\'t exist');
+
+    const availabilities = await this.prisma.userAvailability.findMany({
+      where: { roomId: room.id }
+    });
+
+    if (!availabilities.length)
+      throw new NotFoundException('No availabilities found for this room');
+
+    if (availabilities.length < 2)
+        throw new ConflictException('We need a minimum of 2 person to match the date');
+
+    let commonStart: Date = availabilities[0].startDate;
+    let commonEnd: Date = availabilities[0].endDate;
+
+    availabilities.map((date) => {
+      if (date.startDate >= date.endDate)
+          throw new ConflictException(`Date are invalid for ${date.userId}`);
+      if (date.startDate > commonStart)
+        commonStart = date.startDate;
+      if (date.endDate < commonEnd)
+        commonEnd = date.endDate;
+      console.log("start: ", date.startDate, " end: ", date.endDate);
+    });
+
+    if (commonStart >= commonEnd)
+      throw new ConflictException('No common availability found between all members');
+
+    const res = {
+      startDate:  commonStart,
+      endDate:    commonEnd,
+      duration: Math.ceil((commonEnd.getTime() - commonStart.getTime()) / (1000 * 60 * 60 * 24)),
+      memberCount: availabilities.length,
+    }
+    console.log("Matching date found: ", res);
   }
 
   // Utils
