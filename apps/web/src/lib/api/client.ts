@@ -1,11 +1,17 @@
 import axios, { AxiosInstance } from 'axios';
-import { getSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 // Client navigateur avec Axios - UNIQUEMENT pour Client Components
 class BrowserApiClient {
   private client: AxiosInstance;
+  private cachedToken: string | null = null;
+  private isSigningOut = false;
+
+  setToken(token: string | null) {
+    this.cachedToken = token;
+  }
 
   constructor() {
     this.client = axios.create({
@@ -16,12 +22,11 @@ class BrowserApiClient {
       },
     });
 
-    // Add auth interceptor with NextAuth session token
+    // Add auth interceptor - uses cached token, no extra network call
     this.client.interceptors.request.use(
-      async (config) => {
-        const session = await getSession();
-        if (session?.accessToken) {
-          config.headers.Authorization = `Bearer ${session.accessToken}`;
+      (config) => {
+        if (this.cachedToken) {
+          config.headers.Authorization = `Bearer ${this.cachedToken}`;
         }
         return config;
       },
@@ -32,8 +37,10 @@ class BrowserApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          await signOut({ redirectTo: '/signin' });
+        if (error.response?.status === 401 && !this.isSigningOut) {
+          this.isSigningOut = true;
+          this.cachedToken = null;
+          await signOut({ redirect: true, callbackUrl: '/signin' });
         }
         return Promise.reject(error);
       }

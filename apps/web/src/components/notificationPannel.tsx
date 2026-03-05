@@ -1,199 +1,175 @@
-import { useEffect, useState, useRef } from "react"
-import { useNotifications } from "../hooks/notif"
-import notifLightIcon from "../../public/notiflight.svg"
-import notifDarkIcon from "../../public/notifdark.svg"
-import Image from "next/image"
-import { motion, AnimatePresence } from "motion/react"
-import { useTheme } from "next-themes"
-import { NotificationType } from "@travel-planner/shared"
-import { useUserStore } from "@/stores/useUserStore"
+'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Bell, Check, X, UserPlus, Users, Trash2, MessageSquare, Mail, Star } from 'lucide-react';
+import { NotificationType } from '@travel-planner/shared';
+import type { Notification } from '@travel-planner/shared';
+import { useNotifications } from '../hooks/notif';
+import { timeAgo } from '@/lib/format';
 
-function timeAgo(time: any) {
-    const now: any = new Date()
-    const createdAt: any = new Date(time)
-    const seconds = Math.floor((now - createdAt) / 1000) + 1
-    if (seconds < 60) {
-        return seconds + " sec ago"
-    }
-    const minutes = Math.floor(seconds / 60)
-    if (minutes === 1) {
-        return "1 min ago"
-    }
-    if (minutes < 60) {
-        return minutes + " mins ago"
-    }
-    const hours = Math.floor(minutes / 60)
-    if (hours === 1) {
-        return "1 hour ago"
-    }
-    if (hours < 24) {
-        return hours + " hours ago"
-    }
-    const days = Math.floor(hours / 24)
-    if (days === 1) {
-        return "1 day ago"
-    }
-    if (days) {
-        return days + " days ago"
-    }
-}
+const NOTIF_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string; bg: string }> = {
+  [NotificationType.FRIEND_REQUEST]:  { icon: UserPlus,      color: 'text-blue-500',   bg: 'bg-blue-500/10' },
+  [NotificationType.FRIEND_ACCEPTED]: { icon: Users,         color: 'text-green-500',  bg: 'bg-green-500/10' },
+  [NotificationType.ROOM_INVITE]:     { icon: Mail,          color: 'text-violet-500', bg: 'bg-violet-500/10' },
+  [NotificationType.ROOM_DELETED]:    { icon: Trash2,        color: 'text-red-500',    bg: 'bg-red-500/10' },
+  [NotificationType.NEW_MESSAGE]:     { icon: MessageSquare, color: 'text-amber-500',  bg: 'bg-amber-500/10' },
+  [NotificationType.WELCOME_MSG]:     { icon: Star,          color: 'text-pink-500',   bg: 'bg-pink-500/10' },
+};
 
-function CloseIcon({ size = 24 }) {
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-        >
-            <line x1="17" y1="7" x2="7" y2="17" />
-            <line x1="7" y1="7" x2="17" y2="17" />
-        </svg>
-    )
-}
+const ACTION_TYPES: NotificationType[] = [NotificationType.FRIEND_REQUEST, NotificationType.ROOM_INVITE];
 
-export function AcceptIcon({
-    size = 20,
-    color = "currentColor",
-    strokeWidth = 2.5,
+function NotificationItem({
+  item,
+  index,
+  onRead,
+  onAnswer,
+}: {
+  item: Notification;
+  index: number;
+  onRead: (id: string, index: number) => void;
+  onAnswer: (id: string, index: number, accept: boolean) => void;
 }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width={size}
-            height={size}
-            fill="none"
-            stroke={color}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M4 12l6 6 10-12" />
-        </svg>
-    )
-}
+  const config = NOTIF_CONFIG[item.type] ?? NOTIF_CONFIG.WELCOME_MSG;
+  const Icon = config.icon;
+  const hasActions = ACTION_TYPES.includes(item.type);
 
+  return (
+    <div className="flex items-start gap-3 px-3 py-3 hover:bg-accent/40 transition-colors group">
+      <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${config.bg}`}>
+        <Icon size={15} className={config.color} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium leading-tight truncate">{item.title}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.message}</p>
+        {hasActions && (
+          <div className="flex items-center gap-1.5 mt-2">
+            <button
+              onClick={() => onAnswer(item.id, index, true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-xs font-medium transition-colors"
+            >
+              <Check size={11} />
+              Accepter
+            </button>
+            <button
+              onClick={() => onAnswer(item.id, index, false)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted text-muted-foreground hover:bg-accent hover:text-foreground text-xs font-medium transition-colors"
+            >
+              <X size={11} />
+              Refuser
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="shrink-0 flex flex-col items-end gap-1.5 pt-0.5">
+        <span className="text-[10px] text-muted-foreground whitespace-nowrap">{timeAgo(item.createdAt)}</span>
+        {!hasActions && (
+          <button
+            onClick={() => onRead(item.id, index)}
+            className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+          >
+            <X size={12} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function NotificationPannel() {
-    const [mounted, setMounted] = useState(false);
-    const [isVisible, setIsVisible] = useState(false)
-    const { notifications, setNotifications, loading, isConnected, sendNotif, setReadNotification, answerNotification } = useNotifications()
-    const panelRef = useRef<HTMLDivElement>(null)
-    const { setTheme, theme } = useTheme();
-    const { user } = useUserStore();
-    // setTheme('dark');
+  const [isOpen, setIsOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { notifications, setNotifications, sendNotif: _sendNotif, setReadNotification, answerNotification } = useNotifications();
 
-    const emojis: Record<NotificationType, string> = {
-        FRIEND_ACCEPTED : "👬",
-        FRIEND_REQUEST : "👥",
-        ROOM_DELETED : "🗑️",
-        ROOM_INVITE : "📩",
-        NEW_MESSAGE: "🗨️",
-        WELCOME_MSG: "🌎"
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
     }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-    useEffect(() => {
-        function handleClickOutside(event: any) {
-            if (panelRef.current && !panelRef.current.contains(event.target)) {
-                setIsVisible(false)
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => { document.removeEventListener("mousedown", handleClickOutside) }
+  function handleRead(id: string, index: number) {
+    setReadNotification(id);
+    setNotifications(prev => prev.filter((_, i) => i !== index));
+  }
 
-    }, [panelRef])
+  function handleAnswer(id: string, index: number, accept: boolean) {
+    answerNotification(id, accept);
+    setNotifications(prev => prev.filter((_, i) => i !== index));
+  }
 
-    if (!mounted) {
-        return null
-    }
-    return (
-        <>
-            <button className="text-white bg-black w-20 hover:opacity-50 cursor-pointer"
-                onClick={() => sendNotif({ toUserId: user?.id!, title: "test", message: "this is a message", type: NotificationType.FRIEND_REQUEST })}>try</button>
-            {!isVisible && (
-                <>
-                    <div className="absolute right-1.5 w-10 h-10 flex justify-center items-center bg-secondary top-1.5 rounded-lg cursor-pointer hover:opacity-70" onClick={() => setIsVisible(true)}>
-                        {theme == 'light' && (
+  return (
+    <div ref={panelRef} className="relative">
+      <button
+        onClick={() => setIsOpen(v => !v)}
+        className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+      >
+        <Bell size={18} />
+        {notifications.length > 0 && (
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+        )}
+      </button>
 
-                            <Image src={notifLightIcon} alt="notificationLogo" width={20} height={20} />
-                        )}
-                        {theme == 'dark' && (
-
-                            <Image src={notifDarkIcon} alt="notificationLogo" width={20} height={20} />
-                        )}
-                        {notifications.length > 0 && (
-                            <div className=" absolute -top-1 -right-1 w-4 h-4 
-                            rounded-full bg-red-500 border-2 border-white" />
-                        )}
-                    </div>
-                </>
-            )}
-            <AnimatePresence>
-                {isVisible && (
-                    <>
-                        <motion.div
-                            ref={panelRef}
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute  w-65 sm:w-85 max-h-100 bg-secondary border rounded-xl right-3 top-3 overflow-y-auto">
-                            {notifications.length === 0 ? (
-                                <div className="flex items-center justify-center h-20 text-foreground/50">
-                                    No notifications
-                                </div>
-                            ) : (
-                                notifications.map((item, index) => (
-                                    <div
-                                        key={index} className="relative flex  h-20   gap-1  items-center flex-row">
-                                        <div className="border rounded-full w-10 h-10 ml-3 
-                                        bg-accent-foreground flex justify-center items-center" >
-                                            <p className="">{emojis[item.type]}</p>
-                                        </div>
-                                        <div className="flex flex-col justify-center h-full">
-                                            <p className="text-foreground text-lg font-semibold ml-2">{item.title}</p>
-                                            <p className="text-foreground text-base ml-2">{item.message}</p>
-                                        </div>
-                                        <p className="absolute text-foreground text-sm ml-2 right-2 top-2">{timeAgo(item.createdAt)}</p>
-                                        {(item.type === 'ROOM_DELETED' || item.type === 'NEW_MESSAGE'
-                                            || item.type === 'WELCOME_MSG' || item.type === "FRIEND_ACCEPTED" && (
-
-                                                <div className="absolute right-3 hover:opacity-70 cursor-pointer"
-                                                    onClick={() => { setReadNotification(item.id); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
-                                                    <CloseIcon />
-                                                </div>
-                                            )
-                                        )
-                                        }
-                                        {(item.type === 'ROOM_INVITE' || item.type === 'FRIEND_REQUEST' && (
-                                            <div className="absolute flex justify-center items-center flex-row right-1 gap-2">
-                                                <div className="hover:opacity-70 cursor-pointer"
-                                                    onClick={() => { answerNotification(item.id, true); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
-                                                    <AcceptIcon />
-                                                </div>
-                                                <div className="hover:opacity-70 cursor-pointer"
-                                                    onClick={() => { answerNotification(item.id, false); setNotifications((prev) => prev.filter((_, i) => i !== index)) }}>
-                                                    <CloseIcon />
-                                                </div>
-                                            </div>
-                                        )
-                                        )
-                                        }
-                                    </div>
-                                ))
-                            )}
-                        </motion.div>
-                    </>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-xl overflow-hidden z-50"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
+              <div className="flex items-center gap-2">
+                <Bell size={14} className="text-muted-foreground" />
+                <span className="text-sm font-semibold">Notifications</span>
+                {notifications.length > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                    {notifications.length}
+                  </span>
                 )}
-            </AnimatePresence>
-        </>
-    )
+              </div>
+              {notifications.length > 0 && (
+                <button
+                  onClick={() => {
+                    notifications.forEach(n => setReadNotification(n.id));
+                    setNotifications([]);
+                  }}
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Tout lire
+                </button>
+              )}
+            </div>
+
+            {/* List */}
+            <div className="max-h-96 overflow-y-auto divide-y divide-border/40">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-2 text-muted-foreground">
+                  <Bell size={20} className="opacity-30" />
+                  <p className="text-xs">Aucune notification</p>
+                </div>
+              ) : (
+                notifications.map((item, index) => (
+                  <NotificationItem
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    onRead={handleRead}
+                    onAnswer={handleAnswer}
+                  />
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

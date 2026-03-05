@@ -3,6 +3,7 @@ import { VoteType, MemberRole } from './room';
 // Room DTOs
 export interface CreateRoomDto {
   name: string;
+  type: 'GROUP' | 'DIRECT_MESSAGE';
   description?: string;
   isPrivate?: boolean;
 }
@@ -10,6 +11,7 @@ export interface CreateRoomDto {
 export interface UpdateRoomDto {
   name?: string;
   description?: string;
+  imageUrl?: string;
 }
 
 // RoomMember DTOs
@@ -55,6 +57,7 @@ export interface CreateActivityDto {
   description?: string;
   category: 'RESTAURANT' | 'MUSEUM' | 'NIGHTLIFE' | 'OUTDOOR' | 'OTHER';
   estimatedPrice?: number;
+  link?: string;
 }
 
 export interface UpdateActivityDto {
@@ -62,6 +65,7 @@ export interface UpdateActivityDto {
   description?: string;
   category?: 'RESTAURANT' | 'MUSEUM' | 'NIGHTLIFE' | 'OUTDOOR' | 'OTHER';
   estimatedPrice?: number;
+  link?: string;
 }
 
 // Vote DTOs

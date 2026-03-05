@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, hash, hslToRgb, rgbToHex } from "@/lib/utils";
 
 interface AvatarProps {
   src?: string | null;
@@ -20,6 +20,19 @@ const sizeClasses = {
   xl: "h-20 w-20 text-2xl sm:h-24 sm:w-24 sm:text-3xl",
 };
 
+export function getAvatarColor(str: string | undefined): [string, string] {
+  if (!str) return ["#e07b54", "#fff"];
+
+  const h = hash(str);
+
+  const hue = h % 360;
+  const [r, g, b] = hslToRgb(hue, 60, 55);
+
+  const bg = rgbToHex(r, g, b);
+
+  return [bg, "#fff"];
+}
+
 export function Avatar({
   src,
   alt = "Avatar",
@@ -27,9 +40,10 @@ export function Avatar({
   size = "md",
   className,
   ringColor = "ring-border",
-  pictureColor = "bg-primary",
+  pictureColor,
 }: AvatarProps) {
   const initial = fallback?.charAt(0)?.toUpperCase() || "?";
+  const [bg, fg] = pictureColor ? [pictureColor, "#fff"] : getAvatarColor(fallback);
 
   return (
     <div
@@ -47,7 +61,10 @@ export function Avatar({
           className="h-full w-full object-cover block"
         />
       ) : (
-        <div className={cn("h-full w-full select-none", pictureColor, "flex items-center justify-center text-primary-foreground font-semibold")}>
+        <div
+          className="h-full w-full flex items-center justify-center font-semibold select-none"
+          style={{ backgroundColor: bg, color: fg }}
+        >
           {initial}
         </div>
       )}

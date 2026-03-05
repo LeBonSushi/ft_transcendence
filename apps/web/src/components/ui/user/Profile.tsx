@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from "react";
+import { useState, useRef, forwardRef } from "react";
 import  QRCode from 'react-qr-code';
 import { motion, AnimatePresence } from "motion/react";
 import { signOut as nextAuthSignOut } from "next-auth/react";
@@ -58,18 +58,20 @@ export function Profile() {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownAlign, setDropdownAlign] = useState<'left' | 'right'>('right');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(dropdownRef, () => setIsOpen(false), isOpen);
 
   const handleToggle = () => {
     if (!isOpen && dropdownRef.current) {
       const rect = dropdownRef.current.getBoundingClientRect();
-      const spaceRight = window.innerWidth - rect.right;
       const spaceLeft = rect.left;
-      // dropdown width is 288px (w-72)
-      // right-0 = dropdown aligns to button's right edge, extends to the LEFT
-      // left-0  = dropdown aligns to button's left edge, extends to the RIGHT
-      setDropdownAlign(spaceLeft >= 288 || spaceLeft >= spaceRight ? 'right' : 'left');
+      const spaceRight = window.innerWidth - rect.right;
+      // On mesure la vraie largeur du menu après le prochain rendu
+      requestAnimationFrame(() => {
+        const menuWidth = menuRef.current?.offsetWidth ?? 0;
+        setDropdownAlign(spaceLeft >= menuWidth || spaceLeft >= spaceRight ? 'right' : 'left');
+      });
     }
     setIsOpen(!isOpen);
   };
@@ -106,6 +108,7 @@ export function Profile() {
 
         {isOpen && (
           <ProfileDropdownMenu
+            ref={menuRef}
             user={user}
             createdAt={createdAt}
             align={dropdownAlign}
@@ -132,55 +135,57 @@ interface ProfileDropdownMenuProps {
   onSignOut: () => void;
 }
 
-function ProfileDropdownMenu({ user, createdAt, align, onClose, onOpenSettings, onSignOut }: ProfileDropdownMenuProps) {
-  return (
-    <div className={`absolute mt-2 w-72 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 ${align === 'right' ? 'right-0' : 'left-0'}`}>
-      {/* Header */}
-      <div className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-b border-border">
-        <div className="flex items-center gap-3">
-          <Avatar
-            src={user.profile?.profilePicture || user.image || ''}
-            alt={user.name || 'Avatar'}
-            fallback={user.profile?.firstName || user.name || user.email || 'U'}
-            size="md"
-            ringColor="ring-primary/20"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-foreground truncate">
-              {user.profile?.firstName && user.profile?.lastName
-                ? `${user.profile.firstName} ${user.profile.lastName}`
-                : user.name || 'Utilisateur'}
-            </p>
-            <p className="text-sm text-muted-foreground truncate">
-              @{user.username || user.id?.slice(0, 8)}
-            </p>
+const ProfileDropdownMenu = forwardRef<HTMLDivElement, ProfileDropdownMenuProps>(
+  function ProfileDropdownMenu({ user, createdAt, align, onOpenSettings, onSignOut }, ref) {
+    return (
+      <div ref={ref} className={`absolute mt-2 w-72 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 ${align === 'right' ? 'right-0' : 'left-0'}`}>
+        {/* Header */}
+        <div className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-b border-border">
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={user.profile?.profilePicture || user.image || ''}
+              alt={user.name || 'Avatar'}
+              fallback={user.profile?.firstName || user.name || user.email || 'U'}
+              size="md"
+              ringColor="ring-primary/20"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground truncate">
+                {user.profile?.firstName && user.profile?.lastName
+                  ? `${user.profile.firstName} ${user.profile.lastName}`
+                  : user.name || 'Utilisateur'}
+              </p>
+              <p className="text-sm text-muted-foreground truncate">
+                @{user.username || user.id?.slice(0, 8)}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* User info */}
-      <div className="p-3 space-y-1 border-b border-border">
-        <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
-          <Mail className="h-4 w-4 shrink-0" />
-          <span className="truncate">{user.email}</span>
-        </div>
-        {createdAt && (
+        {/* User info */}
+        <div className="p-3 space-y-1 border-b border-border">
           <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4 shrink-0" />
-            <span>Membre depuis {createdAt}</span>
+            <Mail className="h-4 w-4 shrink-0" />
+            <span className="truncate">{user.email}</span>
           </div>
-        )}
-      </div>
+          {createdAt && (
+            <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span>Membre depuis {createdAt}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Actions */}
-      <div className="p-2">
-        <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
-        <div className="my-2 border-t border-border" />
-        <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+        {/* Actions */}
+        <div className="p-2">
+          <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
+          <div className="my-2 border-t border-border" />
+          <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
 
 interface DropdownItemProps {
   icon: React.ElementType;

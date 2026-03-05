@@ -30,8 +30,10 @@ export interface Room {
   description: string | null;
   status: RoomStatus;
   isPrivate: boolean;
+  imageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
+  type: 'DIRECT_MESSAGE' | 'GROUP';
 }
 
 export interface RoomSummary {
@@ -99,5 +101,6 @@ export interface ActivitySuggestion {
   description: string;
   category: ActivityCategory;
   estimatedPrice: number | null;
+  link: string | null;
   createdAt: Date;
 }
