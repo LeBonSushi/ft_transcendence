@@ -28,12 +28,18 @@ const prisma = new PrismaClient({
 async function main() {
   console.log('🌱 Starting database seed...');
 
+  const testPassword = 'qwertyuiop';
+  const passwordHash = await bcrypt.hash(testPassword, 10);
+
   const user1 = await prisma.user.upsert({
     where: { email: 'alice@example.com' },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: 'alice@example.com',
       username: 'alice',
+      passwordHash,
       profile: {
         create: {
           firstName: 'Alice',
@@ -45,10 +51,13 @@ async function main() {
 
   const user2 = await prisma.user.upsert({
     where: { email: 'bob@example.com' },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: 'bob@example.com',
       username: 'alicia',
+      passwordHash,
       profile: {
         create: {
           firstName: 'Bob',
@@ -60,10 +69,13 @@ async function main() {
 
   const user3 = await prisma.user.upsert({
     where: { email: 'charlie@example.com' },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: 'charlie@example.com',
       username: 'charlie',
+      passwordHash,
       profile: {
         create: {
           firstName: 'Charlie',
@@ -75,10 +87,13 @@ async function main() {
 
   const user4 = await prisma.user.upsert({
     where: { email: 'david@example.com' },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: 'david@example.com',
       username: 'david',
+      passwordHash,
       profile: {
         create: {
           firstName: 'David',
@@ -90,10 +105,13 @@ async function main() {
 
   const user5 = await prisma.user.upsert({
     where: { email: 'akaza@example.com' },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: 'akaza@example.com',
       username: 'akaza',
+      passwordHash,
       profile: {
         create: {
           firstName: 'Gavin',
@@ -105,10 +123,13 @@ async function main() {
 
   const user6 = await prisma.user.upsert({
     where: { email: 'bdhdu38@example.com' },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: 'bdhdu38@example.com',
       username: 'coucou',
+      passwordHash,
       profile: {
         create: {
           firstName: 'azaka',
