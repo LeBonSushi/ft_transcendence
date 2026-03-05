@@ -261,18 +261,18 @@ export class UsersService {
   }
 
   async getFriends(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: id },
+    const friendships = await this.prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [{ userId: id }, { friendId: id }],
+      },
       include: {
-        sentFriendRequests: true,
-        receivedFriendRequests: true,
+        user: { include: { profile: true } },
+        friend: { include: { profile: true } },
       },
     });
 
-    if (!user)
-      throw new NotFoundException('User not found');
-
-    return user;
+    return friendships.map(f => (f.userId === id ? f.friend : f.user));
   }
 
   async searchUser(currentUserId: string, searchQuery: string) {

@@ -1,0 +1,119 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion } from 'motion/react';
+import { friendsApi } from '@/lib/api';
+import { apiClient } from '@/lib/api/client';
+import { API_ROUTES } from '@travel-planner/shared';
+import type { User } from '@travel-planner/shared';
+import { UserPlus, X, Search, Loader2, Check } from 'lucide-react';
+
+export function AddFriendModal({ onClose }: { onClose: () => void }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState<Record<string, boolean>>({});
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    const timeout = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const data = await apiClient.get<User[]>(API_ROUTES.USERS.SEARCH(query.trim()));
+        setResults(data);
+      } catch { setResults([]); }
+      finally { setLoading(false); }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [query]);
+
+  async function handleSend(userId: string) {
+    try {
+      await friendsApi.sendRequest(userId);
+      setSent(s => ({ ...s, [userId]: true }));
+    } catch {}
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.15 }}
+        className="relative z-10 w-full max-w-sm mx-4 bg-card border border-border rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/60">
+          <div className="flex items-center gap-2">
+            <UserPlus size={16} className="text-muted-foreground" />
+            <span className="font-semibold text-sm">Ajouter un ami</span>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted border border-border focus-within:border-primary/50 transition-colors">
+            {loading ? <Loader2 size={15} className="text-muted-foreground animate-spin shrink-0" /> : <Search size={15} className="text-muted-foreground shrink-0" />}
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Rechercher par nom ou @username…"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+            {query && <button onClick={() => setQuery('')}><X size={13} className="text-muted-foreground hover:text-foreground" /></button>}
+          </div>
+
+          <div className="min-h-[60px]">
+            {!query.trim() && (
+              <p className="text-xs text-center text-muted-foreground py-4">Tape un nom pour rechercher</p>
+            )}
+            {query.trim() && !loading && results.length === 0 && (
+              <p className="text-xs text-center text-muted-foreground py-4">Aucun utilisateur trouvé</p>
+            )}
+            {results.length > 0 && (
+              <ul className="space-y-1.5">
+                {results.map(u => (
+                  <li key={u.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-semibold text-primary">
+                        {(u.profile?.firstName?.[0] ?? u.username[0]).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {u.profile?.firstName && u.profile?.lastName
+                          ? `${u.profile.firstName} ${u.profile.lastName}`
+                          : u.username}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">@{u.username}</p>
+                    </div>
+                    <button
+                      onClick={() => handleSend(u.id)}
+                      disabled={sent[u.id]}
+                      className={`shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                        sent[u.id]
+                          ? 'bg-green-500/10 text-green-600 cursor-default'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20'
+                      }`}
+                    >
+                      {sent[u.id] ? <><Check size={12} /> Envoyé</> : <><UserPlus size={12} /> Ajouter</>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
+  );
+}

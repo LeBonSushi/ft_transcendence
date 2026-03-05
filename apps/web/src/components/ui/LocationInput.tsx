@@ -24,7 +24,6 @@ export function LocationInput({
   autoFocus,
 }: LocationInputProps) {
   const { results, loading, setQuery } = useLocationSearch();
-  // inputText is what's displayed — fully independent from `value`
   const [inputText, setInputText] = useState(value);
   const [open, setOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});

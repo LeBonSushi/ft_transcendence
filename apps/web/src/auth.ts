@@ -111,7 +111,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.socketToken = jwt.sign(
           { sub: user.id, email: user.email, username: user.username },
           process.env.NEXTAUTH_SECRET!,
-          { expiresIn: "7d" }
+          { expiresIn: "30d" }
         );
       }
 

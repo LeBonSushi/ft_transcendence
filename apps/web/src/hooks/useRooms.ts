@@ -31,6 +31,10 @@ export function useRooms() {
       setRooms(prev => prev.some(r => r.id === room.id) ? prev : [...prev, room]);
     };
 
+    const onRoomInvited = ({ room }: { room: RoomWithLastMessage }) => {
+      setRooms(prev => prev.some(r => r.id === room.id) ? prev : [...prev, room]);
+    };
+
     const onMessageReceive = (message: { roomId: string; content: string; createdAt: Date }) => {
       setRooms(prev => prev.map(r => r.id === message.roomId
         ? { ...r, lastMessage: message.content, lastMessageDate: message.createdAt }
@@ -39,9 +43,11 @@ export function useRooms() {
     };
 
     socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
+    socket.on(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
     socket.on('message:receive', onMessageReceive);
     return () => {
       socket.off(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
+      socket.off(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
       socket.off('message:receive', onMessageReceive);
     };
   }, [socket, isConnected]);

@@ -1,8 +1,8 @@
 import { Avatar, getAvatarColor } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { formatTime } from "@/lib/format";
 
 interface RoomCardProps {
-  key: string;
   id: string;
   name: string;
   lastMessage: string | null;
@@ -12,21 +12,6 @@ interface RoomCardProps {
   createdAt?: Date;
   isSelected?: boolean;
   onClick?: () => void;
-}
-
-function formatTime(date: Date | null): string {
-  if (!date) return '';
-  const d = new Date(date);
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
-  if (isToday) {
-    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  }
-  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays < 7) {
-    return d.toLocaleDateString('fr-FR', { weekday: 'short' });
-  }
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
 }
 
 export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsername, roomPicture, isSelected, onClick }: RoomCardProps) {

@@ -108,6 +108,10 @@ class RoomResource {
     return apiClient.delete(API_ROUTES.ROOMS.KICK(this.roomId, userId));
   }
 
+  async inviteUser(userId: string) {
+    return apiClient.post(`/rooms/${this.roomId}/invite/${userId}`);
+  }
+
   // Availabilities
   async getAvailabilities() {
     return apiClient.get<UserAvailabilityWithUser[]>(API_ROUTES.AVAILABILITY.LIST(this.roomId));

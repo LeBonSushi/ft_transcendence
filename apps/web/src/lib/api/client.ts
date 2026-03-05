@@ -7,6 +7,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 class BrowserApiClient {
   private client: AxiosInstance;
   private cachedToken: string | null = null;
+  private isSigningOut = false;
 
   setToken(token: string | null) {
     this.cachedToken = token;
@@ -36,8 +37,10 @@ class BrowserApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          await signOut({ redirectTo: '/signin' });
+        if (error.response?.status === 401 && !this.isSigningOut) {
+          this.isSigningOut = true;
+          this.cachedToken = null;
+          await signOut({ redirect: true, callbackUrl: '/signin' });
         }
         return Promise.reject(error);
       }

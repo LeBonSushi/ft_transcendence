@@ -24,11 +24,17 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
+  private userSockets = new Map<string, Set<string>>();
+
   constructor(private prisma: PrismaService) {}
 
   async handleConnection(client: Socket) {
     const user = client.data.user;
     if (user) {
+      if (!this.userSockets.has(user.id)) {
+        this.userSockets.set(user.id, new Set());
+      }
+      this.userSockets.get(user.id)!.add(client.id);
       console.log(`[RoomsGateway] User ${user.username || user.id} connected`);
     }
   }
@@ -36,6 +42,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     const user = client.data.user;
     if (user) {
+      const sockets = this.userSockets.get(user.id);
+      if (sockets) {
+        sockets.delete(client.id);
+        if (sockets.size === 0) this.userSockets.delete(user.id);
+      }
       console.log(`[RoomsGateway] User ${user.username || user.id} disconnected`);
     }
   }
@@ -75,6 +86,15 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`room:${roomId}`).emit(event, data);
   }
 
+  private emitToUser(userId: string, event: string, data: any) {
+    const sockets = this.userSockets.get(userId);
+    if (sockets) {
+      for (const socketId of sockets) {
+        this.server.to(socketId).emit(event, data);
+      }
+    }
+  }
+
   // Room
   emitRoomCreated(room: any) {
     this.server.emit(SOCKET_EVENTS.ROOM_CREATED, { room });
@@ -93,8 +113,9 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_JOINED, { member });
   }
 
-  emitMemberInvited(roomId: string, member: any) {
+  emitMemberInvited(roomId: string, member: any, room: any) {
     this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_INVITED, { member });
+    this.emitToUser(member.userId, SOCKET_EVENTS.ROOM_INVITED, { room });
   }
 
   emitMemberLeft(roomId: string, userId: string) {

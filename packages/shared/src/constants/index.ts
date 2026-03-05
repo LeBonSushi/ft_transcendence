@@ -17,6 +17,7 @@ export const SOCKET_EVENTS = {
   ROOM_CREATED: 'room:created',
   ROOM_UPDATED: 'room:updated',
   ROOM_DELETED: 'room:deleted',
+  ROOM_INVITED: 'room:invited',
 
   MEMBER_JOINED: 'member:joined',
   MEMBER_INVITED: 'member:invited',
