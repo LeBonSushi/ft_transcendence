@@ -2,6 +2,7 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { verifySync } from 'otplib';
 
 @Injectable()
 export class AuthService {
@@ -92,8 +93,14 @@ export class AuthService {
       }
 
       // si le code est fourni, on le verifie
-      const { verifySync } = await import('otplib');
-      const isValidTotp = verifySync({ token: totpCode, secret: user.twoFactorSecret! });
+      let isValidTotp = false;
+
+      if (totpCode.length === 6) {
+        const result = verifySync({ token: totpCode, secret: user.twoFactorSecret! });
+        isValidTotp = result.valid === true;
+      }
+      // const result = verifySync({ token: totpCode, secret: user.twoFactorSecret! });
+      // const isValidTotp = result.valid === true;
 
       // Verifier aussi les backup codes
       if (!isValidTotp) {

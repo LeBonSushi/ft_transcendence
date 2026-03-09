@@ -26,8 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             body: JSON.stringify({
               email: credentials.email,
               password: credentials.password,
-              totpCode: credentials.totpCode && String(credentials.totpCode) !== "undefined" && 
-              String(credentials.totpCode).length === 6 ? credentials.totpCode : undefined,
+              totpCode: credentials.totpCode && String(credentials.totpCode) !== "undefined" ? credentials.totpCode : undefined,
             }),
           });
 

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { generateSecret, generateURI, verifySync } from 'otplib';
 import { randomBytes } from 'crypto';
@@ -43,14 +43,16 @@ export class TwoFactorService {
         }
         
         // Verifie que le code entrer est correct
-        const isValid = verifySync({
+        const result = verifySync({
             token: code,
             secret: user.twoFactorSecret,
         });
 
+        const isValid = result.valid === true;
+
 
         if (!isValid) {
-            throw new UnauthorizedException('Code 2FA invalide');
+            throw new BadRequestException('Code 2FA invalide');
         }
 
         // Genere les backup codes
@@ -81,10 +83,12 @@ export class TwoFactorService {
         }
 
         // En premier, verifie comme code TOTP normal
-        const isValid = verifySync({
+        const result = verifySync({
             token: code,
             secret: user.twoFactorSecret,
         });
+
+        const isValid = result.valid === true;
 
         if (isValid) 
             return true;
@@ -112,7 +116,7 @@ export class TwoFactorService {
         const isValid = await this.verify(userId, code);
 
         if (!isValid) {
-            throw new UnauthorizedException('Code 2FA invalide');
+            throw new BadRequestException('Code 2FA invalide');
         }
 
         await this.prisma.user.update({

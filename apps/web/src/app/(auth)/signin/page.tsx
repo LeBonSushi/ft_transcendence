@@ -22,6 +22,7 @@ export default function SignInPage() {
   // état pour le 2FA
   const [requires2FA, setRequires2FA] = useState(false);
   const [totpCode, setTotpCode] = useState("");
+  const [useBackupCode, setUseBackupCode] = useState(false);
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,28 +190,46 @@ export default function SignInPage() {
               <div className="text-center">
                 <h2 className="text-lg font-semibold">Vérification 2FA</h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Entrez le code à 6 chiffres de votre application d'authentification
+                  {useBackupCode
+                    ? "Entrez un de vos codes de récupération"
+                    : "Entrez le code à 6 chiffres de votre application d'authentification"}
                 </p>
               </div>
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={totpCode} onChange={setTotpCode} pattern={REGEXP_ONLY_DIGITS}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">
-                Vous pouvez aussi utiliser un code de récupération
-              </p>
+
+              {useBackupCode ? (
+                <Input
+                  placeholder="Code de récupération"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  className="text-center font-mono"
+                  maxLength={8}
+                />
+              ) : (
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={totpCode} onChange={setTotpCode} pattern={REGEXP_ONLY_DIGITS}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline w-full text-center"
+                onClick={() => { setUseBackupCode(!useBackupCode); setTotpCode(""); }}
+              >
+                {useBackupCode ? "Utiliser le code TOTP" : "Utiliser un code de récupération"}
+              </button>
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading || (requires2FA && totpCode.length !== 6)}>
+          <Button type="submit" className="w-full" disabled={loading || (requires2FA && !useBackupCode && totpCode.length !== 6) || (requires2FA && useBackupCode && totpCode.length === 0)}>
             {loading ? "Connexion..." : requires2FA ? "Vérifier" : "Se connecter"}
           </Button>
 
@@ -219,7 +238,7 @@ export default function SignInPage() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => { setRequires2FA(false); setTotpCode(""); setError(""); }}
+              onClick={() => { setRequires2FA(false); setTotpCode(""); setUseBackupCode(false); setError(""); }}
             >
               Retour
             </Button>
