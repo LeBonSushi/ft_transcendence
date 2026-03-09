@@ -29,25 +29,38 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private prisma: PrismaService) {}
 
   async handleConnection(client: Socket) {
-    const user = client.data.user;
-    if (user) {
-      if (!this.userSockets.has(user.id)) {
-        this.userSockets.set(user.id, new Set());
+    try {
+      if (!client.data.user) {
+        await WsAuthGuard.validateToken(client);
       }
-      this.userSockets.get(user.id)!.add(client.id);
-      console.log(`[RoomsGateway] User ${user.username || user.id} connected`);
+
+      const user = client.data.user;
+      const userId = user?.id || user?.userId;
+      if (!userId) {
+        client.disconnect(true);
+        return;
+      }
+
+      if (!this.userSockets.has(userId)) {
+        this.userSockets.set(userId, new Set());
+      }
+      this.userSockets.get(userId)!.add(client.id);
+      console.log(`[RoomsGateway] User ${user?.username || userId} connected`);
+    } catch {
+      client.disconnect(true);
     }
   }
 
   handleDisconnect(client: Socket) {
     const user = client.data.user;
-    if (user) {
-      const sockets = this.userSockets.get(user.id);
+    const userId = user?.id || user?.userId;
+    if (userId) {
+      const sockets = this.userSockets.get(userId);
       if (sockets) {
         sockets.delete(client.id);
-        if (sockets.size === 0) this.userSockets.delete(user.id);
+        if (sockets.size === 0) this.userSockets.delete(userId);
       }
-      console.log(`[RoomsGateway] User ${user.username || user.id} disconnected`);
+      console.log(`[RoomsGateway] User ${user.username || userId} disconnected`);
     }
   }
 
@@ -97,7 +110,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // Room
   emitRoomCreated(room: any) {
-    this.server.emit(SOCKET_EVENTS.ROOM_CREATED, { room });
+    this.emitToUser(room.creatorId, SOCKET_EVENTS.ROOM_CREATED, { room });
   }
 
   emitRoomUpdated(roomId: string, room: any) {

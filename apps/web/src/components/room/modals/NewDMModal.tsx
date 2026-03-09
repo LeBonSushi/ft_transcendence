@@ -28,8 +28,11 @@ export function NewDMModal({ onClose, onCreated }: { onClose: () => void; onCrea
       const name = friend.profile?.firstName
         ? `${friend.profile.firstName} ${friend.profile.lastName ?? ''}`.trim()
         : friend.username;
-      const room = await roomsApi.create({ name, type: 'DIRECT_MESSAGE' });
-      await roomsApi.getRoom(room.id).inviteUser(friend.id);
+      const room = await roomsApi.create({
+        name,
+        type: 'DIRECT_MESSAGE',
+        invitedUserId: friend.id,
+      });
       onCreated(room.id);
     } catch { setCreating(null); }
   }

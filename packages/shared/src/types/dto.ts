@@ -4,6 +4,7 @@ import { VoteType, MemberRole } from './room';
 export interface CreateRoomDto {
   name: string;
   type: 'GROUP' | 'DIRECT_MESSAGE';
+  invitedUserId?: string;
   description?: string;
   isPrivate?: boolean;
 }

@@ -6,17 +6,48 @@ import { motion } from 'motion/react';
 import { friendsApi } from '@/lib/api';
 import { apiClient } from '@/lib/api/client';
 import { API_ROUTES } from '@travel-planner/shared';
+import { useUserStore } from '@/stores/useUserStore';
 import type { User } from '@travel-planner/shared';
-import { UserPlus, X, Search, Loader2, Check } from 'lucide-react';
+import { UserPlus, X, Search, Loader2, Check, ShieldBan, ShieldCheck, UserMinus } from 'lucide-react';
+import type { FriendshipRelation } from '@/lib/api/friends';
 
 export function AddFriendModal({ onClose }: { onClose: () => void }) {
+  const { user } = useUserStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<Record<string, boolean>>({});
+  const [relations, setRelations] = useState<FriendshipRelation[]>([]);
+  const [loadingRelations, setLoadingRelations] = useState(false);
+  const [tab, setTab] = useState<'search' | 'requests' | 'friends'>('search');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  async function reloadRelations() {
+    try {
+      setLoadingRelations(true);
+      const [relationList, incomingRequests] = await Promise.all([
+        friendsApi.getRelations(),
+        friendsApi.getFriendRequests(),
+      ]);
+
+      const incomingMap = new Map(incomingRequests.map((request) => [request.id, request]));
+      const normalized = relationList.map((relation) => {
+        const incoming = incomingMap.get(relation.id);
+        if (!incoming) return relation;
+        return { ...relation, status: incoming.status };
+      });
+
+      setRelations(normalized);
+    } finally {
+      setLoadingRelations(false);
+    }
+  }
+
+  useEffect(() => {
+    reloadRelations();
+  }, []);
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
@@ -35,7 +66,44 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
     try {
       await friendsApi.sendRequest(userId);
       setSent(s => ({ ...s, [userId]: true }));
+      await reloadRelations();
     } catch {}
+  }
+
+  const getPeer = (relation: FriendshipRelation) => {
+    return relation.userId === user?.id ? relation.friend : relation.user;
+  };
+
+  const pendingRequests = relations.filter(
+    (relation) => relation.status === 'PENDING' && relation.friendId === user?.id
+  );
+  const managedFriends = relations.filter(
+    (relation) => relation.status === 'ACCEPTED' || relation.status === 'BLOCKED'
+  );
+
+  async function handleAccept(friendshipId: string) {
+    await friendsApi.acceptFriendRequest(friendshipId);
+    await reloadRelations();
+  }
+
+  async function handleReject(friendshipId: string) {
+    await friendsApi.rejectFriendRequest(friendshipId);
+    await reloadRelations();
+  }
+
+  async function handleBlock(targetId: string) {
+    await friendsApi.blockFriend(targetId);
+    await reloadRelations();
+  }
+
+  async function handleUnblock(friendId: string) {
+    await friendsApi.unblockFriend(friendId);
+    await reloadRelations();
+  }
+
+  async function handleRemove(friendId: string) {
+    await friendsApi.removeFriend(friendId);
+    await reloadRelations();
   }
 
   return createPortal(
@@ -59,6 +127,29 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="p-4 space-y-3">
+          <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+            <button
+              onClick={() => setTab('search')}
+              className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${tab === 'search' ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Recherche
+            </button>
+            <button
+              onClick={() => setTab('requests')}
+              className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${tab === 'requests' ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Demandes
+            </button>
+            <button
+              onClick={() => setTab('friends')}
+              className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${tab === 'friends' ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Amis
+            </button>
+          </div>
+
+          {tab === 'search' && (
+            <>
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted border border-border focus-within:border-primary/50 transition-colors">
             {loading ? <Loader2 size={15} className="text-muted-foreground animate-spin shrink-0" /> : <Search size={15} className="text-muted-foreground shrink-0" />}
             <input
@@ -111,6 +202,107 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
               </ul>
             )}
           </div>
+            </>
+          )}
+
+          {tab === 'requests' && (
+            <div className="min-h-[60px]">
+              {loadingRelations && <p className="text-xs text-center text-muted-foreground py-4">Chargement…</p>}
+              {!loadingRelations && pendingRequests.length === 0 && (
+                <p className="text-xs text-center text-muted-foreground py-4">Aucune demande en attente</p>
+              )}
+              {!loadingRelations && pendingRequests.length > 0 && (
+                <ul className="space-y-1.5">
+                  {pendingRequests.map((relation) => {
+                    const peer = getPeer(relation);
+                    const name = peer.profile?.firstName
+                      ? `${peer.profile.firstName} ${peer.profile.lastName ?? ''}`.trim()
+                      : peer.username;
+
+                    return (
+                      <li key={relation.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <span className="text-xs font-semibold text-primary">
+                            {(peer.profile?.firstName?.[0] ?? peer.username[0]).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{name}</p>
+                          <p className="text-[11px] text-muted-foreground">@{peer.username}</p>
+                        </div>
+                        <button
+                          onClick={() => handleAccept(relation.id)}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20"
+                        >
+                          <Check size={12} /> Accepter
+                        </button>
+                        <button
+                          onClick={() => handleReject(relation.id)}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                        >
+                          <X size={12} /> Refuser
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {tab === 'friends' && (
+            <div className="min-h-[60px]">
+              {loadingRelations && <p className="text-xs text-center text-muted-foreground py-4">Chargement…</p>}
+              {!loadingRelations && managedFriends.length === 0 && (
+                <p className="text-xs text-center text-muted-foreground py-4">Aucun ami à gérer</p>
+              )}
+              {!loadingRelations && managedFriends.length > 0 && (
+                <ul className="space-y-1.5">
+                  {managedFriends.map((relation) => {
+                    const peer = getPeer(relation);
+                    const name = peer.profile?.firstName
+                      ? `${peer.profile.firstName} ${peer.profile.lastName ?? ''}`.trim()
+                      : peer.username;
+
+                    return (
+                      <li key={relation.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <span className="text-xs font-semibold text-primary">
+                            {(peer.profile?.firstName?.[0] ?? peer.username[0]).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{name}</p>
+                          <p className="text-[11px] text-muted-foreground">@{peer.username}</p>
+                        </div>
+                        {relation.status === 'BLOCKED' ? (
+                          <button
+                            onClick={() => handleUnblock(peer.id)}
+                            className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20"
+                          >
+                            <ShieldCheck size={12} /> Débloquer
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleBlock(relation.id)}
+                            className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
+                          >
+                            <ShieldBan size={12} /> Bloquer
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleRemove(peer.id)}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                        >
+                          <UserMinus size={12} /> Supprimer
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       </motion.div>
     </div>,

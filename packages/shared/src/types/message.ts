@@ -5,13 +5,21 @@ export enum MessageType {
 }
 
 export interface Message {
-  id: string;
   roomId: string;
-  senderId: string;
   content: string;
   type: MessageType;
-  attachmentUrl?: string;
-  createdAt: Date;
+  attachmentUrl: string | null;
+  createdAt: string;
+  sender: {
+    username: string;
+    profile: {
+      id: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      profilePicture: string | null;
+    } | null;
+  };
 }
 
 export interface TypingIndicator {

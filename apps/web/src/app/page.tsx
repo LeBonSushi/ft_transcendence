@@ -69,6 +69,7 @@ export default function Home() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    console.log(messages)
   }, [messages]);
 
   function handleSendMessage() {
@@ -368,17 +369,20 @@ export default function Home() {
                       {messages.map((msg, i) => {
                         const prev = messages[i - 1];
                         const next = messages[i + 1];
+                        const msgSenderKey = msg.sender.profile?.userId ?? msg.sender.username;
+                        const prevSenderKey = prev?.sender.profile?.userId ?? prev?.sender.username;
+                        const nextSenderKey = next?.sender.profile?.userId ?? next?.sender.username;
+                        const isOwnMessage = msg.sender.profile?.userId === user?.id;
                         const timeDiff = prev ? new Date(msg.createdAt).getTime() - new Date(prev.createdAt).getTime() : Infinity;
-                        const isSameGroupAsPrev = prev?.senderId === msg.senderId && timeDiff < GROUP_TIME_THRESHOLD_MS;
-                        const isSameGroupAsNext = next?.senderId === msg.senderId
+                        const isSameGroupAsPrev = prevSenderKey === msgSenderKey && timeDiff < GROUP_TIME_THRESHOLD_MS;
+                        const isSameGroupAsNext = nextSenderKey === msgSenderKey
                           && new Date(next.createdAt).getTime() - new Date(msg.createdAt).getTime() < GROUP_TIME_THRESHOLD_MS;
-
                         return (
                           <MessageItem
-                            key={msg.id}
+                            key={`${msg.roomId}-${msgSenderKey}-${msg.createdAt}-${i}`}
                             message={msg}
-                            senderLabel={msg.senderId === user?.id ? 'Vous' : msg.senderId}
-                            isOwn={msg.senderId === user?.id}
+                            senderLabel={isOwnMessage ? 'Vous' : msg.sender.username}
+                            isOwn={isOwnMessage}
                             showHeader={!isSameGroupAsPrev}
                             isFirst={!isSameGroupAsPrev}
                             isLast={!isSameGroupAsNext}

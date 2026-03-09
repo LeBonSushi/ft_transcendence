@@ -25,6 +25,19 @@ export class FriendsService {
     return {friend_request: receivedRequest?.receivedFriendRequests};
   }
 
+  async getRelations(id: string) {
+    return this.prisma.friendship.findMany({
+      where: {
+        OR: [{ userId: id }, { friendId: id }],
+      },
+      include: {
+        user: { include: { profile: true } },
+        friend: { include: { profile: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
   async sendRequest(id: string, friendId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: id } });
     const friend = await this.prisma.user.findUnique({ where: { id: friendId } });
@@ -80,17 +93,18 @@ export class FriendsService {
     return { success: true, friendRequest };
   }
 
-  async acceptRequest(id: string, friendshipId: string) {
-    const friendship = await this.prisma.friendship.findUnique({
-        where: { id: friendshipId}
-    });
+  async acceptRequest(id: string, friendshipIdOrFriendId: string) {
+    const friendship = await this.findFriendshipByTarget(id, friendshipIdOrFriendId);
 
     if (!friendship)
         throw new UnauthorizedException('Cannot add user that no exist');
 
+    if (friendship.status !== 'PENDING' || friendship.friendId !== id)
+      throw new NotFoundException('No pending friend request found from this user');
+
     const acceptFriend = await this.prisma.friendship.updateMany({
         where: {
-            id: friendshipId,
+            id: friendship.id,
             status: "PENDING",
         },
         data: {
@@ -112,10 +126,17 @@ export class FriendsService {
     return { success: true };
   }
 
-  async rejectRequest(id: string, friendshipId: string) {
+  async rejectRequest(id: string, friendshipIdOrFriendId: string) {
+    const friendship = await this.findFriendshipByTarget(id, friendshipIdOrFriendId);
+    if (!friendship)
+      throw new NotFoundException('No pending friend request found');
+
+    if (friendship.status !== 'PENDING' || friendship.friendId !== id)
+      throw new NotFoundException('No pending friend request found');
+
     const rejected = await this.prisma.friendship.deleteMany({
         where: {
-          id: friendshipId,
+          id: friendship.id,
           status: 'PENDING',
         }
     });
@@ -126,9 +147,13 @@ export class FriendsService {
     return { success: true, message: 'Friend request rejected' };
   }
 
-  async blockRequest(id: string, friendshipId: string) {
+  async blockRequest(id: string, friendshipIdOrFriendId: string) {
+    const friendship = await this.findFriendshipByTarget(id, friendshipIdOrFriendId);
+    if (!friendship)
+      throw new UnauthorizedException("Cannot block a non friend user");
+
     const friends = await this.prisma.friendship.updateMany({
-        where: { id: friendshipId,
+        where: { id: friendship.id,
             OR: [
                 { userId: id},
                 { friendId: id }
@@ -145,13 +170,20 @@ export class FriendsService {
     return { succes: true, blocked: friends.count };
   }
 
-  async unblockRequest(id: string, friendId: string) {
+  async unblockRequest(id: string, friendshipIdOrFriendId: string) {
+    const friendship = await this.findFriendshipByTarget(id, friendshipIdOrFriendId);
+    if (!friendship)
+      throw new UnauthorizedException("Cannot unblock a non friend user");
+
+    const friendId = friendship.userId === id ? friendship.friendId : friendship.userId;
+
     const friends = await this.prisma.friendship.updateMany({
         where: {
             OR: [
                 { userId: id, friendId: friendId },
                 { userId: friendId, friendId: id }
             ],
+            status: 'BLOCKED',
         },
         data: {
             status: "ACCEPTED",
@@ -164,7 +196,13 @@ export class FriendsService {
     return { succes: true, unblocked: friends.count };
   }
 
-  async deleteFriend(id: string, friendId: string) {
+  async deleteFriend(id: string, friendshipIdOrFriendId: string) {
+    const friendship = await this.findFriendshipByTarget(id, friendshipIdOrFriendId);
+    if (!friendship)
+      throw new UnauthorizedException("Cannot delete a non friend user");
+
+    const friendId = friendship.userId === id ? friendship.friendId : friendship.userId;
+
     const deleteFriend = await this.prisma.friendship.deleteMany({
         where: {
             OR: [
@@ -181,6 +219,25 @@ export class FriendsService {
         throw new UnauthorizedException("Cannot delete a non friend user");
 
     return { succes: true, deleted: deleteFriend.count };
+  }
+
+  private async findFriendshipByTarget(userId: string, target: string) {
+    return this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          {
+            id: target,
+            OR: [{ userId }, { friendId: userId }],
+          },
+          {
+            OR: [
+              { userId, friendId: target },
+              { userId: target, friendId: userId },
+            ],
+          },
+        ],
+      },
+    });
   }
 
   // Endpoint de test pour créer des demandes d'amis vers mon current user

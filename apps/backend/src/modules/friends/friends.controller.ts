@@ -18,6 +18,11 @@ export class FriendsController {
     return await this.friendsService.getRequestReceived(id);
   }
 
+  @Get('relations')
+  async getRelations(@GetUser('id') id: string) {
+    return await this.friendsService.getRelations(id);
+  }
+
   @Post('request/:friendId')
   async sendFriendRequest(@GetUser('id') id: string, @Param('friendId') friendId: string) {
     return await this.friendsService.sendRequest(id, friendId);

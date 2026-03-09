@@ -29,6 +29,10 @@ export class CreateRoomDto implements ICreateRoomDto {
     type: 'GROUP' | 'DIRECT_MESSAGE';
 
     @IsOptional()
+    @IsString()
+    invitedUserId?: string;
+
+    @IsOptional()
     @IsBoolean()
     isPrivate?: boolean;
 }

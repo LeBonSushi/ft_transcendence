@@ -28,6 +28,122 @@ export class RoomsService {
 
   // CRUD ROOM
   async create(userId: string, data: CreateRoomDto) {
+    if (data.type === 'DIRECT_MESSAGE') {
+      if (!data.invitedUserId) {
+        throw new ConflictException('invitedUserId is required for DIRECT_MESSAGE');
+      }
+
+      if (data.invitedUserId === userId) {
+        throw new ConflictException('You cannot create a direct message with yourself');
+      }
+
+      const existingDm = await this.prisma.room.findFirst({
+        where: {
+          type: 'DIRECT_MESSAGE',
+          AND: [
+            { members: { some: { userId } } },
+            { members: { some: { userId: data.invitedUserId } } },
+            { members: { every: { userId: { in: [userId, data.invitedUserId] } } } },
+          ],
+        },
+        include: {
+          members: {
+            include: {
+              user: {
+                include: {
+                  profile: true,
+                },
+              },
+            },
+          },
+          messages: {
+            select: {
+              content: true,
+              createdAt: true,
+              sender: {
+                select: {
+                  username: true,
+                  profile: {
+                    select: {
+                      profilePicture: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+      });
+
+      if (existingDm) {
+        return existingDm;
+      }
+
+      const room = await this.prisma.room.create({
+        data: {
+          name: data.name,
+          description: data.description,
+          isPrivate: true,
+          creatorId: userId,
+          type: data.type,
+          members: {
+            create: [
+              {
+                userId,
+                role: 'ADMIN',
+              },
+              {
+                userId: data.invitedUserId,
+                role: 'MEMBER',
+              },
+            ],
+          },
+        },
+        include: {
+          members: {
+            include: {
+              user: {
+                include: {
+                  profile: true,
+                },
+              },
+            },
+          },
+          messages: {
+            select: {
+              content: true,
+              createdAt: true,
+              sender: {
+                select: {
+                  username: true,
+                  profile: {
+                    select: {
+                      profilePicture: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+      });
+
+      const creatorRoom = this.mapRoomWithLastMessage(room, userId);
+      const invitedRoom = this.mapRoomWithLastMessage(room, data.invitedUserId);
+      const invitedMember = room.members.find((member) => member.userId === data.invitedUserId);
+
+      this.roomsGateway.emitRoomCreated(creatorRoom);
+      if (invitedMember) {
+        this.roomsGateway.emitMemberInvited(room.id, invitedMember, invitedRoom);
+      }
+
+      return room;
+    }
+
     const room = await this.prisma.room.create({
       data: {
         name: data.name,
@@ -55,7 +171,8 @@ export class RoomsService {
       },
     });
 
-    this.roomsGateway.emitRoomCreated(room);
+    const roomWithLastMessage = this.mapRoomWithLastMessage(room, userId);
+    this.roomsGateway.emitRoomCreated(roomWithLastMessage);
 
     return room;
   }
@@ -616,5 +733,38 @@ export class RoomsService {
     }
 
     return member;
+  }
+
+  private mapRoomWithLastMessage(room: any, currentUserId: string) {
+    const lastMsg = room.messages?.[0] ?? null;
+
+    let roomName = room.name;
+    if (room.type === 'DIRECT_MESSAGE') {
+      const otherMember = room.members?.find((member: any) => member.userId !== currentUserId)?.user;
+      if (otherMember) {
+        const firstName = otherMember.profile?.firstName;
+        const lastName = otherMember.profile?.lastName;
+        roomName = firstName
+          ? `${firstName} ${lastName ?? ''}`.trim()
+          : otherMember.username;
+      }
+    }
+
+    return {
+      id: room.id,
+      name: roomName,
+      type: room.type,
+      description: room.description,
+      status: room.status,
+      isPrivate: room.isPrivate,
+      creatorId: room.creatorId,
+      imageUrl: room.imageUrl,
+      createdAt: room.createdAt,
+      updatedAt: room.updatedAt,
+      lastMessage: lastMsg?.content ?? null,
+      lastMessageDate: lastMsg?.createdAt ?? null,
+      senderUsername: lastMsg?.sender?.username ?? null,
+      senderPicture: lastMsg?.sender?.profile?.profilePicture ?? null,
+    };
   }
 }

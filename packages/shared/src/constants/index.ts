@@ -71,7 +71,8 @@ export const API_ROUTES = {
   },
 
   FRIENDS: {
-    REQUESTS: '/friends/requests',
+    REQUESTS: '/friends/request',
+    RELATIONS: '/friends/relations',
     SEND: (userId: string) => `/friends/request/${userId}`,
     ACCEPT: (friendshipId: string) => `/friends/accept/${friendshipId}`,
     REJECT: (friendshipId: string) => `/friends/reject/${friendshipId}`,

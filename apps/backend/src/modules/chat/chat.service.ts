@@ -2,6 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { RedisService } from '@/common/redis/redis.service';
 
+const messagePayloadSelect = {
+  roomId: true,
+  content: true,
+  type: true,
+  attachmentUrl: true,
+  createdAt: true,
+  sender: {
+    select: {
+      username: true,
+      profile: {
+        select: {
+          id: true,
+          userId: true,
+          firstName: true,
+          lastName: true,
+          profilePicture: true,
+        },
+      },
+    },
+  },
+} as const;
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -13,14 +35,8 @@ export class ChatService {
     return this.prisma.message.findMany({
       where: { roomId },
       take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        sender: {
-          include: {
-            profile: true,
-          },
-        },
-      },
+      orderBy: { createdAt: 'asc' },
+      select: messagePayloadSelect,
     });
   }
 
@@ -32,13 +48,7 @@ export class ChatService {
         content,
         type,
       },
-      include: {
-        sender: {
-          include: {
-            profile: true,
-          },
-        },
-      },
+      select: messagePayloadSelect,
     });
 
     // Publish to Redis for real-time distribution across instances

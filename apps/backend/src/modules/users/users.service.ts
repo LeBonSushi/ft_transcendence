@@ -22,7 +22,15 @@ export class UsersService {
   async getUserById(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      include: { profile: true },
+      select: {
+        profile: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      },
     });
   }
 
@@ -216,6 +224,7 @@ export class UsersService {
                 status: true,
                 isPrivate: true,
                 creatorId: true,
+                imageUrl: true,
                 createdAt: true,
                 updatedAt: true,
                 messages: {
@@ -236,6 +245,22 @@ export class UsersService {
                   orderBy: { createdAt: 'desc' },
                   take: 1,
                 },
+                members: {
+                  select: {
+                    userId: true,
+                    user: {
+                      select: {
+                        username: true,
+                        profile: {
+                          select: {
+                            firstName: true,
+                            lastName: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -249,9 +274,19 @@ export class UsersService {
 
     return userWithRooms.roomMemberships.map((m) => {
       const lastMsg = m.room.messages[0] ?? null;
-      const { messages, ...room } = m.room;
+      const otherMember = m.room.type === 'DIRECT_MESSAGE'
+        ? m.room.members.find((member) => member.userId !== userId)?.user
+        : null;
+      const dmName = otherMember
+        ? (otherMember.profile?.firstName
+          ? `${otherMember.profile.firstName} ${otherMember.profile.lastName ?? ''}`.trim()
+          : otherMember.username)
+        : m.room.name;
+
+      const { messages, members, ...room } = m.room;
       return {
         ...room,
+        name: m.room.type === 'DIRECT_MESSAGE' ? dmName : m.room.name,
         lastMessage: lastMsg?.content ?? null,
         lastMessageDate: lastMsg?.createdAt ?? null,
         senderUsername: lastMsg?.sender.username ?? null,

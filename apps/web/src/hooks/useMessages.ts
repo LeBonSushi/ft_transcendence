@@ -11,10 +11,9 @@ export function useMessages(roomId: string | null) {
   const { sendMessage, deleteMessage, sendTypingStart, sendTypingStop, getMessages, isConnected } = useChatSocket(roomId, {
     onMessageReceive: (message) => {
       setMessages(prev => [...prev, message]);
+      console.log("Message received:", message)
     },
-    onMessageDeleted: ({ messageId }) => {
-      setMessages(prev => prev.filter(m => m.id !== messageId));
-    },
+    onMessageDeleted: () => {},
     onMessagesHistory: (history) => {
       setLoading(false);
       setMessages(history);
@@ -25,6 +24,7 @@ export function useMessages(roomId: string | null) {
     messages,
     loading,
     sendMessage,
+    getMessages,
     deleteMessage,
     sendTypingStart,
     sendTypingStop,
