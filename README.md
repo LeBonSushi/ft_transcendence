@@ -57,6 +57,13 @@ Here is a list of all the resources that helped us build our app
 	- OpenClassroom Js tutorial [here](https://openclassrooms.com/fr/courses/6390246-passez-au-full-stack-avec-node-js-express-et-mongodb)
 	- etc
 
+  * WebSocket/Chat:
+	- Official Socket.io docs [here](https://socket.io/docs/v4/)
+	- NestJS WebSockets/Gateways docs [here](https://docs.nestjs.com/websockets/gateways)
+
+  * 2FA:
+	- otplib (TOTP library) [here](https://github.com/yeojz/otplib)
+
   * API:
 	- Sort of API youtube video [here](https://www.youtube.com/watch?v=pBASqUbZgkY)
 
@@ -99,7 +106,7 @@ Write code for assigned features. Participate in code reviews. Test their implem
 ### nbrecque [[ dev ](#developer)]:
 - Backend chat
 - WebSocket
-- front
+- 2FA
 -
 -
 
@@ -161,7 +168,7 @@ Teamwork was organized in a structured way to ensure good project progress track
 Here is a list of features and the people who worked on them
 
 * Chat/Notifications (Njard / Nbrecque):
-	<p>to be completed</p>
+	<p>Messagerie en temps réel via WebSocket (Socket.io). Création et gestion des rooms côté backend (service + controller). Communication instantanée entre clients grâce aux événements WebSocket.</p>
 
 * Rooms (Njard / Nbrecque / Ggirault / Macorso):
 	<p>to be completed</p>
@@ -169,8 +176,8 @@ Here is a list of features and the people who worked on them
 * Profile (Macorso / Ggirault):
 	<p>to be completed</p>
 
-* 2-factor authentication (Macorso)
-	<p>to be completed</p>
+* 2-factor authentication (Macorso / Nbrecque)
+	<p>Activation/désactivation du 2FA depuis les paramètres du profil. Génération de QR code scannable avec Google Authenticator. Vérification TOTP au login avec écran intermédiaire. 8 backup codes à usage unique en cas de perte du téléphone.</p>
 
 # Chosen modules
 
@@ -221,3 +228,9 @@ Below is a summary of the main project areas and contributions.
 
 ## Other Features
 - to be completed
+
+## 2FA - Two Factor Authentication (Nbrecque)
+- Implémentation de l'A2F TOTP avec la lib otplib côté backend
+- Création du service (two-factor.services.ts) et du controller (two-factor.controller.ts) avec 4 routes API protégées par JWT
+- Modification du flux de login dans auth.service.ts pour gérer l'état intermédiaire "2FA requis"
+- Frontend : écran OTP au login, UI activation/désactivation dans les paramètres, QR code

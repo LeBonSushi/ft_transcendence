@@ -48,6 +48,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useTheme } from "next-themes";
 import { storageApi } from "@/lib/api";
+import { apiClient } from "@/lib/api/client";
 
 // ============ PROFILE DROPDOWN ============
 export function Profile() {
@@ -517,52 +518,183 @@ function SecuritySection({
   setShowBackupCodes: (b: boolean) => void;
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
-  const [isEnabling2FA, setisEnabling2FA] = useState<boolean>(false);
+  const [isEnabling2FA, setIsEnabling2FA] = useState<boolean>(false);
   const [totpData, setTotpData] = useState<{ uri: string; secret: string } | null>(null);
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [isLoadingCodes, setIsLoadingCodes] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [error, setError] = useState('');
+  const { updateUser } = useUserStore();
+
+  // 1. Appelle le backend pour générer le secret + URI Fdu QR code
+  const handleGenerate = async () => {
+    try {
+      setError('');
+      const data = await apiClient.post<{ secret: string; uri: string }>('/auth/2fa/generate');
+      setTotpData(data);
+      setIsEnabling2FA(true);
+    } catch (err) {
+      setError('Erreur lors de la génération du QR code');
+    }
+  };
+
+  // 2. Envoie le premier code pour activer le 2FA
+  const handleEnable = async () => {
+    try {
+      setError('');
+      const data = await apiClient.post<{ backupCodes: string[] }>('/auth/2fa/enable', { code: otpCode });
+      setBackupCodes(data.backupCodes);
+      setIsEnabling2FA(false);
+      setTotpData(null);
+      setOtpCode('');
+      setShowBackupCodes(true);
+      updateUser({ twoFactorEnabled: true });
+    } catch (err) {
+      setError('Code invalide. Réessayez.');
+    }
+  };
+
+  // 3. Désactive le 2FA
+  const handleDisable = async () => {
+    try {
+      setError('');
+      await apiClient.post('/auth/2fa/disable', { code: otpCode });
+      setIsDisabling2FA(false);
+      setOtpCode('');
+      setBackupCodes([]);
+      updateUser({ twoFactorEnabled: false });
+    } catch (err) {
+      setError('Code invalide. Réessayez.');
+    }
+  };
 
   return (
     <>
       <SectionCard title="Authentification à deux facteurs (2FA)" icon={Smartphone}>
         <div className="space-y-3 sm:space-y-4">
-          <ListItem
-            icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
-            title="Application d'authentification"
-            description="Google Authenticator, Authy, etc."
-            action={
-              <Button size="sm" onClick={() => {}}>
-                <Plus className="h-4 w-4 mr-1" /> Activer
-              </Button>
-            }
-          />
 
+          {error && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* État normal : bouton Activer ou Désactiver */}
+          {!isEnabling2FA && !isDisabling2FA && (
+            <ListItem
+              icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
+              title="Application d'authentification"
+              description="Google Authenticator, Authy, etc."
+              action={
+                user.twoFactorEnabled ? (
+                  <Button size="sm" variant="destructive" onClick={() => setIsDisabling2FA(true)}>
+                    Désactiver
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={handleGenerate}>
+                    <Plus className="h-4 w-4 mr-1" /> Activer
+                  </Button>
+                )
+              }
+            />
+          )}
+
+          {/* Étape d'activation : QR code + saisie du code */}
+          {isEnabling2FA && totpData && (
+            <div className="space-y-4 p-4 rounded-lg bg-muted/50 border border-border">
+              <p className="text-sm font-medium">
+                1. Scannez ce QR code avec votre application d'authentification :
+              </p>
+              <div className="flex justify-center p-4 bg-white rounded-lg">
+                <QRCode value={totpData.uri} size={200} />
+              </div>
+              <p className="text-xs text-muted-foreground text-center break-all">
+                Clé manuelle : {totpData.secret}
+              </p>
+              <p className="text-sm font-medium">
+                2. Entrez le code à 6 chiffres affiché dans l'application :
+              </p>
+              <div className="flex justify-center">
+                <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} pattern={REGEXP_ONLY_DIGITS}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleEnable} disabled={otpCode.length !== 6} className="flex-1">
+                  <Check className="h-4 w-4 mr-1" /> Confirmer
+                </Button>
+                <Button variant="outline" onClick={() => { setIsEnabling2FA(false); setTotpData(null); setOtpCode(''); setError(''); }}>
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Étape de désactivation : saisie du code */}
+          {isDisabling2FA && (
+            <div className="space-y-4 p-4 rounded-lg bg-muted/50 border border-border">
+              <p className="text-sm font-medium">
+                Entrez un code 2FA pour confirmer la désactivation :
+              </p>
+              <div className="flex justify-center">
+                <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} pattern={REGEXP_ONLY_DIGITS}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="destructive" onClick={handleDisable} disabled={otpCode.length !== 6} className="flex-1">
+                  Désactiver le 2FA
+                </Button>
+                <Button variant="outline" onClick={() => { setIsDisabling2FA(false); setOtpCode(''); setError(''); }}>
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Backup codes */}
           <ListItem
             icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />}
             title="Codes de récupération"
             description="Codes de secours en cas de perte"
             action={
-              <Button size="sm" variant="outline" onClick={() => {}} disabled={isLoadingCodes}>
-                {isLoadingCodes ? (
-                  <RefreshCw className="h-4 w-4 animate-spin mr-1" />
-                ) : showBackupCodes ? (
-                  <EyeOff className="h-4 w-4 mr-1" />
-                ) : (
-                  <Eye className="h-4 w-4 mr-1" />
-                )}
-                {isLoadingCodes ? 'Chargement...' : showBackupCodes ? 'Quitter' : 'Générer'}
+              <Button size="sm" variant="outline" onClick={() => setShowBackupCodes(!showBackupCodes)} disabled={backupCodes.length === 0}>
+                {showBackupCodes ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                {showBackupCodes ? 'Masquer' : 'Afficher'}
               </Button>
             }
           />
         </div>
       </SectionCard>
 
-      {showBackupCodes && (
+      {/* Affichage des backup codes */}
+      {showBackupCodes && backupCodes.length > 0 && (
         <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
           <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-            TODO: Implement backup codes with your auth system.
+            Conservez ces codes en lieu sûr. Chaque code ne peut être utilisé qu'une seule fois.
           </p>
+          <div className="grid grid-cols-2 gap-2">
+            {backupCodes.map((code, i) => (
+              <code key={i} className="p-2 bg-background rounded text-center text-sm font-mono border">
+                {code}
+              </code>
+            ))}
+          </div>
         </div>
       )}
     </>

@@ -62,7 +62,7 @@ export class AuthService {
     };
   }
 
-  async validateUser(email: string, password: string) {
+  async validateUser(email: string, password: string, totpCode?: string) {
     // Récupère l'user avec son profil depuis la DB
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -84,12 +84,41 @@ export class AuthService {
       return null;
     }
 
+    // Si le 2FA est activer, on doit verifier le code TOTP
+    if (user.twoFactorEnabled) {
+      // Si pas code fourni, on dit au front qu'il faut le 2FA
+      if (!totpCode) {
+        return { requiresTwoFactor: true, userId: user.id };
+      }
+
+      // si le code est fourni, on le verifie
+      const { verifySync } = await import('otplib');
+      const isValidTotp = verifySync({ token: totpCode, secret: user.twoFactorSecret! });
+
+      // Verifier aussi les backup codes
+      if (!isValidTotp) {
+        const backupIndex = user.twoFactorBackupCodes.indexOf(totpCode);
+        if (backupIndex === -1) {
+          return null;
+        }
+
+        // Supprimer le backup code utilisé
+        const updatedCodes = [...user.twoFactorBackupCodes];
+        updatedCodes.splice(backupIndex, 1);
+        await this.prisma.user.update({
+          where: {id: user.id},
+          data: {twoFactorBackupCodes: updatedCodes },
+        });
+      }
+    }
+
     // Retourne les données nécessaires pour NextAuth
     return {
       id: user.id,
       email: user.email,
       username: user.username,
       createdAt: user.createdAt,
+      twoFactorEnabled: user.twoFactorEnabled,
       profile: user.profile ? {
         firstName: user.profile.firstName,
         lastName: user.profile.lastName,

@@ -10,7 +10,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        totpCode: { label: "2FA Code", type: "text"},
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -25,6 +26,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             body: JSON.stringify({
               email: credentials.email,
               password: credentials.password,
+              totpCode: credentials.totpCode && String(credentials.totpCode) !== "undefined" && 
+              String(credentials.totpCode).length === 6 ? credentials.totpCode : undefined,
             }),
           });
 
@@ -33,6 +36,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
 
           const data = await response.json();
+
+          // backend demande un code 2FA (normalement ça arrive pas car on le gere dans signin/page.tsx)
+          if (data.requiresTwoFactor) {
+            return null;
+          }
           
           // Return user with all required fields
           return {
@@ -42,9 +50,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             createdAt: new Date(data.createdAt),
             profile: data.profile || null,
           };
-        } catch (error) {
-          console.error("Auth error:", error);
-          return null;
+        } catch (error: any) {
+            console.error("Auth error:", error);
+            return null;
         }
       }
     }),

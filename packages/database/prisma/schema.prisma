@@ -12,6 +12,10 @@ model User {
   username      String   @unique
   email         String   @unique
   passwordHash  String?
+  // 2FA
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
+  twoFactorBackupCodes String[]
 
   // Relations
   profile                Profile?

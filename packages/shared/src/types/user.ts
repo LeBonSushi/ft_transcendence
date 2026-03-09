@@ -10,6 +10,7 @@ export interface User {
   email: string;
   oauthProvider?: string;
   oauthId?: string;
+  twoFactorEnabled: boolean;
   profile: Profile | null;
   createdAt: Date;
   updatedAt: Date;
