@@ -613,7 +613,6 @@ export class RoomsService {
     if (!room)
       throw new NotFoundException('Room doesn\'t exist');
 
-    // Matching date is only for GROUP rooms, not for DMs
     if (room.type === 'DIRECT_MESSAGE')
       return null;
 
