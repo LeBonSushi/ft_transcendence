@@ -13,6 +13,17 @@ interface CreateUserDto {
   profilePicture?: string;
 }
 
+/**
+ * Safe user select - excludes sensitive fields like passwordHash, email, 2FA secrets
+ */
+const SAFE_USER_SELECT = {
+  id: true,
+  username: true,
+  createdAt: true,
+  updatedAt: true,
+  // email, passwordHash, twoFactorSecret, twoFactorBackupCodes are excluded
+} as const;
+
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -22,15 +33,7 @@ export class UsersService {
   async getUserById(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        profile: {
-          select: {
-            userId: true,
-            firstName: true,
-            lastName: true,
-          }
-        }
-      },
+      include: { profile: true },
     });
   }
 
@@ -50,7 +53,8 @@ export class UsersService {
           },
         } : undefined,
       },
-      include: {
+      select: {
+        ...SAFE_USER_SELECT,
         profile: true,
       },
     });
@@ -84,7 +88,8 @@ export class UsersService {
           },
         } : undefined,
       },
-      include: {
+      select: {
+        ...SAFE_USER_SELECT,
         profile: true,
       },
     });
@@ -203,7 +208,10 @@ export class UsersService {
 
     const updatedUser = await this.prisma.user.findUnique({
       where: { id },
-      include: { profile: true },
+      select: {
+        ...SAFE_USER_SELECT,
+        profile: true,
+      },
     });
 
     return warnings.length > 0 ? { user: updatedUser, warnings } : updatedUser;
@@ -302,8 +310,18 @@ export class UsersService {
         OR: [{ userId: id }, { friendId: id }],
       },
       include: {
-        user: { include: { profile: true } },
-        friend: { include: { profile: true } },
+        user: { 
+          select: {
+            ...SAFE_USER_SELECT,
+            profile: true,
+          },
+        },
+        friend: { 
+          select: {
+            ...SAFE_USER_SELECT,
+            profile: true,
+          },
+        },
       },
     });
 

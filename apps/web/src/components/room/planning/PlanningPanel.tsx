@@ -42,6 +42,13 @@ interface PlanningPanelProps {
   
   // Availabilities
   availabilities: any[];
+  matchingDate: { 
+    startDate: Date; 
+    endDate: Date; 
+    duration: number;
+    matchUser: number;
+    droppedUser: string[];
+  } | null;
   showAvailabilityForm: boolean;
   availabilityForm: {
     startDate: string;
@@ -75,6 +82,7 @@ export function PlanningPanel({
   onAddActivity,
   onDeleteActivity,
   availabilities,
+  matchingDate,
   showAvailabilityForm,
   availabilityForm,
   onAvailabilityFormChange,
@@ -203,6 +211,37 @@ export function PlanningPanel({
           {/* Availabilities tab */}
           {tab === 'availabilities' && (
             <div className="space-y-3">
+              {/* Matching Date Suggestion */}
+              {matchingDate && (
+                <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Calendar className="w-3.5 h-3.5 shrink-0 text-green-600" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-green-600">
+                      Fenêtre commune idéale
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium text-green-900">
+                    {new Date(matchingDate.startDate).toLocaleDateString('fr-FR', { 
+                      day: '2-digit', 
+                      month: 'short', 
+                      year: 'numeric' 
+                    })} → {new Date(matchingDate.endDate).toLocaleDateString('fr-FR', { 
+                      day: '2-digit', 
+                      month: 'short', 
+                      year: 'numeric' 
+                    })}
+                  </p>
+                  <p className="text-[11px] opacity-70 mt-0.5">
+                    {matchingDate.duration} jour(s) · {matchingDate.matchUser} personne(s) disponible(s)
+                  </p>
+                  {matchingDate.droppedUser.length > 0 && (
+                    <p className="text-[10px] opacity-60 mt-1 italic">
+                      {matchingDate.droppedUser.length} membre(s) non disponible(s)
+                    </p>
+                  )}
+                </div>
+              )}
+
               <button
                 onClick={onToggleAvailabilityForm}
                 className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/60 hover:text-primary transition-colors"

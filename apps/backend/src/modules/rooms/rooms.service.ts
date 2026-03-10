@@ -16,6 +16,16 @@ import { start } from 'repl';
 import { AvailabilityService } from './availability.service';
 import { PlanningService } from './planning.service';
 
+/**
+ * Safe user select - excludes sensitive fields like passwordHash, email, 2FA secrets
+ */
+const SAFE_USER_SELECT = {
+  id: true,
+  username: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 @Injectable()
 export class RoomsService {
   constructor(
@@ -50,7 +60,8 @@ export class RoomsService {
           members: {
             include: {
               user: {
-                include: {
+                select: {
+                  ...SAFE_USER_SELECT,
                   profile: true,
                 },
               },
@@ -105,7 +116,8 @@ export class RoomsService {
           members: {
             include: {
               user: {
-                include: {
+                select: {
+                  ...SAFE_USER_SELECT,
                   profile: true,
                 },
               },
@@ -182,14 +194,16 @@ export class RoomsService {
       where: { id },
       include: {
         creator: {
-          include: {
+          select: {
+            ...SAFE_USER_SELECT,
             profile: true,
           },
         },
         members: {
           include: {
             user: {
-              include: {
+              select: {
+                ...SAFE_USER_SELECT,
                 profile: true,
               },
             },
@@ -235,7 +249,8 @@ export class RoomsService {
         members: {
           include: {
             user: {
-              include: {
+              select: {
+                ...SAFE_USER_SELECT,
                 profile: true,
               },
             },
@@ -287,7 +302,8 @@ export class RoomsService {
       },
       include: {
         user: {
-          include: {
+          select: {
+            ...SAFE_USER_SELECT,
             profile: true,
           },
         },
@@ -323,7 +339,8 @@ export class RoomsService {
       },
       include: {
         user: {
-          include: {
+          select: {
+            ...SAFE_USER_SELECT,
             profile: true,
           },
         },
@@ -386,7 +403,8 @@ export class RoomsService {
       where: { roomId },
       include: {
         user: {
-          include: {
+          select: {
+            ...SAFE_USER_SELECT,
             profile: true,
           },
         },
@@ -427,7 +445,8 @@ export class RoomsService {
       data: { role },
       include: {
         user: {
-          include: {
+          select: {
+            ...SAFE_USER_SELECT,
             profile: true,
           },
         },
@@ -580,7 +599,9 @@ export class RoomsService {
   async matchingDate(roomId: string) {
     const room = await this.prisma.room.findUnique({
       where: { id: roomId },
-      include: {
+      select: {
+        id: true,
+        type: true,
         members: {
           select: {
             userId: true,
@@ -591,6 +612,10 @@ export class RoomsService {
 
     if (!room)
       throw new NotFoundException('Room doesn\'t exist');
+
+    // Matching date is only for GROUP rooms, not for DMs
+    if (room.type === 'DIRECT_MESSAGE')
+      return null;
 
     const availabilities = await this.prisma.userAvailability.findMany({
       where: { roomId: room.id },
@@ -712,10 +737,16 @@ export class RoomsService {
         best = s;
     }
 
+    const matchUsers = [...best.users];
+    const droppedUsers = [...memberId].filter((id) => !best.users.has(id));
+
+
     return {
       startDate: new Date(best.start),
       endDate: new Date(best.end),
       duration: Math.ceil((best.end - best.start) / (1000 * 60 * 60 * 24)),
+      matchUser: matchUsers.length,
+      droppedUser: droppedUsers,
     };
   }
 

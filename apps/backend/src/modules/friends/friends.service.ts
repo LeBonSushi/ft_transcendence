@@ -2,7 +2,8 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 import { Injectable, NotFoundException, UnauthorizedException, Logger, forwardRef, Inject } from '@nestjs/common';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { NotificationTemplates } from '@/modules/notifications/templates/templates';
-import { NotificationType } from '@travel-planner/shared';
+import { NotificationType, SOCKET_EVENTS } from '@travel-planner/shared';
+import { RoomsGateway } from '@/modules/rooms/rooms.gateway';
 
 @Injectable()
 export class FriendsService {
@@ -11,7 +12,9 @@ export class FriendsService {
   constructor(
     private prisma: PrismaService,
     @Inject (forwardRef(() => NotificationsService))
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
+    @Inject(forwardRef(() => RoomsGateway))
+    private roomsGateway: RoomsGateway,
   ) {}
 
   async getRequestReceived(id: string) {
@@ -30,9 +33,25 @@ export class FriendsService {
       where: {
         OR: [{ userId: id }, { friendId: id }],
       },
-      include: {
-        user: { include: { profile: true } },
-        friend: { include: { profile: true } },
+      select: {
+        id: true,
+        userId: true,
+        friendId: true,
+        status: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profile: true,
+          },
+        },
+        friend: {
+          select: {
+            id: true,
+            username: true,
+            profile: true,
+          },
+        },
       },
       orderBy: { updatedAt: 'desc' },
     });
@@ -151,6 +170,31 @@ export class FriendsService {
     const friendship = await this.findFriendshipByTarget(id, friendshipIdOrFriendId);
     if (!friendship)
       throw new UnauthorizedException("Cannot block a non friend user");
+
+    const friendId = friendship.userId === id ? friendship.friendId : friendship.userId;
+
+    // Find and delete the DIRECT_MESSAGE room between them
+    const dmRoom = await this.prisma.room.findFirst({
+      where: {
+        type: 'DIRECT_MESSAGE',
+        AND: [
+          { members: { some: { userId: id } } },
+          { members: { some: { userId: friendId } } },
+          { members: { every: { userId: { in: [id, friendId] } } } },
+        ],
+      },
+    });
+
+    if (dmRoom) {
+      // Emit deletion event to both users before deleting
+      this.roomsGateway.emitToUser(id, SOCKET_EVENTS.ROOM_DELETED, { roomId: dmRoom.id });
+      this.roomsGateway.emitToUser(friendId, SOCKET_EVENTS.ROOM_DELETED, { roomId: dmRoom.id });
+      
+      // Delete the room
+      await this.prisma.room.delete({
+        where: { id: dmRoom.id },
+      });
+    }
 
     const friends = await this.prisma.friendship.updateMany({
         where: { id: friendship.id,

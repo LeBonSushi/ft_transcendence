@@ -129,6 +129,18 @@ class RoomResource {
     return apiClient.delete(API_ROUTES.AVAILABILITY.DELETE(this.roomId, id));
   }
 
+  async getMatchingDate() {
+    return apiClient.get<{ 
+      startDate: Date; 
+      endDate: Date; 
+      duration: number;
+      matchUser: number;
+      droppedUser: string[];
+    } | null>(
+      API_ROUTES.AVAILABILITY.MATCHING_DATE(this.roomId)
+    );
+  }
+
   // Proposals
   async getProposals() {
     return apiClient.get<TripProposalWithVotesAndActivities[]>(API_ROUTES.PROPOSALS.LIST(this.roomId));

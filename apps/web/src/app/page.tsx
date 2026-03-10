@@ -30,12 +30,12 @@ export default function Home() {
   const { rooms, selectedRoom, selectRoom, updateRoom } = useRooms();
   const { messages, sendMessage } = useMessages(selectedRoom?.id ?? null);
   const {
-    proposals, availabilities, members, loadingProposals,
+    proposals, availabilities, matchingDate, members, loadingProposals,
     createProposal, deleteProposal, selectProposal,
     vote, removeVote,
     createActivity, deleteActivity,
     createAvailability, deleteAvailability,
-  } = usePlanning(selectedRoom?.id ?? null);
+  } = usePlanning(selectedRoom?.id ?? null, selectedRoom?.type ?? null);
   const { user } = useUserStore();
 
   const [roomName, setRoomName] = useState('');
@@ -492,6 +492,7 @@ export default function Home() {
                     onToggleAvailabilityForm={() => setShowAvailabilityForm(f => !f)}
                     onCreateAvailability={handleCreateAvailability}
                     onDeleteAvailability={deleteAvailability}
+                    matchingDate={matchingDate}
                     currentUserId={user?.id ?? ''}
                   />
                 )}

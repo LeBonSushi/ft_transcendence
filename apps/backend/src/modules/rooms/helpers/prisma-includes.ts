@@ -2,9 +2,17 @@
  * Reusable Prisma include fragments to avoid duplication across services.
  */
 
+export const SAFE_USER_SELECT = {
+  id: true,
+  username: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 export const USER_WITH_PROFILE = {
   user: {
-    include: {
+    select: {
+      ...SAFE_USER_SELECT,
       profile: true,
     },
   },
@@ -14,7 +22,8 @@ export const MEMBERS_WITH_USER = {
   members: {
     include: {
       user: {
-        include: {
+        select: {
+          ...SAFE_USER_SELECT,
           profile: true,
         },
       },
@@ -26,7 +35,8 @@ export const PROPOSAL_WITH_VOTES_ACTIVITIES = {
   votes: {
     include: {
       user: {
-        include: {
+        select: {
+          ...SAFE_USER_SELECT,
           profile: true,
         },
       },
@@ -37,7 +47,8 @@ export const PROPOSAL_WITH_VOTES_ACTIVITIES = {
 
 export const VOTE_WITH_USER = {
   user: {
-    include: {
+    select: {
+      ...SAFE_USER_SELECT,
       profile: true,
     },
   },
@@ -45,7 +56,8 @@ export const VOTE_WITH_USER = {
 
 export const ACTIVITY_WITH_SUGGESTER = {
   suggestedBy: {
-    include: {
+    select: {
+      ...SAFE_USER_SELECT,
       profile: true,
     },
   },

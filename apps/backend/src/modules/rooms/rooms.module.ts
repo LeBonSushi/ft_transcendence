@@ -8,6 +8,6 @@ import { PlanningService } from './planning.service';
 @Module({
   controllers: [RoomsController],
   providers: [RoomsService, RoomsGateway, AvailabilityService, PlanningService],
-  exports: [RoomsService],
+  exports: [RoomsService, RoomsGateway],
 })
 export class RoomsModule {}
