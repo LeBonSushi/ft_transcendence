@@ -39,7 +39,7 @@ export default function SignInPage() {
         });
 
         if (!response.ok) {
-          setError("Email ou mot de passe incorrect");
+          setError("Email or password invalid");
           setLoading(false);
           return;
         }
@@ -63,14 +63,14 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError(requires2FA ? "Code 2FA invalide" : "Email ou mot de passe incorrect");
+        setError(requires2FA ? "2FA code invalid" : "Email or password invalid");
         setTotpCode("");
       } else {
         router.push("/");
         router.refresh();
       }
     } catch (err) {
-      setError("Une erreur est survenue");
+      setError("An error has occurred");
     } finally {
       setLoading(false);
     }
@@ -84,19 +84,19 @@ export default function SignInPage() {
   return (
     <AuthLayout
       backgroundImage="/images/auth-bg.jpg"
-      tagline="Explorez le monde"
+      tagline="Explore the world"
       title={
         <>
-          Bienvenue sur <span className="text-primary">TRANSv2</span>
+          Welcome to <span className="text-primary">Travel Planner</span>
         </>
       }
-      description="Planifiez vos voyages, partagez vos expériences et découvrez de nouvelles destinations avec notre communauté."
-      mobileTitle="Connexion"
-      mobileSubtitle="Accédez à votre compte"
-      desktopTitle="Bon retour parmi nous !"
-      desktopSubtitle="Connectez-vous pour continuer votre aventure"
-      footerText="Pas encore de compte ?"
-      footerLinkText="Créer un compte"
+      description="Plan your trips, share your experiences and discover new destinations with our community"
+      mobileTitle="Connection"
+      mobileSubtitle="Access your account"
+      desktopTitle="Welcome back"
+      desktopSubtitle="Log in to continue your adventure"
+      footerText="No account yet ?"
+      footerLinkText="Create an account"
       footerLinkHref="/signup"
     >
       <div className="space-y-6">
@@ -111,7 +111,7 @@ export default function SignInPage() {
                 className="w-full"
               >
                 <Mail className="mr-2 h-4 w-4" />
-                Continuer avec Google
+                Continue with Google
               </Button>
               <Button
                 variant="outline"
@@ -120,14 +120,14 @@ export default function SignInPage() {
                 className="w-full"
               >
                 <Github className="mr-2 h-4 w-4" />
-                Continuer avec GitHub
+                Continue with GitHub
               </Button>
             </div>
 
             <div className="relative">
               <Separator />
               <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-                Ou avec email
+                Or with email
               </span>
             </div>
           </>
@@ -151,7 +151,7 @@ export default function SignInPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="vous@exemple.com"
+                  placeholder="johndoe@exemple.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -162,13 +162,13 @@ export default function SignInPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="password" className="text-sm font-medium">
-                    Mot de passe
+                    Password
                   </label>
                   <Link
                     href="/forgot-password"
                     className="text-xs text-primary hover:underline"
                   >
-                    Mot de passe oublié ?
+                    Forgot your password ?
                   </Link>
                 </div>
                 <Input
@@ -188,17 +188,17 @@ export default function SignInPage() {
           {requires2FA && (
             <div className="space-y-4">
               <div className="text-center">
-                <h2 className="text-lg font-semibold">Vérification 2FA</h2>
+                <h2 className="text-lg font-semibold">2FA verification</h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   {useBackupCode
-                    ? "Entrez un de vos codes de récupération"
-                    : "Entrez le code à 6 chiffres de votre application d'authentification"}
+                    ? "Enter one of your recovery codes"
+                    : "Enter the 6-digit code of your authentication application"}
                 </p>
               </div>
 
               {useBackupCode ? (
                 <Input
-                  placeholder="Code de récupération"
+                  placeholder="Recovery code"
                   value={totpCode}
                   onChange={(e) => setTotpCode(e.target.value)}
                   className="text-center font-mono"
@@ -224,13 +224,13 @@ export default function SignInPage() {
                 className="text-xs text-primary hover:underline w-full text-center"
                 onClick={() => { setUseBackupCode(!useBackupCode); setTotpCode(""); }}
               >
-                {useBackupCode ? "Utiliser le code TOTP" : "Utiliser un code de récupération"}
+                {useBackupCode ? "Use TOTP code" : "Use recovery code"}
               </button>
             </div>
           )}
 
           <Button type="submit" className="w-full" disabled={loading || (requires2FA && !useBackupCode && totpCode.length !== 6) || (requires2FA && useBackupCode && totpCode.length === 0)}>
-            {loading ? "Connexion..." : requires2FA ? "Vérifier" : "Se connecter"}
+            {loading ? "Connection..." : requires2FA ? "Verify" : "Login"}
           </Button>
 
           {requires2FA && (
@@ -240,7 +240,7 @@ export default function SignInPage() {
               className="w-full"
               onClick={() => { setRequires2FA(false); setTotpCode(""); setUseBackupCode(false); setError(""); }}
             >
-              Retour
+              Back
             </Button>
           )}
         </form>

@@ -45,16 +45,16 @@ export function InviteToGroupModal({ roomId, onClose }: { roomId: string; onClos
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
             <UserPlus size={15} className="text-muted-foreground" />
-            <span className="font-semibold text-sm">Inviter des amis</span>
+            <span className="font-semibold text-sm">Invite friends</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             <X size={16} />
           </button>
         </div>
         <div className="p-4">
-          {loading && <p className="text-xs text-center text-muted-foreground py-6">Chargement…</p>}
+          {loading && <p className="text-xs text-center text-muted-foreground py-6">Loading...</p>}
           {!loading && friends.length === 0 && (
-            <p className="text-xs text-center text-muted-foreground py-6">Aucun ami disponible à inviter.</p>
+            <p className="text-xs text-center text-muted-foreground py-6">No friends available to invite</p>
           )}
           {!loading && friends.length > 0 && (
             <ul className="space-y-1.5">
@@ -87,8 +87,8 @@ export function InviteToGroupModal({ roomId, onClose }: { roomId: string; onClos
                       {isInviting
                         ? <Loader2 size={12} className="animate-spin" />
                         : isDone
-                          ? <><Check size={12} /> Invité</>
-                          : <><UserPlus size={12} /> Inviter</>
+                          ? <><Check size={12} /> Guest</>
+                          : <><UserPlus size={12} /> Invite</>
                       }
                     </button>
                   </li>

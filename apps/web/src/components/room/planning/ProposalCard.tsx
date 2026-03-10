@@ -214,7 +214,7 @@ export function ProposalCard({
                           />
                           <input
                             autoFocus
-                            placeholder="Nom de l'activité"
+                            placeholder="Activity name"
                             value={row.title}
                             onChange={e => setPendingActivities(prev => prev.map(r => r.id === row.id ? { ...r, title: e.target.value } : r))}
                             onBlur={() => {
@@ -242,7 +242,7 @@ export function ProposalCard({
                           </button>
                         </div>
                         <input
-                          placeholder="Lien / adresse (optionnel)"
+                          placeholder="Link / address (optional)"
                           value={row.link}
                           onChange={e => setPendingActivities(prev => prev.map(r => r.id === row.id ? { ...r, link: e.target.value } : r))}
                           onKeyDown={e => {

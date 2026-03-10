@@ -45,12 +45,12 @@ export function RoomListPanel({
       <RoomListHeader rooms={rooms} onAddFriend={onAddFriend} />
       <div className="flex items-center gap-3 px-2 py-3">
         <div className="h-px flex-1 bg-border" />
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Groupes de voyage</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Travel groups</span>
         <div className="h-px flex-1 bg-border" />
         <button
           onClick={onNewGroup}
           className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          title="Nouveau groupe"
+          title="New group"
         >
           <Plus size={13} />
         </button>
@@ -58,7 +58,7 @@ export function RoomListPanel({
       <aside className="flex-1 overflow-y-auto py-1 space-y-0.5">
         <div className="px-2">
           {groupRooms.length === 0 && (
-            <p className="text-center text-muted-foreground py-4">Aucun groupe de voyage disponible</p>
+            <p className="text-center text-muted-foreground py-4">No travel groups available</p>
           )}
           <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
             <SortableContext items={groupRooms.map(r => r.id)} strategy={verticalListSortingStrategy}>
@@ -75,19 +75,19 @@ export function RoomListPanel({
         </div>
         <div className="flex items-center gap-3 px-2 py-3">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Messages privés</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Private messages</span>
           <div className="h-px flex-1 bg-border" />
           <button
             onClick={onNewDM}
             className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            title="Nouveau message privé"
+            title="New private message"
           >
             <Plus size={13} />
           </button>
         </div>
         <div className="px-2">
           {dmRooms.length === 0 && (
-            <p className="text-center text-muted-foreground py-4">Aucun message privé disponible</p>
+            <p className="text-center text-muted-foreground py-4">No private messages available</p>
           )}
           {dmRooms.map((room) => (
             <RoomCard

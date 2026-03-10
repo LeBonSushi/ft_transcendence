@@ -96,7 +96,7 @@ export function AvailabilityList({
       {/* My availabilities */}
       {myAvailabilities.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Mes disponibilités</p>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">My availability</p>
           <div className="space-y-1.5">
             {myAvailabilities.map(av => (
               <div key={av.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20">

@@ -100,10 +100,10 @@ export function PlanningPanel({
     poor: 'border-border bg-muted text-muted-foreground',
   };
   const CONSENSUS_LABELS = {
-    perfect: 'Consensus parfait',
-    good: 'Bon consensus',
-    partial: 'Consensus partiel',
-    poor: 'Peu de consensus',
+    perfect: 'Perfect consensus',
+    good: 'Good consensus',
+    partial: 'Partial consensus',
+    poor: 'Little consensus',
   };
 
   return (
@@ -127,7 +127,7 @@ export function PlanningPanel({
             }`}
           >
             <MapPin className="w-3.5 h-3.5" />
-            Propositions
+            Proposals
           </button>
           <button
             onClick={() => onTabChange('availabilities')}
@@ -138,7 +138,7 @@ export function PlanningPanel({
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            Disponibilités
+            Availability
           </button>
         </div>
 
@@ -153,7 +153,7 @@ export function PlanningPanel({
                 className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/60 hover:text-primary transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Nouvelle proposition
+                New proposal
               </button>
 
               <ProposalForm
@@ -187,9 +187,9 @@ export function PlanningPanel({
               })()}
 
               {loadingProposals ? (
-                <p className="text-xs text-center text-muted-foreground py-4">Chargement…</p>
+                <p className="text-xs text-center text-muted-foreground py-4">Loading...</p>
               ) : proposals.length === 0 ? (
-                <p className="text-xs text-center text-muted-foreground py-4 italic">Aucune proposition pour l'instant</p>
+                <p className="text-xs text-center text-muted-foreground py-4 italic">No proposals yet</p>
               ) : (
                 proposals.map(proposal => (
                   <ProposalCard
@@ -217,7 +217,7 @@ export function PlanningPanel({
                   <div className="flex items-center gap-1.5 mb-1">
                     <Calendar className="w-3.5 h-3.5 shrink-0 text-green-600" />
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-green-600">
-                      Fenêtre commune idéale
+                      Ideal common window
                     </span>
                   </div>
                   <p className="text-xs font-medium text-green-900">
@@ -232,11 +232,11 @@ export function PlanningPanel({
                     })}
                   </p>
                   <p className="text-[11px] opacity-70 mt-0.5">
-                    {matchingDate.duration} jour(s) · {matchingDate.matchUser} personne(s) disponible(s)
+                    {matchingDate.duration} day(s) · {matchingDate.matchUser} person(s) available(s)
                   </p>
                   {matchingDate.droppedUser.length > 0 && (
                     <p className="text-[10px] opacity-60 mt-1 italic">
-                      {matchingDate.droppedUser.length} membre(s) non disponible(s)
+                      {matchingDate.droppedUser.length} member(s) not available(s)
                     </p>
                   )}
                 </div>
@@ -247,7 +247,7 @@ export function PlanningPanel({
                 className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/60 hover:text-primary transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Ajouter mes disponibilités
+                Add my availability
               </button>
 
               <AvailabilityList

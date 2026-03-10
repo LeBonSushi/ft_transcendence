@@ -30,7 +30,8 @@ function overlapDays(
 ): number {
   const overlapStart = new Date(Math.max(startA.getTime(), startB.getTime()));
   const overlapEnd = new Date(Math.min(endA.getTime(), endB.getTime()));
-  if (overlapStart > overlapEnd) return 0;
+  if (overlapStart > overlapEnd)
+    return 0;
   return Math.round((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 }
 
@@ -45,10 +46,8 @@ export function scoreProposals(
     .map(proposal => {
       const propStart = new Date(proposal.startDate);
       const propEnd = new Date(proposal.endDate);
-      const propDuration = overlapDays(propStart, propEnd, propStart, propEnd);
 
       // --- Vote score ---
-      const voterIds = new Set(proposal.votes.map(v => v.userId));
       let rawVoteScore = 0;
       for (const vote of proposal.votes) {
         rawVoteScore += VOTE_POINTS[vote.vote] ?? 0;
@@ -86,28 +85,27 @@ export function scoreProposals(
       const noCount = proposal.votes.filter(v => v.vote === 'NO').length;
       let consensusLevel: ProposalScore['consensusLevel'];
 
-      if (noCount === 0 && yesCount >= Math.ceil(totalMembers * 0.7)) {
+      if (noCount === 0 && yesCount >= Math.ceil(totalMembers * 0.7))
         consensusLevel = 'perfect';
-      } else if (noCount === 0 && yesCount > 0) {
+      else if (noCount === 0 && yesCount > 0)
         consensusLevel = 'good';
-      } else if (noCount > 0 && yesCount > noCount) {
+      else if (noCount > 0 && yesCount > noCount)
         consensusLevel = 'partial';
-      } else {
+      else
         consensusLevel = 'poor';
-      }
 
       // --- Human-readable explanation ---
       const parts: string[] = [];
-      if (yesCount > 0) parts.push(`${yesCount} pour`);
+      if (yesCount > 0) parts.push(`${yesCount} for`);
       if (proposal.votes.filter(v => v.vote === 'MAYBE').length > 0)
-        parts.push(`${proposal.votes.filter(v => v.vote === 'MAYBE').length} peut-être`);
-      if (noCount > 0) parts.push(`${noCount} contre`);
+        parts.push(`${proposal.votes.filter(v => v.vote === 'MAYBE').length} maybe`);
+      if (noCount > 0) parts.push(`${noCount} against`);
 
       if (membersWithAvailability > 0) {
-        parts.push(`${availableMembers}/${membersWithAvailability} disponibles`);
+        parts.push(`${availableMembers}/${membersWithAvailability} available`);
       }
 
-      const explanation = parts.join(' · ') || 'Aucun vote';
+      const explanation = parts.join(' · ') || 'No votes';
 
       return { proposal, score, voteScore, availabilityScore, availableMembers, totalMembers, consensusLevel, explanation };
     })

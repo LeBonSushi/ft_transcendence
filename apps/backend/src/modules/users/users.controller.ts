@@ -39,6 +39,7 @@ export class UsersController {
       email: user?.email,
       twoFactorEnabled: user?.twoFactorEnabled,
       twoFactorSecret: user?.twoFactorSecret,
+      createdAt: user.createdAt,
       profile: {
         firstName: user.profile?.firstName,
         lastName: user.profile?.lastName,

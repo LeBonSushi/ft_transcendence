@@ -50,16 +50,16 @@ export function NewDMModal({ onClose, onCreated }: { onClose: () => void; onCrea
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
             <Send size={15} className="text-muted-foreground" />
-            <span className="font-semibold text-sm">Nouveau message privé</span>
+            <span className="font-semibold text-sm">New private message</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             <X size={16} />
           </button>
         </div>
         <div className="p-4">
-          {loading && <p className="text-xs text-center text-muted-foreground py-6">Chargement…</p>}
+          {loading && <p className="text-xs text-center text-muted-foreground py-6">Loading...</p>}
           {!loading && friends.length === 0 && (
-            <p className="text-xs text-center text-muted-foreground py-6">Aucun ami à contacter.<br/>Ajoute des amis d'abord !</p>
+            <p className="text-xs text-center text-muted-foreground py-6">No friends to contact.<br/>Add friends first!</p>
           )}
           {!loading && friends.length > 0 && (
             <ul className="space-y-1.5">

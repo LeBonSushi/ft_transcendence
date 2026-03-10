@@ -32,7 +32,7 @@ export function ProposalForm({ show, form, onFormChange, onCreate, onCancel }: P
           <div className="space-y-2 p-3 rounded-xl border border-border bg-card">
             <LocationInput
               autoFocus
-              placeholder="Destination *"
+              placeholder="Destination"
               value={form.destination}
               onChange={v => onFormChange({ ...form, destination: v })}
             />
@@ -41,11 +41,11 @@ export function ProposalForm({ show, form, onFormChange, onCreate, onCancel }: P
               endDate={form.endDate}
               onChangeStart={v => onFormChange({ ...form, startDate: v })}
               onChangeEnd={v => onFormChange({ ...form, endDate: v })}
-              placeholderStart="Date de départ *"
-              placeholderEnd="Date de retour *"
+              placeholderStart="Start availability"
+              placeholderEnd="End availability"
             />
             <input
-              placeholder="Budget estimé (€)"
+              placeholder="Estimated budget (€)"
               type="number"
               value={form.budgetEstimate}
               onChange={e => onFormChange({ ...form, budgetEstimate: e.target.value })}

@@ -167,16 +167,16 @@ const ProfileDropdownMenu = forwardRef<HTMLDivElement, ProfileDropdownMenuProps>
           {createdAt && (
             <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 shrink-0" />
-              <span>Member by {createdAt}</span>
+              <span>Member since {createdAt}</span>
             </div>
           )}
         </div>
 
         {/* Actions */}
         <div className="p-2">
-          <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
+          <DropdownItem icon={Settings} label="Settings" onClick={onOpenSettings} />
           <div className="my-2 border-t border-border" />
-          <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+          <DropdownItem icon={LogOut} label="Logout" onClick={onSignOut} variant="destructive" />
         </div>
       </div>
     );
@@ -323,7 +323,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
           <h1 className="text-base sm:text-2xl font-bold text-foreground truncate">
             {user.profile?.firstName && user.profile?.lastName
               ? `${user.profile.firstName} ${user.profile.lastName}`
-              : user.username || 'Utilisateur'}
+              : user.username || 'User'}
           </h1>
           <p className="text-muted-foreground text-xs sm:text-base truncate">
             @{user.username || user.id?.slice(0, 8)}
@@ -384,9 +384,9 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 
   const { theme, themes, setTheme } = useTheme();
   const themeProps = [
-    { type: "light", name: "Clair", icon: SunMedium },
-    { type: "dark", name: "Sombre", icon: MoonIcon },
-    { type: "system", name: "Systeme", icon: LaptopMinimal },
+    { type: "light", name: "light", icon: SunMedium },
+    { type: "dark", name: "dark", icon: MoonIcon },
+    { type: "system", name: "system", icon: LaptopMinimal },
   ]
 
   const themeSelectRef = useRef(null);
@@ -398,7 +398,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 
   return (
     <>
-      <SectionCard title="Informations personnelles" icon={User}>
+      <SectionCard title="Personal informations" icon={User}>
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
             {error}
@@ -408,22 +408,22 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         {isEditing ? (
           <div className="space-y-4">
             <Input
-              label="Prénom"
+              label="First name"
               value={formData.firstName}
               onChange={(e) => setFormData.firstName(e.target.value)}
-              placeholder="Votre prénom"
+              placeholder="Your first name"
             />
             <Input
-              label="Nom"
+              label="Last name"
               value={formData.lastName}
               onChange={(e) => setFormData.lastName(e.target.value)}
-              placeholder="Votre nom"
+              placeholder="Your lirst name"
             />
             <Input
-              label="Nom d'utilisateur"
+              label="Username"
               value={formData.username}
               onChange={(e) => setFormData.username(e.target.value)}
-              placeholder="Votre nom d'utilisateur"
+              placeholder="Your username"
               prefix="@"
             />
             <div className="flex gap-2 mt-4">
@@ -440,9 +440,9 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         ) : (
           <>
             <div className="space-y-1">
-              <InfoRow label="Prénom" value={user.profile?.firstName || '-'} />
-              <InfoRow label="Nom" value={user.profile?.lastName || '-'} />
-              <InfoRow label="Nom d'utilisateur" value={user.username ? `@${user.username}` : '-'} />
+              <InfoRow label="First name" value={user.profile?.firstName || '-'} />
+              <InfoRow label="Last name" value={user.profile?.lastName || '-'} />
+              <InfoRow label="Username" value={user.username ? `@${user.username}` : '-'} />
             </div>
             <Button variant="outline" className="mt-4 w-full sm:w-auto" onClick={startEditing}>
               Update profile
@@ -451,7 +451,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         )}
       </SectionCard>
 
-      <SectionCard title="Adresse email" icon={Mail}>
+      <SectionCard title="Email address" icon={Mail}>
         <div className="p-3 rounded-lg bg-muted/50">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -460,7 +460,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         </div>
       </SectionCard>
 
-      <SectionCard title="Apparence" icon={Settings2}>
+      <SectionCard title="Appearence" icon={Settings2}>
         <div className="grid grid-cols-3 gap-3">
           {themeProps.map((t) => {
             const isActive = theme === t.type;
@@ -485,7 +485,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
       </SectionCard>
 
       {lastSignIn && (
-        <SectionCard title="Dernière connexion" icon={Clock}>
+        <SectionCard title="Last connection" icon={Clock}>
           <p className="text-muted-foreground text-sm sm:text-base">{lastSignIn}</p>
         </SectionCard>
       )}
@@ -560,7 +560,7 @@ function SecuritySection({
 
   return (
     <>
-      <SectionCard title="Authentification à deux facteurs (2FA)" icon={Smartphone}>
+      <SectionCard title="Two-factor authentication (2FA)" icon={Smartphone}>
         <div className="space-y-3 sm:space-y-4">
 
           {error && (
@@ -573,7 +573,7 @@ function SecuritySection({
           {!isEnabling2FA && !isDisabling2FA && (
             <ListItem
               icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
-              title="Application d'authentification"
+              title="Authentication application"
               description="Google Authenticator, Authy, etc."
               action={
                 user.twoFactorEnabled ? (
@@ -659,12 +659,12 @@ function SecuritySection({
           {/* Backup codes */}
           <ListItem
             icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />}
-            title="Codes de récupération"
-            description="Codes de secours en cas de perte"
+            title="Recovery codes"
+            description="Emergency codes in case of loss"
             action={
               <Button size="sm" variant="outline" onClick={() => setShowBackupCodes(!showBackupCodes)} disabled={backupCodes.length === 0}>
                 {showBackupCodes ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                {showBackupCodes ? 'Masquer' : 'Afficher'}
+                {showBackupCodes ? 'Hide' : 'Show'}
               </Button>
             }
           />

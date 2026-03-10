@@ -19,14 +19,14 @@ export function RoomListHeader({ rooms = [], onAddFriend }: { rooms?: RoomWithLa
         </div>
         <div className="flex gap-1">
           <p className="font-extrabold pt-px">{rooms.filter(room => room.type === 'GROUP').length}</p>
-          <p className="font-light">groupes de voyage actifs</p>
+          <p className="font-light">active groups</p>
         </div>
       </div>
       <div className="flex items-center gap-1 mr-1">
         <button
           onClick={onAddFriend}
           className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          title="Ajouter un ami"
+          title="Add a friend"
         >
           <UserPlus size={18} />
         </button>

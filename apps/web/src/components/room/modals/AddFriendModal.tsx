@@ -119,7 +119,7 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
             <UserPlus size={16} className="text-muted-foreground" />
-            <span className="font-semibold text-sm">Ajouter un ami</span>
+            <span className="font-semibold text-sm">Add a friend</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             <X size={16} />
@@ -132,19 +132,19 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
               onClick={() => setTab('search')}
               className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${tab === 'search' ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              Recherche
+              Research
             </button>
             <button
               onClick={() => setTab('requests')}
               className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${tab === 'requests' ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              Demandes
+              Requests
             </button>
             <button
               onClick={() => setTab('friends')}
               className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${tab === 'friends' ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              Amis
+              Friends
             </button>
           </div>
 
@@ -156,7 +156,7 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
               ref={inputRef}
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Rechercher par nom ou @username…"
+              placeholder="Research by name or @username…"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             {query && <button onClick={() => setQuery('')}><X size={13} className="text-muted-foreground hover:text-foreground" /></button>}
@@ -164,10 +164,10 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
 
           <div className="min-h-[60px]">
             {!query.trim() && (
-              <p className="text-xs text-center text-muted-foreground py-4">Tape un nom pour rechercher</p>
+              <p className="text-xs text-center text-muted-foreground py-4">Type a name to search</p>
             )}
             {query.trim() && !loading && results.length === 0 && (
-              <p className="text-xs text-center text-muted-foreground py-4">Aucun utilisateur trouvé</p>
+              <p className="text-xs text-center text-muted-foreground py-4">No users found</p>
             )}
             {results.length > 0 && (
               <ul className="space-y-1.5">
@@ -195,7 +195,7 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
                           : 'bg-primary/10 text-primary hover:bg-primary/20'
                       }`}
                     >
-                      {sent[u.id] ? <><Check size={12} /> Envoyé</> : <><UserPlus size={12} /> Ajouter</>}
+                      {sent[u.id] ? <><Check size={12} /> Send</> : <><UserPlus size={12} /> Add</>}
                     </button>
                   </li>
                 ))}
@@ -207,9 +207,9 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
 
           {tab === 'requests' && (
             <div className="min-h-[60px]">
-              {loadingRelations && <p className="text-xs text-center text-muted-foreground py-4">Chargement…</p>}
+              {loadingRelations && <p className="text-xs text-center text-muted-foreground py-4">Loading...</p>}
               {!loadingRelations && pendingRequests.length === 0 && (
-                <p className="text-xs text-center text-muted-foreground py-4">Aucune demande en attente</p>
+                <p className="text-xs text-center text-muted-foreground py-4">No pending requests</p>
               )}
               {!loadingRelations && pendingRequests.length > 0 && (
                 <ul className="space-y-1.5">
@@ -234,13 +234,13 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
                           onClick={() => handleAccept(relation.id)}
                           className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20"
                         >
-                          <Check size={12} /> Accepter
+                          <Check size={12} /> Accept
                         </button>
                         <button
                           onClick={() => handleReject(relation.id)}
                           className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                         >
-                          <X size={12} /> Refuser
+                          <X size={12} /> Refuse
                         </button>
                       </li>
                     );
@@ -252,9 +252,9 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
 
           {tab === 'friends' && (
             <div className="min-h-[60px]">
-              {loadingRelations && <p className="text-xs text-center text-muted-foreground py-4">Chargement…</p>}
+              {loadingRelations && <p className="text-xs text-center text-muted-foreground py-4">Loading...</p>}
               {!loadingRelations && managedFriends.length === 0 && (
-                <p className="text-xs text-center text-muted-foreground py-4">Aucun ami à gérer</p>
+                <p className="text-xs text-center text-muted-foreground py-4">No friends to deal with</p>
               )}
               {!loadingRelations && managedFriends.length > 0 && (
                 <ul className="space-y-1.5">
@@ -280,21 +280,21 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
                             onClick={() => handleUnblock(peer.id)}
                             className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20"
                           >
-                            <ShieldCheck size={12} /> Débloquer
+                            <ShieldCheck size={12} /> Unblock
                           </button>
                         ) : (
                           <button
                             onClick={() => handleBlock(relation.id)}
                             className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
                           >
-                            <ShieldBan size={12} /> Bloquer
+                            <ShieldBan size={12} /> Block
                           </button>
                         )}
                         <button
                           onClick={() => handleRemove(peer.id)}
                           className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                         >
-                          <UserMinus size={12} /> Supprimer
+                          <UserMinus size={12} /> Delete
                         </button>
                       </li>
                     );
