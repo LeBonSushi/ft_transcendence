@@ -6,10 +6,10 @@ import { ChevronDown } from 'lucide-react';
 
 const ACTIVITY_CATEGORY_LABELS: Record<string, string> = {
   RESTAURANT: '🍽️ Restaurant',
-  MUSEUM: '🏛️ Musée',
-  NIGHTLIFE: '🎉 Nuit',
-  OUTDOOR: '🌿 Plein air',
-  OTHER: '✨ Autre',
+  MUSEUM: '🏛️ Museum',
+  NIGHTLIFE: '🎉 Night',
+  OUTDOOR: '🌿 Outdoor',
+  OTHER: '✨ Other',
 };
 
 export function CategorySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {

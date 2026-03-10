@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/components/ui/theme-provider';
-import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
 import { auth } from '@/auth';
 import './globals.css';
@@ -9,7 +8,6 @@ import './globals.css';
 import { SocketProvider } from '@/providers/socket-provider';
 import { UserProvider } from '@/providers/user-provider';
 import { SessionGuard } from '@/components/SessionGuard';
-import DismissableToast from '@/components/DismissableToast';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -24,8 +22,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Voyageur - Planifiez vos aventures',
-  description: 'Plateforme collaborative de planification de voyages',
+  title: 'Traveler - Plan your adventures',
+  description: 'Collaborative travel planning platform',
 };
 
 
@@ -49,7 +47,6 @@ export default async function RootLayout({
               </UserProvider>
             </SessionGuard>
           </SessionProvider>
-          <DismissableToast />
         </ThemeProvider>
       </body>
     </html>

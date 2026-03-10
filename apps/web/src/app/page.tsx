@@ -69,7 +69,6 @@ export default function Home() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    console.log(messages)
   }, [messages]);
 
   function handleSendMessage() {
@@ -107,7 +106,8 @@ export default function Home() {
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id)
+      return;
     const ids = groupRooms.map(r => r.id);
     const next = arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id)));
     localStorage.setItem('group-order', JSON.stringify(next));
@@ -115,7 +115,8 @@ export default function Home() {
   }
 
   const scoredProposals = useMemo(() => {
-    if (proposals.length === 0) return [];
+    if (proposals.length === 0)
+      return [];
     const memberIds = members.map(m => m.userId);
     return scoreProposals(proposals, availabilities, memberIds);
   }, [proposals, availabilities, members]);

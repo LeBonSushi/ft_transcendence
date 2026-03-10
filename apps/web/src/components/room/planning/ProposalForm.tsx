@@ -64,13 +64,13 @@ export function ProposalForm({ show, form, onFormChange, onCreate, onCancel }: P
                 disabled={!form.destination || !form.startDate || !form.endDate}
                 className="flex-1 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Créer
+                Create
               </button>
               <button
                 onClick={onCancel}
                 className="flex-1 py-1.5 bg-muted text-muted-foreground text-xs font-medium rounded-lg hover:text-foreground"
               >
-                Annuler
+                Cancel
               </button>
             </div>
           </div>

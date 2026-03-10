@@ -34,8 +34,8 @@ export function DateRangePicker({
   endDate,
   onChangeStart,
   onChangeEnd,
-  placeholderStart = 'Départ',
-  placeholderEnd = 'Retour',
+  placeholderStart = 'Departure',
+  placeholderEnd = 'Back',
   className,
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
@@ -49,6 +49,13 @@ export function DateRangePicker({
   const start = startDate ? new Date(startDate + 'T00:00:00') : null;
   const end = endDate ? new Date(endDate + 'T00:00:00') : null;
   const rightMonth = addMonths(leftMonth, 1);
+
+  // Helper function to get today at midnight
+  const getTodayAtMidnight = (): Date => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
 
   // selecting: null = nothing, 'end' = start chosen waiting for end
   const selecting = start && !end ? 'end' : null;
@@ -100,12 +107,10 @@ export function DateRangePicker({
     if (!start || (start && end)) {
       // Start fresh
       onChangeStart(fmt(day));
-      onChangeEnd('');
     } else {
       // start chosen, pick end
       if (isBefore(day, start)) {
         onChangeStart(fmt(day));
-        onChangeEnd('');
       } else if (isSameDay(day, start)) {
         // do nothing
       } else {
@@ -163,10 +168,12 @@ export function DateRangePicker({
               <button
                 key={i}
                 type="button"
-                disabled={isPast || !isCurrentMonth}
                 onPointerEnter={() => { if (selecting === 'end') setHovered(day); }}
                 onPointerLeave={() => setHovered(null)}
-                onClick={() => { if (isCurrentMonth && !isPast) handleDayClick(day); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isCurrentMonth && !isPast) handleDayClick(day);
+                }}
                 className={cn(
                   'relative h-8 text-xs transition-colors select-none',
                   !isCurrentMonth && 'invisible',
@@ -221,9 +228,9 @@ export function DateRangePicker({
           <div className="flex items-center justify-between border-t border-border pt-3 mt-1">
             <p className="text-[11px] text-muted-foreground">
               {!start
-                ? 'Sélectionnez la date de départ'
+                ? 'Select the departure date'
                 : !end
-                ? 'Sélectionnez la date de retour'
+                ? 'Select the return date'
                 : `${displayFmt(start)} → ${displayFmt(end)}`}
             </p>
             {(start || end) && (
@@ -232,7 +239,7 @@ export function DateRangePicker({
                 onClick={() => { onChangeStart(''); onChangeEnd(''); }}
                 className="text-[11px] text-muted-foreground hover:text-destructive transition-colors"
               >
-                Effacer
+                Erase
               </button>
             )}
           </div>

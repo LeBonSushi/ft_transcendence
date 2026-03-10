@@ -35,7 +35,6 @@ export function FriendSearchBar() {
     
     try {
       const res = await apiClient.post(API_ROUTES.FRIENDS.SEND(userId))
-      console.log(res);
     } catch (e) {
       console.log("Error: ", e)
     }
