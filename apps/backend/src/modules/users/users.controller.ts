@@ -97,7 +97,6 @@ export class UsersController {
             firstName: user.profile.firstName,
             lastName: user.profile.lastName,
             profilePicture: user.profile.profilePicture,
-            bio: user.profile.bio,
           }
         : null,
     };

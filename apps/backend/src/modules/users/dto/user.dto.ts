@@ -55,6 +55,5 @@ export interface PublicUserResponse {
 	firstName: string | null;
 	lastName: string | null;
 	profilePicture: string | null;
-	bio: string | null;
   } | null;
 }

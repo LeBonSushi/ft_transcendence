@@ -13,15 +13,11 @@ interface CreateUserDto {
   profilePicture?: string;
 }
 
-/**
- * Safe user select - excludes sensitive fields like passwordHash, email, 2FA secrets
- */
 const SAFE_USER_SELECT = {
   id: true,
   username: true,
   createdAt: true,
   updatedAt: true,
-  // email, passwordHash, twoFactorSecret, twoFactorBackupCodes are excluded
 } as const;
 
 @Injectable()
@@ -202,8 +198,8 @@ export class UsersService {
 
     await this.prisma.profile.upsert({
       where: { userId: id },
-      update: { firstName, lastName, bio, profilePicture, location, birthdate },
-      create: { userId: id, firstName, lastName, bio, profilePicture, location, birthdate },
+      update: { firstName, lastName, profilePicture },
+      create: { userId: id, firstName, lastName, profilePicture },
     });
 
     const updatedUser = await this.prisma.user.findUnique({
