@@ -65,11 +65,11 @@ export function AvailabilityList({
                 endDate={form.endDate}
                 onChangeStart={v => onFormChange({ ...form, startDate: v })}
                 onChangeEnd={v => onFormChange({ ...form, endDate: v })}
-                placeholderStart="Début disponibilité"
-                placeholderEnd="Fin disponibilité"
+                placeholderStart="Start availability"
+                placeholderEnd="End availability"
               />
               <input
-                placeholder="Notes (optionnel)"
+                placeholder="Notes (optionnal)"
                 value={form.notes}
                 onChange={e => onFormChange({ ...form, notes: e.target.value })}
                 className="w-full text-xs px-2.5 py-1.5 rounded-md bg-muted border border-border outline-none focus:border-primary/60"
@@ -79,13 +79,13 @@ export function AvailabilityList({
                   onClick={onCreate}
                   className="flex-1 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg"
                 >
-                  Ajouter
+                  Add
                 </button>
                 <button
                   onClick={onCancelForm}
                   className="flex-1 py-1.5 bg-muted text-muted-foreground text-xs font-medium rounded-lg hover:text-foreground"
                 >
-                  Annuler
+                  Cancel
                 </button>
               </div>
             </div>
@@ -96,7 +96,7 @@ export function AvailabilityList({
       {/* My availabilities */}
       {myAvailabilities.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Mes disponibilités</p>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">My availability</p>
           <div className="space-y-1.5">
             {myAvailabilities.map(av => (
               <div key={av.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20">
@@ -121,7 +121,7 @@ export function AvailabilityList({
       {/* Other members' availabilities */}
       {othersAvailabilities.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Membres</p>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Members</p>
           <div className="space-y-1.5">
             {othersAvailabilities.map(av => (
               <div key={av.id} className="p-2 rounded-lg bg-muted border border-border">
@@ -139,7 +139,7 @@ export function AvailabilityList({
       )}
 
       {availabilities.length === 0 && (
-        <p className="text-xs text-center text-muted-foreground py-4 italic">Aucune disponibilité renseignée</p>
+        <p className="text-xs text-center text-muted-foreground py-4 italic">No availability indicated</p>
       )}
     </>
   );

@@ -126,13 +126,13 @@ export function AuthLayout({
 
           {/* Footer */}
           <p className="text-center text-xs text-muted-foreground mt-4">
-            En vous connectant, vous acceptez nos{" "}
-            <a href="/terms" className="underline hover:text-foreground transition-colors">
+            By logging in, you agree to our{" "}
+            <a href="/rgpd/condition" className="underline hover:text-foreground transition-colors">
               Conditions
             </a>
-            {" "}et{" "}
-            <a href="/privacy" className="underline hover:text-foreground transition-colors">
-              Confidentialité
+            {" "}and{" "}
+            <a href="rgpd/privacy" className="underline hover:text-foreground transition-colors">
+              Privacy
             </a>
           </p>
         </div>

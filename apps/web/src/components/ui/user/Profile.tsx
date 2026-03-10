@@ -14,7 +14,6 @@ import {
   Calendar,
   Smartphone,
   Key,
-  Monitor,
   LogOut,
   Trash2,
   Plus,
@@ -27,10 +26,7 @@ import {
   RefreshCw,
   Settings2,
   SunMedium,
-  Moon,
   LaptopMinimal,
-  ChevronUp,
-  Section,
   MoonIcon,
   Pencil,
 } from "lucide-react";
@@ -40,10 +36,9 @@ import { Modal } from "@/components/ui/modal";
 import { SectionCard, InfoRow, ListItem } from "@/components/ui/card";
 import { TabNavigation } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useClickOutside, useProfileEdit, useSessions, useDeleteAccount } from "@/hooks";
-import { Separator } from "@radix-ui/react-separator";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useTheme } from "next-themes";
@@ -154,7 +149,7 @@ const ProfileDropdownMenu = forwardRef<HTMLDivElement, ProfileDropdownMenuProps>
               <p className="font-semibold text-foreground truncate">
                 {user.profile?.firstName && user.profile?.lastName
                   ? `${user.profile.firstName} ${user.profile.lastName}`
-                  : user.name || 'Utilisateur'}
+                  : user.name || 'User'}
               </p>
               <p className="text-sm text-muted-foreground truncate">
                 @{user.username || user.id?.slice(0, 8)}
@@ -172,16 +167,16 @@ const ProfileDropdownMenu = forwardRef<HTMLDivElement, ProfileDropdownMenuProps>
           {createdAt && (
             <div className="flex items-center gap-3 px-2 py-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 shrink-0" />
-              <span>Membre depuis {createdAt}</span>
+              <span>Member since {createdAt}</span>
             </div>
           )}
         </div>
 
         {/* Actions */}
         <div className="p-2">
-          <DropdownItem icon={Settings} label="Paramètres" onClick={onOpenSettings} />
+          <DropdownItem icon={Settings} label="Settings" onClick={onOpenSettings} />
           <div className="my-2 border-t border-border" />
-          <DropdownItem icon={LogOut} label="Se déconnecter" onClick={onSignOut} variant="destructive" />
+          <DropdownItem icon={LogOut} label="Logout" onClick={onSignOut} variant="destructive" />
         </div>
       </div>
     );
@@ -215,8 +210,8 @@ function DropdownItem({ icon: Icon, label, onClick, variant = 'default' }: Dropd
 type Tab = 'account' | 'security';
 
 const TABS = [
-  { id: 'account' as const, label: 'Compte', icon: User },
-  { id: 'security' as const, label: 'Sécurité', icon: Shield },
+  { id: 'account' as const, label: 'account', icon: User },
+  { id: 'security' as const, label: 'security', icon: Shield },
 ];
 
 export function ProfilePage({ onClose }: { onClose: () => void }) {
@@ -328,20 +323,20 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
           <h1 className="text-base sm:text-2xl font-bold text-foreground truncate">
             {user.profile?.firstName && user.profile?.lastName
               ? `${user.profile.firstName} ${user.profile.lastName}`
-              : user.username || 'Utilisateur'}
+              : user.username || 'User'}
           </h1>
           <p className="text-muted-foreground text-xs sm:text-base truncate">
             @{user.username || user.id?.slice(0, 8)}
           </p>
           {createdAt && (
             <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
-              Membre depuis {createdAt}
+              Member by {createdAt}
             </p>
           )}
         </div>
         <Button variant="outline" size="sm" onClick={() => signOut()} className="shrink-0 sm:size-default">
           <LogOut className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Se déconnecter</span>
+          <span className="hidden sm:inline">Log out</span>
         </Button>
       </div>
 
@@ -389,9 +384,9 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 
   const { theme, themes, setTheme } = useTheme();
   const themeProps = [
-    { type: "light", name: "Clair", icon: SunMedium },
-    { type: "dark", name: "Sombre", icon: MoonIcon },
-    { type: "system", name: "Systeme", icon: LaptopMinimal },
+    { type: "light", name: "light", icon: SunMedium },
+    { type: "dark", name: "dark", icon: MoonIcon },
+    { type: "system", name: "system", icon: LaptopMinimal },
   ]
 
   const themeSelectRef = useRef(null);
@@ -403,7 +398,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 
   return (
     <>
-      <SectionCard title="Informations personnelles" icon={User}>
+      <SectionCard title="Personal informations" icon={User}>
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
             {error}
@@ -413,50 +408,50 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         {isEditing ? (
           <div className="space-y-4">
             <Input
-              label="Prénom"
+              label="First name"
               value={formData.firstName}
               onChange={(e) => setFormData.firstName(e.target.value)}
-              placeholder="Votre prénom"
+              placeholder="Your first name"
             />
             <Input
-              label="Nom"
+              label="Last name"
               value={formData.lastName}
               onChange={(e) => setFormData.lastName(e.target.value)}
-              placeholder="Votre nom"
+              placeholder="Your lirst name"
             />
             <Input
-              label="Nom d'utilisateur"
+              label="Username"
               value={formData.username}
               onChange={(e) => setFormData.username(e.target.value)}
-              placeholder="Votre nom d'utilisateur"
+              placeholder="Your username"
               prefix="@"
             />
             <div className="flex gap-2 mt-4">
               <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none">
                 {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2 hidden sm:inline" /> : <Check className="h-4 w-4 mr-2 hidden sm:inline" />}
-                Enregistrer
+                Save
               </Button>
               <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="flex-1 sm:flex-none">
                 <X className="h-4 w-4 mr-2 hidden sm:inline" />
-                Annuler
+                Cancel
               </Button>
             </div>
           </div>
         ) : (
           <>
             <div className="space-y-1">
-              <InfoRow label="Prénom" value={user.profile?.firstName || '-'} />
-              <InfoRow label="Nom" value={user.profile?.lastName || '-'} />
-              <InfoRow label="Nom d'utilisateur" value={user.username ? `@${user.username}` : '-'} />
+              <InfoRow label="First name" value={user.profile?.firstName || '-'} />
+              <InfoRow label="Last name" value={user.profile?.lastName || '-'} />
+              <InfoRow label="Username" value={user.username ? `@${user.username}` : '-'} />
             </div>
             <Button variant="outline" className="mt-4 w-full sm:w-auto" onClick={startEditing}>
-              Modifier le profil
+              Update profile
             </Button>
           </>
         )}
       </SectionCard>
 
-      <SectionCard title="Adresse email" icon={Mail}>
+      <SectionCard title="Email address" icon={Mail}>
         <div className="p-3 rounded-lg bg-muted/50">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -465,7 +460,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
         </div>
       </SectionCard>
 
-      <SectionCard title="Apparence" icon={Settings2}>
+      <SectionCard title="Appearence" icon={Settings2}>
         <div className="grid grid-cols-3 gap-3">
           {themeProps.map((t) => {
             const isActive = theme === t.type;
@@ -490,7 +485,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
       </SectionCard>
 
       {lastSignIn && (
-        <SectionCard title="Dernière connexion" icon={Clock}>
+        <SectionCard title="Last connection" icon={Clock}>
           <p className="text-muted-foreground text-sm sm:text-base">{lastSignIn}</p>
         </SectionCard>
       )}
@@ -502,10 +497,6 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 // ============ SECURITY SECTION ============
 function SecuritySection({
   user,
-  session,
-  sessions,
-  revoking,
-  revokeSession,
   showBackupCodes,
   setShowBackupCodes
 }: {
@@ -517,12 +508,10 @@ function SecuritySection({
   showBackupCodes: boolean;
   setShowBackupCodes: (b: boolean) => void;
 }) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [isEnabling2FA, setIsEnabling2FA] = useState<boolean>(false);
   const [totpData, setTotpData] = useState<{ uri: string; secret: string } | null>(null);
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
-  const [isLoadingCodes, setIsLoadingCodes] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
   const { updateUser } = useUserStore();
@@ -535,7 +524,7 @@ function SecuritySection({
       setTotpData(data);
       setIsEnabling2FA(true);
     } catch (err) {
-      setError('Erreur lors de la génération du QR code');
+      setError('Error while generating QR code');
     }
   };
 
@@ -551,7 +540,7 @@ function SecuritySection({
       setShowBackupCodes(true);
       updateUser({ twoFactorEnabled: true });
     } catch (err) {
-      setError('Code invalide. Réessayez.');
+      setError('Invalid code, retry');
     }
   };
 
@@ -565,13 +554,13 @@ function SecuritySection({
       setBackupCodes([]);
       updateUser({ twoFactorEnabled: false });
     } catch (err) {
-      setError('Code invalide. Réessayez.');
+      setError('Invalid code, retry');
     }
   };
 
   return (
     <>
-      <SectionCard title="Authentification à deux facteurs (2FA)" icon={Smartphone}>
+      <SectionCard title="Two-factor authentication (2FA)" icon={Smartphone}>
         <div className="space-y-3 sm:space-y-4">
 
           {error && (
@@ -584,16 +573,16 @@ function SecuritySection({
           {!isEnabling2FA && !isDisabling2FA && (
             <ListItem
               icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
-              title="Application d'authentification"
+              title="Authentication application"
               description="Google Authenticator, Authy, etc."
               action={
                 user.twoFactorEnabled ? (
                   <Button size="sm" variant="destructive" onClick={() => setIsDisabling2FA(true)}>
-                    Désactiver
+                    Disable
                   </Button>
                 ) : (
                   <Button size="sm" onClick={handleGenerate}>
-                    <Plus className="h-4 w-4 mr-1" /> Activer
+                    <Plus className="h-4 w-4 mr-1" /> Enable
                   </Button>
                 )
               }
@@ -604,16 +593,16 @@ function SecuritySection({
           {isEnabling2FA && totpData && (
             <div className="space-y-4 p-4 rounded-lg bg-muted/50 border border-border">
               <p className="text-sm font-medium">
-                1. Scannez ce QR code avec votre application d'authentification :
+                1. Scan this QR code with your authentication application:
               </p>
               <div className="flex justify-center p-4 bg-white rounded-lg">
                 <QRCode value={totpData.uri} size={200} />
               </div>
               <p className="text-xs text-muted-foreground text-center break-all">
-                Clé manuelle : {totpData.secret}
+                Manual key : {totpData.secret}
               </p>
               <p className="text-sm font-medium">
-                2. Entrez le code à 6 chiffres affiché dans l'application :
+                2. Enter the 6-digit code displayed in the app:
               </p>
               <div className="flex justify-center">
                 <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} pattern={REGEXP_ONLY_DIGITS}>
@@ -632,7 +621,7 @@ function SecuritySection({
                   <Check className="h-4 w-4 mr-1" /> Confirmer
                 </Button>
                 <Button variant="outline" onClick={() => { setIsEnabling2FA(false); setTotpData(null); setOtpCode(''); setError(''); }}>
-                  Annuler
+                  Cancel
                 </Button>
               </div>
             </div>
@@ -642,7 +631,7 @@ function SecuritySection({
           {isDisabling2FA && (
             <div className="space-y-4 p-4 rounded-lg bg-muted/50 border border-border">
               <p className="text-sm font-medium">
-                Entrez un code 2FA pour confirmer la désactivation :
+                Enter a 2FA code to confirm deactivation:
               </p>
               <div className="flex justify-center">
                 <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} pattern={REGEXP_ONLY_DIGITS}>
@@ -658,10 +647,10 @@ function SecuritySection({
               </div>
               <div className="flex gap-2">
                 <Button variant="destructive" onClick={handleDisable} disabled={otpCode.length !== 6} className="flex-1">
-                  Désactiver le 2FA
+                  Disable 2FA
                 </Button>
                 <Button variant="outline" onClick={() => { setIsDisabling2FA(false); setOtpCode(''); setError(''); }}>
-                  Annuler
+                  Cancel
                 </Button>
               </div>
             </div>
@@ -670,12 +659,12 @@ function SecuritySection({
           {/* Backup codes */}
           <ListItem
             icon={<Key className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />}
-            title="Codes de récupération"
-            description="Codes de secours en cas de perte"
+            title="Recovery codes"
+            description="Emergency codes in case of loss"
             action={
               <Button size="sm" variant="outline" onClick={() => setShowBackupCodes(!showBackupCodes)} disabled={backupCodes.length === 0}>
                 {showBackupCodes ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                {showBackupCodes ? 'Masquer' : 'Afficher'}
+                {showBackupCodes ? 'Hide' : 'Show'}
               </Button>
             }
           />
@@ -686,7 +675,7 @@ function SecuritySection({
       {showBackupCodes && backupCodes.length > 0 && (
         <div className="p-3 sm:p-4 rounded-lg bg-muted border border-border">
           <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-            Conservez ces codes en lieu sûr. Chaque code ne peut être utilisé qu'une seule fois.
+            Keep these codes in a safe place. Each code can only be used once.
           </p>
           <div className="grid grid-cols-2 gap-2">
             {backupCodes.map((code, i) => (
@@ -716,27 +705,27 @@ function DeleteAccountModal({ onClose }: { onClose: () => void }) {
             <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Supprimer le compte</h2>
-            <p className="text-sm text-muted-foreground">Cette action est irréversible</p>
+            <h2 className="text-lg font-semibold text-foreground">Delete account</h2>
+            <p className="text-sm text-muted-foreground">This action is irreversible</p>
           </div>
         </div>
 
         {/* Warning */}
         <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 mb-4">
           <p className="text-sm text-foreground mb-2">
-            En supprimant votre compte, vous perdrez :
+            By deleting your account you will lose:
           </p>
           <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-            <li>Toutes vos données personnelles</li>
-            <li>Votre historique et vos préférences</li>
-            <li>L'accès à tous les services associés</li>
+            <li>All your personal data</li>
+            <li>Your history and preferences</li>
+            <li>Access to all associated services</li>
           </ul>
         </div>
 
         {/* Confirmation input */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-foreground mb-2">
-            Pour confirmer, tapez <span className="font-bold text-destructive">{expectedText}</span> ci-dessous :
+           To confirm, wrote <span className="font-bold text-destructive">{expectedText}</span> below :
           </label>
           <Input
             value={confirmText}
@@ -755,7 +744,7 @@ function DeleteAccountModal({ onClose }: { onClose: () => void }) {
         {/* Actions */}
         <div className="flex gap-3">
           <Button variant="outline" onClick={onClose} disabled={isDeleting} className="flex-1">
-            Annuler
+            Cancel
           </Button>
           <Button
             variant="destructive"
@@ -766,12 +755,12 @@ function DeleteAccountModal({ onClose }: { onClose: () => void }) {
             {isDeleting ? (
               <>
                 <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                Suppression...
+                Deleting...
               </>
             ) : (
               <>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer
+                Delete
               </>
             )}
           </Button>

@@ -63,7 +63,7 @@ export function Logo({
             isWhite ? "text-white" : "text-foreground"
           )}
         >
-          Voyageur
+          Travel Planner
         </span>
       )}
     </div>

@@ -43,9 +43,9 @@ model Profile {
   firstName      String
   lastName       String
   profilePicture String?
-  bio            String?
-  location       String?
-  birthdate      DateTime?
+  // bio            String?
+  // location       String?
+  // birthdate      DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

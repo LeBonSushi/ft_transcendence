@@ -32,7 +32,7 @@ export function ProposalForm({ show, form, onFormChange, onCreate, onCancel }: P
           <div className="space-y-2 p-3 rounded-xl border border-border bg-card">
             <LocationInput
               autoFocus
-              placeholder="Destination *"
+              placeholder="Destination"
               value={form.destination}
               onChange={v => onFormChange({ ...form, destination: v })}
             />
@@ -41,11 +41,11 @@ export function ProposalForm({ show, form, onFormChange, onCreate, onCancel }: P
               endDate={form.endDate}
               onChangeStart={v => onFormChange({ ...form, startDate: v })}
               onChangeEnd={v => onFormChange({ ...form, endDate: v })}
-              placeholderStart="Date de départ *"
-              placeholderEnd="Date de retour *"
+              placeholderStart="Start availability"
+              placeholderEnd="End availability"
             />
             <input
-              placeholder="Budget estimé (€)"
+              placeholder="Estimated budget (€)"
               type="number"
               value={form.budgetEstimate}
               onChange={e => onFormChange({ ...form, budgetEstimate: e.target.value })}
@@ -64,13 +64,13 @@ export function ProposalForm({ show, form, onFormChange, onCreate, onCancel }: P
                 disabled={!form.destination || !form.startDate || !form.endDate}
                 className="flex-1 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Créer
+                Create
               </button>
               <button
                 onClick={onCancel}
                 className="flex-1 py-1.5 bg-muted text-muted-foreground text-xs font-medium rounded-lg hover:text-foreground"
               >
-                Annuler
+                Cancel
               </button>
             </div>
           </div>

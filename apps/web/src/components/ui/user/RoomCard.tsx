@@ -43,7 +43,7 @@ export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsernam
         <p className="text-xs text-muted-foreground truncate mt-0.5">
           {lastMessage
             ? <>{senderUsername && <span className="font-medium text-foreground/70">{senderUsername} : </span>}{lastMessage}</>
-            : <span className="italic opacity-60">Aucun message</span>
+            : <span className="italic opacity-60">No messages</span>
           }
         </p>
       </div>

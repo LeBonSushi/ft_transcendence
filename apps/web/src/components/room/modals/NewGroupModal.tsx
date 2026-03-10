@@ -35,7 +35,7 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
             <Users size={15} className="text-muted-foreground" />
-            <span className="font-semibold text-sm">Nouveau groupe de voyage</span>
+            <span className="font-semibold text-sm">New travel group</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             <X size={16} />
@@ -47,7 +47,7 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleCreate()}
-            placeholder="Nom du groupe…"
+            placeholder="Group name ..."
             className="w-full px-3 py-2 rounded-xl bg-muted border border-border text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground"
           />
           <button
@@ -56,7 +56,7 @@ export function NewGroupModal({ onClose, onCreated }: { onClose: () => void; onC
             className="w-full py-2 bg-primary text-primary-foreground text-sm font-medium rounded-xl disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-opacity"
           >
             {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-            Créer le groupe
+            Create the group
           </button>
         </div>
       </motion.div>

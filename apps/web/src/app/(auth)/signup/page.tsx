@@ -36,12 +36,12 @@ export default function SignUpPage() {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Les mots de passe ne correspondent pas");
+      setError("The password doesn't match");
       return;
     }
 
     if (formData.password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères");
+      setError("The password should contains at least 8 caracteres");
       return;
     }
 
@@ -66,7 +66,7 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Une erreur est survenue lors de l'inscription");
+        setError(data.error || "An error occurred during registration");
         setLoading(false);
         return;
       }
@@ -79,14 +79,14 @@ export default function SignUpPage() {
       });
 
       if (result?.error) {
-        setError("Inscription réussie mais échec de connexion. Veuillez vous connecter.");
+        setError("Registration successful but connection failed. Please log in");
         router.push("/signin");
       } else {
         router.push("/");
         router.refresh();
       }
     } catch (err) {
-      setError("Une erreur est survenue");
+      setError("An error as occurred");
     } finally {
       setLoading(false);
     }
@@ -100,19 +100,19 @@ export default function SignUpPage() {
   return (
     <AuthLayout
       backgroundImage="/images/auth-bg.jpg"
-      tagline="Rejoignez l'aventure"
+      tagline="Explore the world"
       title={
         <>
-          Créez votre compte <span className="text-primary">TRANSv2</span>
+          Welcome to <span className="text-primary">Travel Planner</span>
         </>
       }
-      description="Commencez à planifier vos voyages dès aujourd'hui et rejoignez notre communauté de voyageurs passionnés."
-      mobileTitle="Inscription"
-      mobileSubtitle="Créez votre compte"
-      desktopTitle="Bienvenue !"
-      desktopSubtitle="Créez votre compte pour commencer"
-      footerText="Déjà un compte ?"
-      footerLinkText="Se connecter"
+      description="Start planning your trips today and join our community of passionate travelers."
+      mobileTitle="Registration"
+      mobileSubtitle="Create your account"
+      desktopTitle="Welcome !"
+      desktopSubtitle="Create your account to get started"
+      footerText="Already an account ?"
+      footerLinkText="Login"
       footerLinkHref="/signin"
     >
       <div className="space-y-4">
@@ -125,7 +125,7 @@ export default function SignUpPage() {
             className="w-full"
           >
             <Mail className="mr-2 h-4 w-4" />
-            Continuer avec Google
+           Continue with Google
           </Button>
           <Button
             variant="outline"
@@ -134,14 +134,14 @@ export default function SignUpPage() {
             className="w-full"
           >
             <Github className="mr-2 h-4 w-4" />
-            Continuer avec GitHub
+            Continue with GitHub
           </Button>
         </div>
 
         <div className="relative">
           <Separator />
           <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-            Ou avec email
+            Or with email
           </span>
         </div>
 
@@ -156,7 +156,7 @@ export default function SignUpPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label htmlFor="firstName" className="text-sm font-medium">
-                Prénom
+                First Name
               </label>
               <Input
                 id="firstName"
@@ -170,7 +170,7 @@ export default function SignUpPage() {
             </div>
             <div className="space-y-1">
               <label htmlFor="lastName" className="text-sm font-medium">
-                Nom
+                Last Name
               </label>
               <Input
                 id="lastName"
@@ -186,7 +186,7 @@ export default function SignUpPage() {
 
           <div className="space-y-1">
             <label htmlFor="username" className="text-sm font-medium">
-              Nom d'utilisateur
+              Username
             </label>
             <Input
               id="username"
@@ -208,7 +208,7 @@ export default function SignUpPage() {
               id="email"
               name="email"
               type="email"
-              placeholder="vous@exemple.com"
+              placeholder="johndoe@exemple.com"
               value={formData.email}
               onChange={handleChange}
               required
@@ -218,7 +218,7 @@ export default function SignUpPage() {
 
           <div className="space-y-1">
             <label htmlFor="password" className="text-sm font-medium">
-              Mot de passe
+              Password
             </label>
             <Input
               id="password"
@@ -231,13 +231,13 @@ export default function SignUpPage() {
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground">
-              Au moins 8 caractères
+              At least 8 caracteres
             </p>
           </div>
 
           <div className="space-y-1">
             <label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirmer le mot de passe
+              Confirm password
             </label>
             <Input
               id="confirmPassword"
@@ -251,16 +251,8 @@ export default function SignUpPage() {
             />
           </div>
 
-          <div className="text-xs text-muted-foreground">
-            En créant un compte, vous acceptez nos{" "}
-            <Link href="/rgpd" className="text-primary hover:underline">
-              Conditions d'utilisation
-            </Link>
-            .
-          </div>
-
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Création du compte..." : "Créer mon compte"}
+            {loading ? "Creating your account..." : "Create my account"}
           </Button>
         </form>
       </div>

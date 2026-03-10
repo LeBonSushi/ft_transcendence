@@ -25,7 +25,27 @@ export class UsersController {
 
   @Get('me')
   async getMe(@GetUser('id') userId: string) {
-    return this.usersService.getUserById(userId);
+    // return this.usersService.getUserById(userId);
+
+    const user = await this.usersService.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      email: user?.email,
+      twoFactorEnabled: user?.twoFactorEnabled,
+      twoFactorSecret: user?.twoFactorSecret,
+      createdAt: user.createdAt,
+      profile: {
+        firstName: user.profile?.firstName,
+        lastName: user.profile?.lastName,
+        profilePicture: user.profile?.profilePicture,
+      }
+    };
   }
 
   @Delete('me')

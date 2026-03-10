@@ -99,7 +99,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`room:${roomId}`).emit(event, data);
   }
 
-  private emitToUser(userId: string, event: string, data: any) {
+  emitToUser(userId: string, event: string, data: any) {
     const sockets = this.userSockets.get(userId);
     if (sockets) {
       for (const socketId of sockets) {

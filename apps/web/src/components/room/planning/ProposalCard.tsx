@@ -13,9 +13,9 @@ const VOTE_ICONS = {
 };
 
 const VOTE_LABELS = {
-  YES: 'Pour',
-  NO: 'Contre',
-  MAYBE: 'Peut-être',
+  YES: 'Yes',
+  NO: 'No',
+  MAYBE: 'Maybe',
 };
 
 const VOTE_COLORS = {
@@ -26,10 +26,10 @@ const VOTE_COLORS = {
 
 const ACTIVITY_CATEGORY_LABELS: Record<string, string> = {
   RESTAURANT: '🍽️ Restaurant',
-  MUSEUM: '🏛️ Musée',
-  NIGHTLIFE: '🎉 Nuit',
-  OUTDOOR: '🌿 Plein air',
-  OTHER: '✨ Autre',
+  MUSEUM: '🏛️ Museum',
+  NIGHTLIFE: '🎉 Night',
+  OUTDOOR: '🌿 Outdoor',
+  OTHER: '✨ Other',
 };
 
 export function ProposalCard({
@@ -73,7 +73,7 @@ export function ProposalCard({
             <div className="flex items-center gap-1.5">
               {proposal.isSelected && (
                 <span className="text-[10px] font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full shrink-0">
-                  Sélectionné
+                  Select
                 </span>
               )}
               <span className="font-semibold text-sm truncate">{proposal.destination}</span>
@@ -84,7 +84,7 @@ export function ProposalCard({
             </div>
             {proposal.budgetEstimate && (
               <p className="text-[11px] text-muted-foreground mt-0.5">
-                Budget estimé : <span className="font-medium text-foreground">{Number(proposal.budgetEstimate).toLocaleString('fr-FR')} €</span>
+                Estimate budget : <span className="font-medium text-foreground">{Number(proposal.budgetEstimate).toLocaleString('fr-FR')} €</span>
               </p>
             )}
           </div>
@@ -166,7 +166,7 @@ export function ProposalCard({
                     className="flex items-center gap-0.5 text-[11px] text-primary hover:underline"
                   >
                     <Plus className="w-3 h-3" />
-                    Ajouter
+                    Add
                   </button>
                 </div>
 
@@ -214,7 +214,7 @@ export function ProposalCard({
                           />
                           <input
                             autoFocus
-                            placeholder="Nom de l'activité"
+                            placeholder="Activity name"
                             value={row.title}
                             onChange={e => setPendingActivities(prev => prev.map(r => r.id === row.id ? { ...r, title: e.target.value } : r))}
                             onBlur={() => {
@@ -242,7 +242,7 @@ export function ProposalCard({
                           </button>
                         </div>
                         <input
-                          placeholder="Lien / adresse (optionnel)"
+                          placeholder="Link / address (optional)"
                           value={row.link}
                           onChange={e => setPendingActivities(prev => prev.map(r => r.id === row.id ? { ...r, link: e.target.value } : r))}
                           onKeyDown={e => {
@@ -259,7 +259,7 @@ export function ProposalCard({
                 )}
 
                 {proposal.activities.length === 0 && pendingActivities.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground italic">Aucune activité suggérée</p>
+                  <p className="text-[11px] text-muted-foreground italic">No suggested activities</p>
                 )}
               </div>
             </div>

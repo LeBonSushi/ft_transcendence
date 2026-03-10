@@ -30,12 +30,12 @@ export default function Home() {
   const { rooms, selectedRoom, selectRoom, updateRoom } = useRooms();
   const { messages, sendMessage } = useMessages(selectedRoom?.id ?? null);
   const {
-    proposals, availabilities, members, loadingProposals,
+    proposals, availabilities, matchingDate, members, loadingProposals,
     createProposal, deleteProposal, selectProposal,
     vote, removeVote,
     createActivity, deleteActivity,
     createAvailability, deleteAvailability,
-  } = usePlanning(selectedRoom?.id ?? null);
+  } = usePlanning(selectedRoom?.id ?? null, selectedRoom?.type ?? null);
   const { user } = useUserStore();
 
   const [roomName, setRoomName] = useState('');
@@ -69,7 +69,6 @@ export default function Home() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    console.log(messages)
   }, [messages]);
 
   function handleSendMessage() {
@@ -107,7 +106,8 @@ export default function Home() {
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id)
+      return;
     const ids = groupRooms.map(r => r.id);
     const next = arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id)));
     localStorage.setItem('group-order', JSON.stringify(next));
@@ -115,7 +115,8 @@ export default function Home() {
   }
 
   const scoredProposals = useMemo(() => {
-    if (proposals.length === 0) return [];
+    if (proposals.length === 0)
+      return [];
     const memberIds = members.map(m => m.userId);
     return scoreProposals(proposals, availabilities, memberIds);
   }, [proposals, availabilities, members]);
@@ -136,7 +137,7 @@ export default function Home() {
       destination: proposalForm.destination.trim(),
       startDate: proposalForm.startDate,
       endDate: proposalForm.endDate,
-      description: proposalForm.description.trim() || 'Aucune description',
+      description: proposalForm.description.trim() || 'No description',
       budgetEstimate: proposalForm.budgetEstimate ? parseFloat(proposalForm.budgetEstimate) : undefined,
     });
     setProposalForm({ destination: '', startDate: '', endDate: '', description: '', budgetEstimate: '' });
@@ -328,7 +329,7 @@ export default function Home() {
                         transition={{ duration: 0.2 }}
                         style={{ overflow: 'hidden', display: 'block' }}
                       >
-                        Cliquer pour renommer · Entrée pour sauvegarder
+                        Click to rename · Enter to save
                       </motion.span>
                     </motion.div>
                   )}
@@ -339,7 +340,7 @@ export default function Home() {
                   {selectedRoom.type === 'GROUP' && (
                     <button
                       onClick={() => setShowInvite(true)}
-                      title="Inviter des amis"
+                      title="Invite friends"
                       className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
                       <UserPlus className="w-4 h-4" />
@@ -347,7 +348,7 @@ export default function Home() {
                   )}
                   <button
                     onClick={() => setShowPlanningPanel(p => !p)}
-                    title="Planification du voyage"
+                    title="Travel planning"
                     className={`shrink-0 p-2 rounded-lg transition-colors ${
                       showPlanningPanel
                         ? 'bg-primary text-primary-foreground'
@@ -392,7 +393,7 @@ export default function Home() {
                       <div ref={messagesEndRef} />
                     </div>
                   ) : (
-                    <p className="text-center text-muted-foreground py-4">Aucun message disponible</p>
+                    <p className="text-center text-muted-foreground py-4">No messages available</p>
                   )}
                 </div>
                 <motion.div
@@ -411,12 +412,12 @@ export default function Home() {
                         const files = (e.target as HTMLInputElement).files;
                         if (files) {
                           if (files.length + (imagesToUpload.current[selectedRoom.id]?.length || 0) > MAX_IMAGES_PER_MESSAGE) {
-                            setError(`Vous ne pouvez pas envoyer plus de ${MAX_IMAGES_PER_MESSAGE} images par message.`);
+                            setError(`You cannot send more than ${MAX_IMAGES_PER_MESSAGE} images per message.`);
                             return;
                           }
                           for (let i = 0; i < files.length; i++) {
                             if (files[i].size > MAX_IMAGE_SIZE) {
-                              setError(`Un ou plusieurs fichiers sont trop volumineux.`);
+                              setError(`One or more files are too large.`);
                               return;
                             } else {
                               imagesToUpload.current[selectedRoom.id] = imagesToUpload.current[selectedRoom.id] || [];
@@ -449,7 +450,7 @@ export default function Home() {
                       message.current[selectedRoom.id] = e.target.value;
                     }}
                     className="w-full max-h-40 outline-none bg-transparent resize-none field-sizing-content leading-relaxed text-sm placeholder:text-muted-foreground"
-                    placeholder="Écrivez votre message..."
+                    placeholder="Write your message..."
                   />
                   <motion.button
                     className="shrink-0 w-5 h-5 mb-0.5"
@@ -492,6 +493,7 @@ export default function Home() {
                     onToggleAvailabilityForm={() => setShowAvailabilityForm(f => !f)}
                     onCreateAvailability={handleCreateAvailability}
                     onDeleteAvailability={deleteAvailability}
+                    matchingDate={matchingDate}
                     currentUserId={user?.id ?? ''}
                   />
                 )}
@@ -500,7 +502,7 @@ export default function Home() {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-muted-foreground">Sélectionnez une conversation pour commencer à discuter</p>
+            <p className="text-muted-foreground">Select a conversation to start chatting</p>
           </div>
         )}
       </main>

@@ -48,7 +48,13 @@ export class AuthService {
           },
         },
       },
-      include: { profile: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+        profile: true,
+      },
     });
 
     return {
@@ -67,7 +73,17 @@ export class AuthService {
     // Récupère l'user avec son profil depuis la DB
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { profile: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+        passwordHash: true,
+        twoFactorEnabled: true,
+        twoFactorSecret: true,
+        twoFactorBackupCodes: true,
+        profile: true,
+      },
     });
 
     if (!user) {

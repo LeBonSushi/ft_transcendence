@@ -15,7 +15,6 @@ if (!connectionString) {
 
 const pool = new Pool({
   connectionString,
-  // Ensure password is treated as a string
   connectionTimeoutMillis: 5000,
 });
 const adapter = new PrismaPg(pool);
@@ -26,7 +25,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('Starting database seed...');
 
   const testPassword = 'qwertyuiop';
   const passwordHash = await bcrypt.hash(testPassword, 10);
@@ -139,7 +138,6 @@ async function main() {
     },
   });
 
-  console.log('✅ Created 6 users with minimal profiles');
 
   // Create friendship between Alice and Bob (ACCEPTED)
   await prisma.friendship.createMany({
@@ -151,7 +149,6 @@ async function main() {
     skipDuplicates: true,
   });
 
-  console.log('✅ Created friendships');
 
   // Create rooms
   const room1 = await prisma.room.create({
@@ -253,7 +250,6 @@ async function main() {
     },
   });
 
-  console.log('✅ Created 9 rooms (normal + matching edge cases)');
 
   // Add members to rooms
   await prisma.roomMember.createMany({
@@ -307,7 +303,6 @@ async function main() {
     skipDuplicates: true,
   });
 
-  console.log('✅ Added room members (including edge-case rooms)');
 
   // Add messages
   await prisma.message.createMany({
@@ -359,7 +354,6 @@ async function main() {
     ],
   });
 
-  console.log('✅ Created base chat messages');
 
   // Add user availabilities (normal + edge-case scenarios for matching)
   await prisma.userAvailability.createMany({
@@ -635,13 +629,11 @@ async function main() {
     ],
   });
 
-  console.log('✅ Created user availabilities (normal + impossible + tricky cases)');
-  console.log('🎉 Database seeded successfully!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error seeding database:', e);
+    console.error('Error seeding database:', e);
     process.exit(1);
   })
   .finally(async () => {

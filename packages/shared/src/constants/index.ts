@@ -98,6 +98,7 @@ export const API_ROUTES = {
     CREATE: (roomId: string) => `/rooms/${roomId}/availability`,
     UPDATE: (roomId: string, id: string) => `/rooms/${roomId}/availability/${id}`,
     DELETE: (roomId: string, id: string) => `/rooms/${roomId}/availability/${id}`,
+    MATCHING_DATE: (roomId: string) => `/rooms/${roomId}/matchingDate`,
   },
 
   PROPOSALS: {

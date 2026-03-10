@@ -42,15 +42,22 @@ export function useRooms() {
       ));
     };
 
+    const onRoomDeleted = ({ roomId }: { roomId: string }) => {
+      setRooms(prev => prev.filter(r => r.id !== roomId));
+      if (selectedRoomId === roomId) setSelectedRoomId(null);
+    };
+
     socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
     socket.on(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
     socket.on('message:receive', onMessageReceive);
+    socket.on(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted);
     return () => {
       socket.off(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
       socket.off(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
       socket.off('message:receive', onMessageReceive);
+      socket.off(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted);
     };
-  }, [socket, isConnected]);
+  }, [socket, isConnected, selectedRoomId]);
 
   // Subscribe to socket events for the selected room
   useRoomSocket(selectedRoomId, {

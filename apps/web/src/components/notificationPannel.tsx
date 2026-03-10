@@ -143,7 +143,7 @@ export function NotificationPannel() {
                   }}
                   className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Tout lire
+                  Read all
                 </button>
               )}
             </div>
