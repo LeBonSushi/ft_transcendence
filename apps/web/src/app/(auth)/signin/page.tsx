@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Github, Mail } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -17,20 +19,52 @@ export default function SignInPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // état pour le 2FA
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
+  const [useBackupCode, setUseBackupCode] = useState(false);
+
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
+      // Si on n'est pas encore à l'étape 2FA, on vérifie d'abord les credentials directement
+      if (!requires2FA) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+          setError("Email ou mot de passe incorrect");
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+
+        // Le backend demande un code 2FA
+        if (data.requiresTwoFactor) {
+          setRequires2FA(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Login complet via NextAuth (avec ou sans TOTP)
       const result = await signIn("credentials", {
         email,
         password,
+        totpCode: totpCode || undefined,
         redirect: false,
       });
 
       if (result?.error) {
-        setError("Email ou mot de passe incorrect");
+        setError(requires2FA ? "Code 2FA invalide" : "Email ou mot de passe incorrect");
+        setTotpCode("");
       } else {
         router.push("/");
         router.refresh();
@@ -66,34 +100,38 @@ export default function SignInPage() {
       footerLinkHref="/signup"
     >
       <div className="space-y-6">
-        {/* OAuth Buttons */}
-        <div className="grid grid-cols-1 gap-3">
-          <Button
-            variant="outline"
-            onClick={() => handleOAuthSignIn("google")}
-            disabled={loading}
-            className="w-full"
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            Continuer avec Google
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleOAuthSignIn("github")}
-            disabled={loading}
-            className="w-full"
-          >
-            <Github className="mr-2 h-4 w-4" />
-            Continuer avec GitHub
-          </Button>
-        </div>
+        {/* OAuth Buttons — cachés si on est à l'étape 2FA */}
+        {!requires2FA && (
+          <>
+            <div className="grid grid-cols-1 gap-3">
+              <Button
+                variant="outline"
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={loading}
+                className="w-full"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Continuer avec Google
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleOAuthSignIn("github")}
+                disabled={loading}
+                className="w-full"
+              >
+                <Github className="mr-2 h-4 w-4" />
+                Continuer avec GitHub
+              </Button>
+            </div>
 
-        <div className="relative">
-          <Separator />
-          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-            Ou avec email
-          </span>
-        </div>
+            <div className="relative">
+              <Separator />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+                Ou avec email
+              </span>
+            </div>
+          </>
+        )}
 
         {/* Credentials Form */}
         <form onSubmit={handleCredentialsSignIn} className="space-y-4">
@@ -103,47 +141,108 @@ export default function SignInPage() {
             </div>
           )}
 
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="vous@exemple.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
+          {/* Étape 1 : Email + Password (caché si 2FA demandé) */}
+          {!requires2FA && (
+            <>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="vous@exemple.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium">
-                Mot de passe
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-primary hover:underline"
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    Mot de passe
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Étape 2 : Code 2FA */}
+          {requires2FA && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h2 className="text-lg font-semibold">Vérification 2FA</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {useBackupCode
+                    ? "Entrez un de vos codes de récupération"
+                    : "Entrez le code à 6 chiffres de votre application d'authentification"}
+                </p>
+              </div>
+
+              {useBackupCode ? (
+                <Input
+                  placeholder="Code de récupération"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  className="text-center font-mono"
+                  maxLength={8}
+                />
+              ) : (
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={totpCode} onChange={setTotpCode} pattern={REGEXP_ONLY_DIGITS}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline w-full text-center"
+                onClick={() => { setUseBackupCode(!useBackupCode); setTotpCode(""); }}
               >
-                Mot de passe oublié ?
-              </Link>
+                {useBackupCode ? "Utiliser le code TOTP" : "Utiliser un code de récupération"}
+              </button>
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
+          )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Connexion..." : "Se connecter"}
+          <Button type="submit" className="w-full" disabled={loading || (requires2FA && !useBackupCode && totpCode.length !== 6) || (requires2FA && useBackupCode && totpCode.length === 0)}>
+            {loading ? "Connexion..." : requires2FA ? "Vérifier" : "Se connecter"}
           </Button>
+
+          {requires2FA && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => { setRequires2FA(false); setTotpCode(""); setUseBackupCode(false); setError(""); }}
+            >
+              Retour
+            </Button>
+          )}
         </form>
       </div>
     </AuthLayout>
