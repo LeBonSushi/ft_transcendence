@@ -504,6 +504,20 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
               placeholder="Your username"
               prefix="@"
             />
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData.email(e.target.value)}
+              placeholder="Your email"
+            />
+            <Input
+              label="New password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData.password(e.target.value)}
+              placeholder="Leave empty to keep your current password"
+            />
             <div className="flex gap-2 mt-4">
               <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none">
                 {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2 hidden sm:inline" /> : <Check className="h-4 w-4 mr-2 hidden sm:inline" />}
@@ -521,21 +535,13 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
               <InfoRow label="First name" value={user.profile?.firstName || '-'} />
               <InfoRow label="Last name" value={user.profile?.lastName || '-'} />
               <InfoRow label="Username" value={user.username ? `@${user.username}` : '-'} />
+              <InfoRow label="Email" value={user.email || '-'} />
             </div>
             <Button variant="outline" className="mt-4 w-full sm:w-auto" onClick={startEditing}>
               Update profile
             </Button>
           </>
         )}
-      </SectionCard>
-
-      <SectionCard title="Email address" icon={Mail}>
-        <div className="p-3 rounded-lg bg-muted/50">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-foreground text-sm sm:text-base truncate">{user.email}</span>
-          </div>
-        </div>
       </SectionCard>
 
       <SectionCard title="Appearence" icon={Settings2}>

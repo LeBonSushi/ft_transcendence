@@ -6,22 +6,31 @@ import { useSocket } from './useSocket';
 import { useRoomSocket } from './useRoomSocket';
 import { SOCKET_EVENTS } from '@travel-planner/shared';
 import type { RoomWithLastMessage, UpdateRoomDto } from '@travel-planner/shared';
+import { useUserStore } from '@/stores/useUserStore';
 
 export function useRooms() {
   const [rooms, setRooms] = useState<RoomWithLastMessage[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { socket, isConnected } = useSocket();
+  const { user } = useUserStore();
 
   const selectedRoom = rooms.find(r => r.id === selectedRoomId) ?? null;
 
-  // Fetch rooms on mount
+  // Fetch rooms when user is available
   useEffect(() => {
-    usersApi.getCurrentUser().getRooms()
+    if (!user?.id) {
+      setRooms([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    usersApi.getUserRooms(user.id)
       .then(setRooms)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.id]);
 
   // Listen for new rooms created in real time
   useEffect(() => {

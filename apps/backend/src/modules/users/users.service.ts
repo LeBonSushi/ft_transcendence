@@ -4,24 +4,11 @@ import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { SearchUser, RoomWithLastMessage } from '@travel-planner/shared';
 
-interface CreateUserDto {
-  id: string;
-  email: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
-}
-
-/**
- * Safe user select - excludes sensitive fields like passwordHash, email, 2FA secrets
- */
 const SAFE_USER_SELECT = {
   id: true,
   username: true,
   createdAt: true,
   updatedAt: true,
-  // email, passwordHash, twoFactorSecret, twoFactorBackupCodes are excluded
 } as const;
 
 @Injectable()
@@ -34,64 +21,6 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: { id: userId },
       include: { profile: true },
-    });
-  }
-
-  async createUser(data: CreateUserDto) {
-    this.logger.debug(`Creating user: ${data.id}`);
-
-    return this.prisma.user.create({
-      data: {
-        id: data.id,
-        email: data.email,
-        username: data.username,
-        profile: data.firstName && data.lastName ? {
-          create: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            profilePicture: data.profilePicture,
-          },
-        } : undefined,
-      },
-      select: {
-        ...SAFE_USER_SELECT,
-        profile: true,
-      },
-    });
-  }
-
-  async updateUser(userId: string, data: UpdateUserDto) {
-    this.logger.debug(`Updating user: ${userId}`);
-
-    const user = await this.getUserById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        email: data.email,
-        username: data.username,
-        profile: data.firstName && data.lastName ? {
-          upsert: {
-            create: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              profilePicture: data.profilePicture,
-            },
-            update: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              profilePicture: data.profilePicture,
-            },
-          },
-        } : undefined,
-      },
-      select: {
-        ...SAFE_USER_SELECT,
-        profile: true,
-      },
     });
   }
 
@@ -122,21 +51,6 @@ export class UsersService {
 
     return this.prisma.user.delete({
       where: { id: userId },
-    });
-  }
-
-  async updateProfile(userId: string, data: any) {
-    const profile = await this.prisma.profile.findUnique({
-      where: { userId },
-    });
-
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
-
-    return this.prisma.profile.update({
-      where: { userId },
-      data,
     });
   }
 

@@ -6,16 +6,19 @@ interface ProfileData {
   firstName: string;
   lastName: string;
   username: string;
+  email: string;
+  password: string;
 }
 
 interface UseProfileEditOptions {
   user: {
     id: string;
+    username?: string | null;
+    email?: string | null;
     profile?: {
       firstName?: string | null;
       lastName?: string | null;
     } | null;
-    username?: string | null;
   };
   onSuccess?: () => void;
 }
@@ -30,6 +33,8 @@ interface UseProfileEditReturn {
     firstName: (value: string) => void;
     lastName: (value: string) => void;
     username: (value: string) => void;
+    email: (value: string) => void;
+    password: (value: string) => void;
   };
   startEditing: () => void;
   handleSave: () => Promise<void>;
@@ -51,11 +56,15 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
   const [firstName, setFirstName] = useState(user.profile?.firstName || '');
   const [lastName, setLastName] = useState(user.profile?.lastName || '');
   const [username, setUsername] = useState(user.username || '');
+  const [email, setEmail] = useState(user.email || '');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     setFirstName(user.profile?.firstName || '');
     setLastName(user.profile?.lastName || '');
     setUsername(user.username || '');
+    setEmail(user.email || '');
+    setPassword('');
   }, [user]);
 
   useEffect(() => {
@@ -135,10 +144,13 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
       const currentFirstName = user.profile?.firstName ?? '';
       const currentLastName = user.profile?.lastName ?? '';
       const currentUsername = user.username ?? '';
+      const currentEmail = user.email ?? '';
 
       const nextFirstName = firstName.trim();
       const nextLastName = lastName.trim();
       const nextUsername = username.trim();
+      const nextEmail = email.trim();
+      const nextPassword = password.trim();
 
       const updateData: Partial<ProfileData> = {};
 
@@ -150,6 +162,12 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
 
       if (nextUsername !== currentUsername)
         updateData.username = nextUsername;
+
+      if (nextEmail !== currentEmail)
+        updateData.email = nextEmail;
+
+      if (nextPassword.length > 0)
+        updateData.password = nextPassword;
 
       if (Object.keys(updateData).length === 0) {
         setIsEditing(false);
@@ -169,8 +187,11 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
       if (updatedUser) {
         if (updatedUser.username)
           updateUser({ username: updatedUser.username });
+
         if (updatedUser.email)
           updateUser({ email: updatedUser.email });
+        else if (updateData.email !== undefined)
+          updateUser({ email: updateData.email });
 
         if (updatedUser.profile) {
           updateProfile({
@@ -179,6 +200,8 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
           });
         }
       }
+
+      setPassword('');
 
       setIsEditing(false);
       onSuccess?.();
@@ -193,6 +216,8 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
     setFirstName(user.profile?.firstName || '');
     setLastName(user.profile?.lastName || '');
     setUsername(user.username || '');
+    setEmail(user.email || '');
+    setPassword('');
     setError(null);
     setWarning(null);
     setIsEditing(false);
@@ -203,11 +228,13 @@ export function useProfileEdit({ user, onSuccess }: UseProfileEditOptions): UseP
     isSaving,
     error,
     warning,
-    formData: { firstName, lastName, username },
+    formData: { firstName, lastName, username, email, password },
     setFormData: {
       firstName: setFirstName,
       lastName: setLastName,
       username: setUsername,
+      email: setEmail,
+      password: setPassword,
     },
     startEditing,
     handleSave,

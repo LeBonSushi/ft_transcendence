@@ -22,10 +22,6 @@ class ServerUserResource {
 
 // Classe pour l'utilisateur courant - version serveur
 class ServerCurrentUserResource {
-  async getRooms() {
-    return serverApiClient.get<Room[]>(API_ROUTES.USERS.ME_ROOMS);
-  }
-
   async getProfile() {
     return serverApiClient.get<User>(API_ROUTES.USERS.ME);
   }
@@ -39,10 +35,6 @@ export const serverUsersApi = {
 
   getUser: (userId: string) => {
     return new ServerUserResource(userId);
-  },
-
-  getMyRooms: async () => {
-    return serverApiClient.get<Room[]>(API_ROUTES.USERS.ME_ROOMS);
   },
 
   getUserRooms: async (userId: string) => {

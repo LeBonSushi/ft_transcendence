@@ -49,6 +49,7 @@ interface PlanningPanelProps {
     matchUser: number;
     droppedUser: string[];
   } | null;
+  matchingDateMessage: string | null;
   showAvailabilityForm: boolean;
   availabilityForm: {
     startDate: string;
@@ -83,6 +84,7 @@ export function PlanningPanel({
   onDeleteActivity,
   availabilities,
   matchingDate,
+  matchingDateMessage,
   showAvailabilityForm,
   availabilityForm,
   onAvailabilityFormChange,
@@ -212,31 +214,47 @@ export function PlanningPanel({
           {tab === 'availabilities' && (
             <div className="space-y-3">
               {/* Matching Date Suggestion */}
-              {matchingDate && (
-                <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-3">
+              {(matchingDate || matchingDateMessage) && (
+                <div className={`rounded-xl border p-3 ${
+                  matchingDate
+                    ? 'border-green-500/40 bg-green-500/5'
+                    : 'border-border bg-muted/30'
+                }`}>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Calendar className="w-3.5 h-3.5 shrink-0 text-green-600" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-green-600">
-                      Ideal common window
+                    <Calendar className={`w-3.5 h-3.5 shrink-0 ${
+                      matchingDate ? 'text-green-600' : 'text-muted-foreground'
+                    }`} />
+                    <span className={`text-[11px] font-semibold uppercase tracking-wider ${
+                      matchingDate ? 'text-green-600' : 'text-muted-foreground'
+                    }`}>
+                      {matchingDate ? 'Ideal common window' : 'Matching date'}
                     </span>
                   </div>
-                  <p className="text-xs font-medium text-green-900">
-                    {new Date(matchingDate.startDate).toLocaleDateString('fr-FR', { 
-                      day: '2-digit', 
-                      month: 'short', 
-                      year: 'numeric' 
-                    })} → {new Date(matchingDate.endDate).toLocaleDateString('fr-FR', { 
-                      day: '2-digit', 
-                      month: 'short', 
-                      year: 'numeric' 
-                    })}
-                  </p>
-                  <p className="text-[11px] opacity-70 mt-0.5">
-                    {matchingDate.duration} day(s) · {matchingDate.matchUser} person(s) available(s)
-                  </p>
-                  {matchingDate.droppedUser.length > 0 && (
-                    <p className="text-[10px] opacity-60 mt-1 italic">
-                      {matchingDate.droppedUser.length} member(s) not available(s)
+                  {matchingDate ? (
+                    <>
+                      <p className="text-xs font-medium text-green-900">
+                        {new Date(matchingDate.startDate).toLocaleDateString('fr-FR', { 
+                          day: '2-digit', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })} → {new Date(matchingDate.endDate).toLocaleDateString('fr-FR', { 
+                          day: '2-digit', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                      <p className="text-[11px] opacity-70 mt-0.5">
+                        {matchingDate.duration} day(s) · {matchingDate.matchUser} person(s) available(s)
+                      </p>
+                      {matchingDate.droppedUser.length > 0 && (
+                        <p className="text-[10px] opacity-60 mt-1 italic">
+                          {matchingDate.droppedUser.length} member(s) not available(s)
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {matchingDateMessage}
                     </p>
                   )}
                 </div>

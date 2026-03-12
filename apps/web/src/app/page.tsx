@@ -30,7 +30,7 @@ export default function Home() {
   const { rooms, selectedRoom, selectRoom, updateRoom } = useRooms();
   const { messages, sendMessage } = useMessages(selectedRoom?.id ?? null);
   const {
-    proposals, availabilities, matchingDate, members, loadingProposals,
+    proposals, availabilities, matchingDate, matchingDateMessage, members, loadingProposals,
     createProposal, deleteProposal, selectProposal,
     vote, removeVote,
     createActivity, deleteActivity,
@@ -207,7 +207,7 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M15 18l-6-6 6-6"/>
                 </svg>
-                Retour
+                Back
               </button>
 
               {selectedRoom.type === 'DIRECT_MESSAGE' ? (
@@ -502,6 +502,7 @@ export default function Home() {
                     }
                     onDeleteActivity={deleteActivity}
                     availabilities={availabilities}
+                    matchingDateMessage={matchingDateMessage}
                     showAvailabilityForm={showAvailabilityForm}
                     availabilityForm={availabilityForm}
                     onAvailabilityFormChange={setAvailabilityForm}

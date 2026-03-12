@@ -18,7 +18,7 @@ export class StorageController {
   ) {
     const url = await this.storageService.uploadImage(file, 'profile-pictures');
 
-    await this.usersService.updateProfile(req.user.id, { profilePicture: url });
+    await this.usersService.modifyUser(req.user.id, { profilePicture: url });
 
     return { url, key: `profile-picture/${file.originalname}` };
   }
@@ -33,7 +33,7 @@ export class StorageController {
   @Delete('remove/profile-picture')
   async removeProfilePicture(@Req() req: any) {
     await this.storageService.removeImage(`profile-picture/${req.user.id}`);
-    await this.usersService.updateProfile(req.user.id, { profilePicture: null });
+    await this.usersService.modifyUser(req.user.id, { profilePicture: null });
     return { success: true };
   }
 }

@@ -25,13 +25,10 @@ export class UsersController {
 
   @Get('me')
   async getMe(@GetUser('id') userId: string) {
-    // return this.usersService.getUserById(userId);
-
     const user = await this.usersService.getUserById(userId);
 
-    if (!user) {
+    if (!user)
       throw new NotFoundException('User not found');
-    }
 
     return {
       id: user.id,
@@ -66,28 +63,17 @@ export class UsersController {
     }
   }
 
-  @Get('me/rooms')
-  async getMyRooms(@GetUser('id') userId: string) {
-    return this.usersService.getRoomsByUser(userId);
-  }
-
   @Get('search')
   async searchUsers(@GetUser('id') userId: string, @Query('query') searchQuery: string) {
     return this.usersService.searchUser(userId, searchQuery);
-  }
-
-  @Put('me')
-  async updateMe(@GetUser('id') userId: string, @Body() body: UpdateUserDto) {
-    return this.usersService.modifyUser(userId, body);
   }
 
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<PublicUserResponse> {
     const user = await this.usersService.getUserById(id);
 
-    if (!user) {
+    if (!user)
       throw new NotFoundException('User not found');
-    }
 
     return {
       id: user.id,
@@ -100,14 +86,6 @@ export class UsersController {
           }
         : null,
     };
-  }
-
-  @Put(':id')
-  async modifyUser(@GetUser('id') userId: string, @Param('id') id: string, @Body() body: UpdateUserDto ) {
-    if (userId !== id)
-      throw new HttpException('Not authorized to modify this user', HttpStatus.FORBIDDEN);
-
-    return this.usersService.modifyUser(id, body);
   }
 
   @Get(':id/rooms')
@@ -126,6 +104,14 @@ export class UsersController {
     }
 
     return this.usersService.getFriends(id);
+  }
+
+  @Put(':id')
+  async modifyUser(@GetUser('id') userId: string, @Param('id') id: string, @Body() body: UpdateUserDto ) {
+    if (userId !== id)
+      throw new HttpException('Not authorized to modify this user', HttpStatus.FORBIDDEN);
+
+    return this.usersService.modifyUser(id, body);
   }
 
   @Get()

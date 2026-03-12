@@ -24,6 +24,7 @@ export function usePlanning(roomId: string | null, roomType?: 'GROUP' | 'DIRECT_
     matchUser: number;
     droppedUser: string[];
   } | null>(null);
+  const [matchingDateMessage, setMatchingDateMessage] = useState<string | null>(null);
   const [loadingProposals, setLoadingProposals] = useState(false);
   const [loadingAvailabilities, setLoadingAvailabilities] = useState(false);
   const isDirectMessage = roomType === 'DIRECT_MESSAGE';
@@ -48,17 +49,36 @@ export function usePlanning(roomId: string | null, roomType?: 'GROUP' | 'DIRECT_
     if (!roomId || isDirectMessage) {
       setAvailabilities([]);
       setMatchingDate(null);
+      setMatchingDateMessage(null);
       return;
     }
     setLoadingAvailabilities(true);
     try {
       const data = await roomsApi.getRoom(roomId).getAvailabilities();
       setAvailabilities(data);
-      // Fetch matching date after availabilities are loaded
       const matching = await roomsApi.getRoom(roomId).getMatchingDate();
       setMatchingDate(matching);
+      setMatchingDateMessage(null);
     } catch (e) {
-      console.error(e);
+      setMatchingDate(null);
+      const backendMessage = (e as { response?: { data?: { message?: string | string[] } } })
+        ?.response?.data?.message;
+
+      const message = Array.isArray(backendMessage)
+        ? backendMessage.join(' ')
+        : backendMessage;
+
+      if (typeof message === 'string') {
+        const normalizedMessage = message.toLowerCase();
+        if (normalizedMessage.includes('minimum of 2 person')) {
+          setMatchingDateMessage('Not enough users to calculate a matching date yet.');
+        } else {
+          setMatchingDateMessage(message);
+        }
+      } else {
+        setMatchingDateMessage('Unable to calculate a matching date right now.');
+      }
+      console.error("Erreur: ", e);
     } finally {
       setLoadingAvailabilities(false);
     }
@@ -70,6 +90,7 @@ export function usePlanning(roomId: string | null, roomType?: 'GROUP' | 'DIRECT_
       setAvailabilities([]);
       setMembers([]);
       setMatchingDate(null);
+      setMatchingDateMessage(null);
       return;
     }
 
@@ -77,6 +98,7 @@ export function usePlanning(roomId: string | null, roomType?: 'GROUP' | 'DIRECT_
       setProposals([]);
       setAvailabilities([]);
       setMatchingDate(null);
+      setMatchingDateMessage(null);
       setMembers([]);
       return;
     }
@@ -140,20 +162,21 @@ export function usePlanning(roomId: string | null, roomType?: 'GROUP' | 'DIRECT_
   const createAvailability = async (data: CreateAvailabilityDto) => {
     if (!roomId || isDirectMessage) return;
     const av = await roomsApi.getRoom(roomId).createAvailability(data);
-    setAvailabilities(prev => [...prev, av]);
+    await fetchAvailabilities();
     return av;
   };
 
   const deleteAvailability = async (id: string) => {
     if (!roomId || isDirectMessage) return;
     await roomsApi.getRoom(roomId).deleteAvailability(id);
-    setAvailabilities(prev => prev.filter(a => a.id !== id));
+    await fetchAvailabilities();
   };
 
   return {
     proposals,
     availabilities,
     matchingDate,
+    matchingDateMessage,
     members,
     loadingProposals,
     loadingAvailabilities,

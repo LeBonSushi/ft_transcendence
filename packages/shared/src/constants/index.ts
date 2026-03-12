@@ -56,13 +56,10 @@ export const API_ROUTES = {
     ME: '/auth/me',
     GOOGLE: '/auth/google',
     GITHUB: '/auth/github',
-    FORTY_TWO: '/auth/42',
   },
 
   USERS: {
     ME: '/users/me',
-    ME_ROOMS: '/users/me/rooms',
-    GET_CURRENT: '/users/me',
     SEARCH: (query: string) =>`/users/search?query=${query}`,
     GET: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
