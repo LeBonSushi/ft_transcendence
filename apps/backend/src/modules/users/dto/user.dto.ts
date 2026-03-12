@@ -34,18 +34,6 @@ export class UpdateUserDto {
 	@IsString()
 	@MinLength(10)
 	passwordHash?: string;
-
-	@IsOptional()
-	@IsString()
-	bio?: string;
-
-	@IsOptional()
-	@IsString()
-	location?: string;
-
-	@IsOptional()
-	@IsString()
-	birthdate?: string;
 }
 
 export interface PublicUserResponse {
@@ -55,6 +43,5 @@ export interface PublicUserResponse {
 	firstName: string | null;
 	lastName: string | null;
 	profilePicture: string | null;
-	bio: string | null;
   } | null;
 }

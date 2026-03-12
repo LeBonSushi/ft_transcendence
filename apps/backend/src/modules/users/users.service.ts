@@ -195,16 +195,47 @@ export class UsersService {
       }
     }
 
-    await this.prisma.user.update({
-      where: { id },
-      data: userFields,
-    });
+    const hasUserFields = Object.keys(userFields).length > 0;
 
-    await this.prisma.profile.upsert({
-      where: { userId: id },
-      update: { firstName, lastName, bio, profilePicture, location, birthdate },
-      create: { userId: id, firstName, lastName, bio, profilePicture, location, birthdate },
-    });
+    const profileUpdateData: Record<string, unknown> = {};
+    if (firstName !== undefined)
+      profileUpdateData.firstName = firstName;
+    if (lastName !== undefined)
+      profileUpdateData.lastName = lastName;
+    if (profilePicture !== undefined)
+      profileUpdateData.profilePicture = profilePicture;
+    const hasProfileFields = Object.keys(profileUpdateData).length > 0;
+
+    if (hasUserFields) {
+      await this.prisma.user.update({
+        where: { id },
+        data: userFields,
+      });
+    }
+
+    if (hasProfileFields) {
+      const existingProfile = await this.prisma.profile.findUnique({
+        where: { userId: id },
+        select: { userId: true },
+      });
+
+      if (existingProfile) {
+        await this.prisma.profile.update({
+          where: { userId: id },
+          data: profileUpdateData,
+        });
+      }
+      else {
+        await this.prisma.profile.create({
+          data: {
+            userId: id,
+            firstName: firstName ?? '',
+            lastName: lastName ?? '',
+            ...(profilePicture !== undefined ? { profilePicture } : {}),
+          },
+        });
+      }
+    }
 
     const updatedUser = await this.prisma.user.findUnique({
       where: { id },
@@ -263,6 +294,7 @@ export class UsersService {
                           select: {
                             firstName: true,
                             lastName: true,
+                            profilePicture: true,
                           },
                         },
                       },
@@ -299,6 +331,7 @@ export class UsersService {
         lastMessageDate: lastMsg?.createdAt ?? null,
         senderUsername: lastMsg?.sender.username ?? null,
         senderPicture: lastMsg?.sender.profile?.profilePicture ?? null,
+        otherUserPicture: otherMember?.profile?.profilePicture ?? null,
       };
     });
   }

@@ -210,134 +210,149 @@ export default function Home() {
                 Retour
               </button>
 
-              <div className="flex items-center gap-4">
-                <button
-                  className="relative shrink-0 group"
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/jpeg,image/png,image/webp';
-                    input.onchange = async (e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0];
-                      if (!file) return;
-                      try {
-                        const { url } = await storageApi.uploadRoomImage(file);
-                        await updateRoom(selectedRoom.id, { imageUrl: url });
-                      } catch (err) {
-                        console.error('Failed to upload room image:', err);
-                      }
-                    };
-                    input.click();
-                  }}
-                >
+              {selectedRoom.type === 'DIRECT_MESSAGE' ? (
+                <div className="flex items-center gap-4">
                   <Avatar
-                    src={selectedRoom.imageUrl ?? ''}
+                    src={selectedRoom.otherUserPicture ?? ''}
                     alt={selectedRoom.name}
                     fallback={selectedRoom.name}
                     size="md"
                     pictureColor={getAvatarColor(selectedRoom.id)[0]}
                     ringColor="ring-transparent"
                   />
-                  <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="w-4 h-4 text-white" />
+                  <div className="flex flex-col items-start flex-1">
+                    <span style={{ fontFamily: 'var(--font-serif)' }} className="text-2xl font-semibold tracking-tight">
+                      {selectedRoom.name}
+                    </span>
                   </div>
-                </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <button
+                    className="relative shrink-0 group"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/jpeg,image/png,image/webp';
+                      input.onchange = async (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (!file) return;
+                        try {
+                          const { url } = await storageApi.uploadRoomImage(file);
+                          await updateRoom(selectedRoom.id, { imageUrl: url });
+                        } catch (err) {
+                          console.error('Failed to upload room image:', err);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    <Avatar
+                      src={selectedRoom.imageUrl ?? ''}
+                      alt={selectedRoom.name}
+                      fallback={selectedRoom.name}
+                      size="md"
+                      pictureColor={getAvatarColor(selectedRoom.id)[0]}
+                      ringColor="ring-transparent"
+                    />
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera className="w-4 h-4 text-white" />
+                    </div>
+                  </button>
 
-                <AnimatePresence mode="wait" initial={false}>
-                  {isEditingName ? (
-                    <motion.div
-                      key="input"
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={isShaking ? { opacity: 1, y: 0, x: [0, -6, 6, -6, 6, -4, 4, 0] } : { opacity: 1, y: 0, x: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={isShaking ? { duration: 0.4, ease: "easeInOut" } : { duration: 0.15 }}
-                    >
-                      <input
-                        autoFocus
-                        spellCheck={false}
-                        value={roomName}
-                        onChange={(e) => {
-                          if (e.target.value.length <= MAX_ROOM_NAME_LENGTH) {
-                            setRoomName(e.target.value);
-                          } else if (!isShaking) {
-                            setIsShaking(true);
-                            setTimeout(() => setIsShaking(false), 500);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            const trimmed = roomName.trim();
-                            if (!trimmed) setRoomName(selectedRoom.name);
-                            else updateRoom(selectedRoom.id, { name: trimmed });
-                            setIsEditingName(false);
-                          }
-                          if (e.key === 'Escape') {
+                  <AnimatePresence mode="wait" initial={false}>
+                    {isEditingName ? (
+                      <motion.div
+                        key="input"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={isShaking ? { opacity: 1, y: 0, x: [0, -6, 6, -6, 6, -4, 4, 0] } : { opacity: 1, y: 0, x: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={isShaking ? { duration: 0.4, ease: "easeInOut" } : { duration: 0.15 }}
+                      >
+                        <input
+                          autoFocus
+                          spellCheck={false}
+                          value={roomName}
+                          onChange={(e) => {
+                            if (e.target.value.length <= MAX_ROOM_NAME_LENGTH) {
+                              setRoomName(e.target.value);
+                            } else if (!isShaking) {
+                              setIsShaking(true);
+                              setTimeout(() => setIsShaking(false), 500);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const trimmed = roomName.trim();
+                              if (!trimmed) setRoomName(selectedRoom.name);
+                              else updateRoom(selectedRoom.id, { name: trimmed });
+                              setIsEditingName(false);
+                            }
+                            if (e.key === 'Escape') {
+                              setRoomName(selectedRoom.name);
+                              setIsEditingName(false);
+                            }
+                          }}
+                          onBlur={() => {
                             setRoomName(selectedRoom.name);
                             setIsEditingName(false);
-                          }
-                        }}
-                        onBlur={() => {
-                          setRoomName(selectedRoom.name);
-                          setIsEditingName(false);
-                        }}
-                        style={{ fontFamily: 'var(--font-serif)' }}
-                        className="w-full max-w-xs text-2xl font-semibold tracking-tight text-foreground outline-none bg-muted/50 border border-primary/40 rounded-md px-3 py-1"
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="display"
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.15 }}
-                      className="flex flex-col items-start flex-1"
-                    >
-                      <motion.button
-                        onClick={() => setIsEditingName(true)}
-                        onHoverStart={() => setIsHoveringName(true)}
-                        onHoverEnd={() => setIsHoveringName(false)}
-                        className="flex items-center gap-2 -mx-3 px-3 py-1 rounded-md"
+                          }}
+                          style={{ fontFamily: 'var(--font-serif)' }}
+                          className="w-full max-w-xs text-2xl font-semibold tracking-tight text-foreground outline-none bg-muted/50 border border-primary/40 rounded-md px-3 py-1"
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="display"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex flex-col items-start flex-1"
                       >
+                        <motion.button
+                          onClick={() => setIsEditingName(true)}
+                          onHoverStart={() => setIsHoveringName(true)}
+                          onHoverEnd={() => setIsHoveringName(false)}
+                          className="flex items-center gap-2 -mx-3 px-3 py-1 rounded-md"
+                        >
+                          <motion.span
+                            style={{ fontFamily: 'var(--font-serif)', originX: 0 }}
+                            className="text-2xl font-semibold tracking-tight"
+                            animate={isHoveringName ? { color: 'var(--primary)', scale: 1.02 } : { color: 'var(--foreground)', scale: 1 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {roomName}
+                          </motion.span>
+                          <motion.svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14" height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="shrink-0"
+                            animate={isHoveringName ? { color: 'var(--primary)' } : { color: 'var(--muted-foreground)' }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                          </motion.svg>
+                        </motion.button>
                         <motion.span
-                          style={{ fontFamily: 'var(--font-serif)', originX: 0 }}
-                          className="text-2xl font-semibold tracking-tight"
-                          animate={isHoveringName ? { color: 'var(--primary)', scale: 1.02 } : { color: 'var(--foreground)', scale: 1 }}
+                          className="text-xs text-muted-foreground/50 font-sans whitespace-nowrap"
+                          animate={isHoveringName ? { opacity: 1, height: 'auto' } : { opacity: 0, height: 0 }}
                           transition={{ duration: 0.2 }}
+                          style={{ overflow: 'hidden', display: 'block' }}
                         >
-                          {roomName}
+                          Click to rename · Enter to save
                         </motion.span>
-                        <motion.svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14" height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="shrink-0"
-                          animate={isHoveringName ? { color: 'var(--primary)' } : { color: 'var(--muted-foreground)' }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                        </motion.svg>
-                      </motion.button>
-                      <motion.span
-                        className="text-xs text-muted-foreground/50 font-sans whitespace-nowrap"
-                        animate={isHoveringName ? { opacity: 1, height: 'auto' } : { opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ overflow: 'hidden', display: 'block' }}
-                      >
-                        Click to rename · Enter to save
-                      </motion.span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                {/* Planning panel toggle */}
-                <div className="flex items-center gap-1 ml-auto">
-                  {selectedRoom.type === 'GROUP' && (
+                  <div className="flex items-center gap-1 ml-auto">
                     <button
                       onClick={() => setShowInvite(true)}
                       title="Invite friends"
@@ -345,20 +360,20 @@ export default function Home() {
                     >
                       <UserPlus className="w-4 h-4" />
                     </button>
-                  )}
-                  <button
-                    onClick={() => setShowPlanningPanel(p => !p)}
-                    title="Travel planning"
-                    className={`shrink-0 p-2 rounded-lg transition-colors ${
-                      showPlanningPanel
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                    }`}
-                  >
-                    <LayoutPanelLeft className="w-4 h-4" />
-                  </button>
+                    <button
+                      onClick={() => setShowPlanningPanel(p => !p)}
+                      title="Travel planning"
+                      className={`shrink-0 p-2 rounded-lg transition-colors ${
+                        showPlanningPanel
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <LayoutPanelLeft className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="flex-1 flex overflow-hidden">
@@ -465,7 +480,7 @@ export default function Home() {
 
               {/* Planning panel */}
               <AnimatePresence initial={false}>
-                {showPlanningPanel && (
+                {showPlanningPanel && selectedRoom.type === 'GROUP' && (
                   <PlanningPanel
                     show={showPlanningPanel}
                     tab={planningTab}
