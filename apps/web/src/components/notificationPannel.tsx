@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Bell, Check, X, UserPlus, Users, Trash2, MessageSquare, Mail, Star } from 'lucide-react';
 import { NotificationType } from '@travel-planner/shared';
 import type { Notification } from '@travel-planner/shared';
-import { useNotifications } from '../hooks/notif';
+import { useNotification } from '../hooks/useNotification';
 import { timeAgo } from '@/lib/format';
 
 const NOTIF_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string; bg: string }> = {
@@ -17,7 +17,7 @@ const NOTIF_CONFIG: Record<NotificationType, { icon: React.ElementType; color: s
   [NotificationType.WELCOME_MSG]:     { icon: Star,          color: 'text-pink-500',   bg: 'bg-pink-500/10' },
 };
 
-const ACTION_TYPES: NotificationType[] = [NotificationType.FRIEND_REQUEST, NotificationType.ROOM_INVITE];
+const ACTION_TYPES: NotificationType[] = [NotificationType.FRIEND_REQUEST];
 
 function NotificationItem({
   item,
@@ -81,7 +81,7 @@ function NotificationItem({
 export function NotificationPannel() {
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const { notifications, setNotifications, sendNotif: _sendNotif, setReadNotification, answerNotification } = useNotifications();
+  const { notifications, setNotifications, setReadNotification, answerNotification } = useNotification();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

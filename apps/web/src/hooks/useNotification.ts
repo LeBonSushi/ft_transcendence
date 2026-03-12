@@ -5,7 +5,7 @@ import { useSocket } from './useSocket';
 import { useUserStore } from '@/stores/useUserStore';
 import { CreateNotificationDto, Notification } from '@travel-planner/shared';
 
-export function useNotifications() {
+export function useNotification() {
     const { user } = useUserStore();
     const { socket, isConnected } = useSocket();
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -39,19 +39,14 @@ export function useNotifications() {
         };
     }, [user?.id, socket, isConnected]);
 
-    const sendNotif = (notification: CreateNotificationDto) => {
-        if (socket && isConnected && user?.id) {
-            socket.emit('sendNotif', { notification });
-        }
-    };
     const setReadNotification = (notifId: string) => {
         if (socket && isConnected && user?.id) {
-            socket.emit('readnotification', { notifId });
+            socket.emit('readNotification', { notifId });
         }
     };
     const answerNotification = (notifId: string, answer: boolean) => {
         if (socket && isConnected && user?.id) {
-            socket.emit('answernotification', { notifId, answer });
+            socket.emit('answerNotification', { notifId, answer });
         }
     };
 
@@ -60,7 +55,6 @@ export function useNotifications() {
         loading,
         isConnected,
         setNotifications,
-        sendNotif,
         setReadNotification,
         answerNotification,
     };
