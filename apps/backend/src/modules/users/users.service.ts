@@ -1,8 +1,10 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { SearchUser, RoomWithLastMessage } from '@travel-planner/shared';
+import { SearchUser, RoomWithLastMessage, NotificationType } from '@travel-planner/shared';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationTemplates } from '../notifications/templates/templates';
 
 interface CreateUserDto {
   id: string;
@@ -24,7 +26,8 @@ const SAFE_USER_SELECT = {
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService) {}
 
   async getUserById(userId: string) {
     return this.prisma.user.findUnique({
@@ -52,6 +55,7 @@ export class UsersService {
       select: {
         ...SAFE_USER_SELECT,
         profile: true,
+        
       },
     });
   }

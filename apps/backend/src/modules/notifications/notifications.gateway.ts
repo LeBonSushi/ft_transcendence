@@ -63,17 +63,6 @@ export class NotificationsGateway implements OnGatewayInit {
     console.log(`User ${userId} subscribed to notifications`)
   }
 
-  @SubscribeMessage('getNotifications')
-  async handleGetNotifications(@ConnectedSocket() client: Socket) {
-    try {
-      const userId = client.data.user.id;
-      const notifications = await this.notificationsService.getNotification(userId)
-      client.emit('notifications', notifications)
-    }
-    catch (error) {
-      console.error("Error getNotifications:", error)
-    }
-  }
 
   @SubscribeMessage('getUnreadNotifications')
   async handleGetUnreadNotifications(@ConnectedSocket() client: Socket) {
@@ -87,7 +76,7 @@ export class NotificationsGateway implements OnGatewayInit {
     }
   }
 
-  @SubscribeMessage('readnotification')
+  @SubscribeMessage('readNotification')
   async handleReadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { notifId: string }) {
     try {
       const userId = client.data.user.id;
@@ -102,7 +91,7 @@ export class NotificationsGateway implements OnGatewayInit {
     }
   }
 
-  @SubscribeMessage('answernotification')
+  @SubscribeMessage('answerNotification')
   async handleAnsweredNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { notifId: string, answer: boolean }) {
     try {
       const userId = client.data.user.id;
@@ -115,12 +104,6 @@ export class NotificationsGateway implements OnGatewayInit {
     catch (error) {
       console.error("Error answernotification:", error)
     }
-  }
-
-  @SubscribeMessage('sendNotif')
-  async sendNotif(@ConnectedSocket() _client: Socket, @MessageBody() data: { notification: CreateNotificationDto })
-  {
-    await this.notificationsService.createNotification(data.notification)
   }
 
 }

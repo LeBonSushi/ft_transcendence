@@ -32,16 +32,6 @@ export class NotificationsService {
     return notif
   }
 
-  async getNotification(userId:string)
-  {
-    const res = await this.Prisma.notification.findMany({
-      where: {
-        userId: userId,
-      }, orderBy: {createdAt: 'desc'}
-    })
-    return res
-  }
-
   async getUnreadNotification(userId:string)
   {
     const res = await this.Prisma.notification.findMany({

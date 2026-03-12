@@ -1,12 +1,19 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { verifySync } from 'otplib';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationTemplates } from '../notifications/templates/templates';
+import { NotificationType } from '@travel-planner/shared';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject (forwardRef(() => NotificationsService))
+    private notificationsService : NotificationsService
+  ) {}
 
   async register(data: {
     email: string;
@@ -57,6 +64,7 @@ export class AuthService {
       },
     });
 
+    await this.notificationsService.createNotification(NotificationTemplates.getTemplate(NotificationType.WELCOME_MSG, {toUserId : user.id, firstName : user.profile?.firstName}))
     return {
       id: user.id,
       email: user.email,

@@ -10,11 +10,13 @@ import {
   CreateActivityDto,
   UpdateActivityDto
  } from './dto/rooms.dto'
-import type { MemberRole, VoteType } from '@travel-planner/shared';
+import { NotificationType, type MemberRole, type VoteType } from '@travel-planner/shared';
 import { RoomsGateway } from './rooms.gateway';
 import { start } from 'repl';
 import { AvailabilityService } from './availability.service';
 import { PlanningService } from './planning.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationTemplates } from '../notifications/templates/templates';
 
 /**
  * Safe user select - excludes sensitive fields like passwordHash, email, 2FA secrets
@@ -34,6 +36,8 @@ export class RoomsService {
     private roomsGateway: RoomsGateway,
     private availabilityService: AvailabilityService,
     private planningService: PlanningService,
+    @Inject (forwardRef(() => NotificationsService))
+    private notificationsService : NotificationsService
   ) {}
 
   // CRUD ROOM
@@ -365,6 +369,8 @@ export class RoomsService {
     };
 
     this.roomsGateway.emitMemberInvited(roomId, member, roomWithLastMessage);
+    const roomNameAttribute = await this.prisma.room.findUnique({where : {id : roomId}, select : {name : true}})
+    await this.notificationsService.createNotification(NotificationTemplates.getTemplate(NotificationType.ROOM_INVITE, {toUserId : invitedUserId, roomName : roomNameAttribute?.name  }))
 
     return member;
   }
