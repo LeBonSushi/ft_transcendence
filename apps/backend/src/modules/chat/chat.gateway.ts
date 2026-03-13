@@ -11,6 +11,7 @@ import { UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { WsAuthGuard } from '@/common/guards/ws-auth.guard';
+import { RoomsGateway } from '@/modules/rooms/rooms.gateway';
 
 @WebSocketGateway({
   cors: {
@@ -23,7 +24,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(private chatService: ChatService) {}
+  constructor(
+    private chatService: ChatService,
+    private roomsGateway: RoomsGateway,
+  ) {}
 
   async handleConnection(client: Socket) {
     // L'utilisateur est disponible dans client.data.user grâce au WsAuthGuard
@@ -76,13 +80,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("message:send")
-  async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data: {roomId: string; content: string}) {
+  async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data: {roomId: string; content: string; type?: 'TEXT' | 'IMAGE' | 'SYSTEM'; attachmentUrl?: string}) {
     const user = client.data.user;
     console.log(`Message from ${user.username} in room ${data.roomId}: "${data.content}"`);
 
-    const message = await this.chatService.createMessage(data.roomId, user.id, data.content);
+    const message = await this.chatService.createMessage(data.roomId, user.id, data.content, data.type ?? 'TEXT', data.attachmentUrl);
 
     this.server.to(data.roomId).emit("message:receive", message);
+    this.roomsGateway.emitMessageReceived(data.roomId, message);
 
     console.log(`Message sent to room ${data.roomId}`);
   }

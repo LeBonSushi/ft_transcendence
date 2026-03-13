@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, forwardRef } from "react";
+import { useState, useRef, forwardRef, useEffect } from "react";
 import  QRCode from 'react-qr-code';
 import { motion, AnimatePresence } from "motion/react";
 import { signOut as nextAuthSignOut } from "next-auth/react";
@@ -149,7 +149,7 @@ const ProfileDropdownMenu = forwardRef<HTMLDivElement, ProfileDropdownMenuProps>
               <p className="font-semibold text-foreground truncate">
                 {user.profile?.firstName && user.profile?.lastName
                   ? `${user.profile.firstName} ${user.profile.lastName}`
-                  : user.name || 'User'}
+                  : user.username || 'User'}
               </p>
               <p className="text-sm text-muted-foreground truncate">
                 @{user.username || user.id?.slice(0, 8)}
@@ -221,7 +221,60 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>('account');
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [openChangeProfilePicture, setOpenChangeProfilePicture] = useState(false);
+  const [profilePictureError, setProfilePictureError] = useState<string | null>(null);
+  const [profilePictureSuccess, setProfilePictureSuccess] = useState<string | null>(null);
   const profilePictureRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!profilePictureError)
+      return;
+
+    const timeoutId = window.setTimeout(() => {
+      setProfilePictureError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [profilePictureError]);
+
+  useEffect(() => {
+    if (!profilePictureSuccess)
+      return;
+
+    const timeoutId = window.setTimeout(() => {
+      setProfilePictureSuccess(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [profilePictureSuccess]);
+
+  const getProfilePictureErrorMessage = (error: unknown) => {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    const responseMessage = (error as { response?: { data?: { message?: string | string[] } } })
+      ?.response?.data?.message;
+
+    if (status === 400) {
+      if (Array.isArray(responseMessage)) {
+        const hasFileSizeMessage = responseMessage.some((message) =>
+          message.toLowerCase().includes('file') && message.toLowerCase().includes('size')
+        );
+        if (hasFileSizeMessage)
+          return 'Image is too large. Please choose a smaller file.';
+      }
+
+      if (typeof responseMessage === 'string') {
+        const normalizedMessage = responseMessage.toLowerCase();
+        if (normalizedMessage.includes('file') && normalizedMessage.includes('size')) {
+          return 'Image is too large. Please choose a smaller file.';
+        }
+      }
+    }
+
+    if (status === 413) {
+      return 'Image is too large. Please choose a smaller file.';
+    }
+
+    return 'Unable to update profile picture. Please try again.';
+  };
 
   useClickOutside(profilePictureRef, () => setOpenChangeProfilePicture(false), openChangeProfilePicture);
 
@@ -280,17 +333,22 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
                 <button
                   className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-foreground hover:bg-muted transition-colors"
                   onClick={() => {
+                    setProfilePictureError(null);
+                    setProfilePictureSuccess(null);
                     const input = document.createElement('input');
                     input.type = 'file';
                     input.accept = 'image/jpeg,image/png,image/webp,image/gif';
                     input.onchange = async (e) => {
                       const file = (e.target as HTMLInputElement).files?.[0];
-                      if (!file) return;
+                      if (!file)
+                        return;
 
                       try {
                         await storageApi.uploadProfilePicture(file);
+                        setProfilePictureSuccess('Profile picture updated.');
                         setOpenChangeProfilePicture(false);
                       } catch (err) {
+                        setProfilePictureError(getProfilePictureErrorMessage(err));
                         console.error('Failed to upload profile picture:', err);
                       }
                     };
@@ -304,10 +362,14 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
                 <button
                   className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-destructive hover:bg-destructive/10 transition-colors"
                   onClick={async () => {
+                    setProfilePictureError(null);
+                    setProfilePictureSuccess(null);
                     try {
                       await storageApi.removeProfilePicture();
+                      setProfilePictureSuccess('Profile picture removed.');
                       setOpenChangeProfilePicture(false);
                     } catch (err) {
+                      setProfilePictureError(getProfilePictureErrorMessage(err));
                       console.error('Failed to remove profile picture:', err);
                     }
                   }}
@@ -320,6 +382,16 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
           </AnimatePresence>
         </div>
         <div className="flex-1 min-w-0 text-left">
+          {profilePictureError && (
+            <div className="mb-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm">
+              {profilePictureError}
+            </div>
+          )}
+          {profilePictureSuccess && (
+            <div className="mb-2 p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm">
+              {profilePictureSuccess}
+            </div>
+          )}
           <h1 className="text-base sm:text-2xl font-bold text-foreground truncate">
             {user.profile?.firstName && user.profile?.lastName
               ? `${user.profile.firstName} ${user.profile.lastName}`
@@ -330,7 +402,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
           </p>
           {createdAt && (
             <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
-              Member by {createdAt}
+              Member since {createdAt}
             </p>
           )}
         </div>
@@ -375,6 +447,7 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
     isEditing,
     isSaving,
     error,
+    warning,
     formData,
     setFormData,
     startEditing,
@@ -400,8 +473,13 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
     <>
       <SectionCard title="Personal informations" icon={User}>
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm whitespace-pre-line">
             {error}
+          </div>
+        )}
+        {warning && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-400 text-sm whitespace-pre-line">
+            {warning}
           </div>
         )}
 
@@ -426,6 +504,20 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
               placeholder="Your username"
               prefix="@"
             />
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData.email(e.target.value)}
+              placeholder="Your email"
+            />
+            <Input
+              label="New password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData.password(e.target.value)}
+              placeholder="Leave empty to keep your current password"
+            />
             <div className="flex gap-2 mt-4">
               <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none">
                 {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2 hidden sm:inline" /> : <Check className="h-4 w-4 mr-2 hidden sm:inline" />}
@@ -443,21 +535,13 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
               <InfoRow label="First name" value={user.profile?.firstName || '-'} />
               <InfoRow label="Last name" value={user.profile?.lastName || '-'} />
               <InfoRow label="Username" value={user.username ? `@${user.username}` : '-'} />
+              <InfoRow label="Email" value={user.email || '-'} />
             </div>
             <Button variant="outline" className="mt-4 w-full sm:w-auto" onClick={startEditing}>
               Update profile
             </Button>
           </>
         )}
-      </SectionCard>
-
-      <SectionCard title="Email address" icon={Mail}>
-        <div className="p-3 rounded-lg bg-muted/50">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-foreground text-sm sm:text-base truncate">{user.email}</span>
-          </div>
-        </div>
       </SectionCard>
 
       <SectionCard title="Appearence" icon={Settings2}>

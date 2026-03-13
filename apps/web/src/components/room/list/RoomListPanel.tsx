@@ -97,7 +97,7 @@ export function RoomListPanel({
               lastMessage={room.lastMessage}
               lastMessageDate={room.lastMessageDate}
               senderUsername={room.senderUsername}
-              roomPicture={room.imageUrl}
+              roomPicture={room.otherUserPicture || room.imageUrl || null}
               isSelected={selectedRoomId === room.id}
               onClick={() => onSelectRoom(room.id)}
             />

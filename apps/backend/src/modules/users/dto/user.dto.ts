@@ -28,24 +28,12 @@ export class UpdateUserDto {
 
 	@IsOptional()
 	@IsString()
-	profilePicture?: string;
+	profilePicture?: string | null;
 
 	@IsOptional()
 	@IsString()
 	@MinLength(10)
-	passwordHash?: string;
-
-	@IsOptional()
-	@IsString()
-	bio?: string;
-
-	@IsOptional()
-	@IsString()
-	location?: string;
-
-	@IsOptional()
-	@IsString()
-	birthdate?: string;
+	password?: string;
 }
 
 export interface PublicUserResponse {

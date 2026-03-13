@@ -23,6 +23,8 @@ export function MessageItem({
     ? `rounded-2xl ${isFirst ? 'rounded-tr-sm' : ''} ${isLast ? '' : 'rounded-br-sm'}`
     : `rounded-2xl ${isFirst ? 'rounded-tl-sm' : ''} ${isLast ? '' : 'rounded-bl-sm'}`;
 
+  const isImage = !!message.attachmentUrl;
+
   return (
     <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} ${showHeader ? 'mt-4' : 'mt-0.5'}`}>
       {showHeader && (
@@ -33,15 +35,25 @@ export function MessageItem({
           </span>
         </div>
       )}
-      <div
-        className={`px-3.5 py-2 text-sm max-w-sm md:max-w-md break-words ${bubbleRadius} ${
-          isOwn
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-foreground'
-        }`}
-      >
-        {message.content}
-      </div>
+      {isImage ? (
+        <a href={message.attachmentUrl!} target="_blank" rel="noopener noreferrer">
+          <img
+            src={message.attachmentUrl!}
+            alt="attachment"
+            className={`max-w-xs md:max-w-sm max-h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity ${bubbleRadius}`}
+          />
+        </a>
+      ) : (
+        <div
+          className={`px-3.5 py-2 text-sm max-w-sm md:max-w-md break-words ${bubbleRadius} ${
+            isOwn
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-foreground'
+          }`}
+        >
+          {message.content}
+        </div>
+      )}
     </div>
   );
 }

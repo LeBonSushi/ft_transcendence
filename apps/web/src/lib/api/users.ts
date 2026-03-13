@@ -31,16 +31,8 @@ class UserResource {
 
 // Classe pour l'utilisateur courant
 class CurrentUserResource {
-  async getRooms() {
-    return apiClient.get<RoomWithLastMessage[]>(API_ROUTES.USERS.ME_ROOMS);
-  }
-
   async getProfile() {
     return apiClient.get<User>(API_ROUTES.USERS.ME);
-  }
-
-  async update(data: UpdateProfileDto) {
-    return apiClient.put<UserUpdate>(API_ROUTES.USERS.ME, data);
   }
 }
 
@@ -48,10 +40,6 @@ export const usersApi = {
   getCurrentUser: () => new CurrentUserResource(),
 
   getUser: (userId: string) => new UserResource(userId),
-
-  getMyRooms: async () => {
-    return apiClient.get<RoomWithLastMessage[]>(API_ROUTES.USERS.ME_ROOMS);
-  },
 
   getUserRooms: async (userId: string) => {
     return apiClient.get<RoomWithLastMessage[]>(API_ROUTES.USERS.ROOMS(userId));

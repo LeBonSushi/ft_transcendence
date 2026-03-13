@@ -16,6 +16,12 @@ interface RoomCardProps {
 
 export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsername, roomPicture, isSelected, onClick }: RoomCardProps) {
   const [roomColor] = getAvatarColor(id);
+  const isAttachmentUrl = (value: string | null) => {
+    if (!value) return false;
+    return /\/message-attachments\//i.test(value)
+      || /^https?:\/\/.+\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?$/i.test(value);
+  };
+  const previewMessage = isAttachmentUrl(lastMessage) ? 'Image' : lastMessage;
 
   return (
     <button
@@ -41,8 +47,8 @@ export function RoomCard({ id, name, lastMessage, lastMessageDate, senderUsernam
           </span>
         </div>
         <p className="text-xs text-muted-foreground truncate mt-0.5">
-          {lastMessage
-            ? <>{senderUsername && <span className="font-medium text-foreground/70">{senderUsername} : </span>}{lastMessage}</>
+          {previewMessage
+            ? <>{senderUsername && <span className="font-medium text-foreground/70">{senderUsername} : </span>}{previewMessage}</>
             : <span className="italic opacity-60">No messages</span>
           }
         </p>

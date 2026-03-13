@@ -16,6 +16,7 @@ export const SOCKET_EVENTS = {
   ROOM_UNSUBSCRIBE: 'room:unsubscribe',
   ROOM_CREATED: 'room:created',
   ROOM_UPDATED: 'room:updated',
+  ROOM_LAST_MESSAGE_UPDATED: 'room:last-message-updated',
   ROOM_DELETED: 'room:deleted',
   ROOM_INVITED: 'room:invited',
 
@@ -56,13 +57,10 @@ export const API_ROUTES = {
     ME: '/auth/me',
     GOOGLE: '/auth/google',
     GITHUB: '/auth/github',
-    FORTY_TWO: '/auth/42',
   },
 
   USERS: {
     ME: '/users/me',
-    ME_ROOMS: '/users/me/rooms',
-    GET_CURRENT: '/users/me',
     SEARCH: (query: string) =>`/users/search?query=${query}`,
     GET: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,

@@ -132,11 +132,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   emitMemberLeft(roomId: string, userId: string) {
-    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_LEFT, { userId });
+    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_LEFT, { roomId, userId });
   }
 
   emitMemberKicked(roomId: string, userId: string) {
-    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_KICKED, { userId });
+    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_KICKED, { roomId, userId });
   }
 
   emitMemberRoleUpdated(roomId: string, member: any) {
@@ -197,5 +197,9 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitActivityDeleted(roomId: string, proposalId: string, activityId: string) {
     this.emitToRoom(roomId, SOCKET_EVENTS.ACTIVITY_DELETED, { proposalId, activityId });
+  }
+
+  emitMessageReceived(roomId: string, message: any) {
+    this.emitToRoom(roomId, SOCKET_EVENTS.ROOM_LAST_MESSAGE_UPDATED, message);
   }
 }

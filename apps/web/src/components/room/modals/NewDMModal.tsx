@@ -67,6 +67,7 @@ export function NewDMModal({ onClose, onCreated }: { onClose: () => void; onCrea
                 const name = f.profile?.firstName
                   ? `${f.profile.firstName} ${f.profile.lastName ?? ''}`.trim()
                   : f.username;
+                const avatarUrl = f.profile?.profilePicture ?? null;
                 const isCreating = creating === f.id;
                 return (
                   <li key={f.id}>
@@ -76,9 +77,18 @@ export function NewDMModal({ onClose, onCreated }: { onClose: () => void; onCrea
                       className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors disabled:opacity-50"
                     >
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={name}
+                          className="rounded-lg w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
                         <span className="text-xs font-semibold text-primary">
                           {(f.profile?.firstName?.[0] ?? f.username[0]).toUpperCase()}
                         </span>
+                      )}
                       </div>
                       <div className="flex-1 min-w-0 text-left">
                         <p className="text-sm font-medium truncate">{name}</p>

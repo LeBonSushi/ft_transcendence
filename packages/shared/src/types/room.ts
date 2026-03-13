@@ -50,6 +50,7 @@ export interface RoomWithLastMessage extends Room {
   lastMessageDate: Date | null;
   senderUsername: string | null;
   senderPicture: string | null;
+  otherUserPicture?: string | null;
 }
 
 export interface RoomMember {

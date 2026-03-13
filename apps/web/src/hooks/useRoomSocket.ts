@@ -19,8 +19,8 @@ interface RoomUpdatedPayload { room: Room }
 interface RoomDeletedPayload { roomId: string }
 
 interface MemberPayload { member: RoomMember }
-interface MemberLeftPayload { userId: string }
-interface MemberKickedPayload { userId: string }
+interface MemberLeftPayload { roomId: string; userId: string }
+interface MemberKickedPayload { roomId: string; userId: string }
 
 interface AvailabilityPayload { availability: UserAvailability }
 interface AvailabilityDeletedPayload { availabilityId: string }

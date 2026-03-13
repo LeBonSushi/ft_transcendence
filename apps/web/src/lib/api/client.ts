@@ -25,9 +25,9 @@ class BrowserApiClient {
     // Add auth interceptor - uses cached token, no extra network call
     this.client.interceptors.request.use(
       (config) => {
-        if (this.cachedToken) {
+        if (this.cachedToken)
           config.headers.Authorization = `Bearer ${this.cachedToken}`;
-        }
+
         return config;
       },
       (error) => Promise.reject(error)

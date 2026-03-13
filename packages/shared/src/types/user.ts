@@ -27,9 +27,6 @@ export interface Profile {
   firstName: string;
   lastName: string;
   profilePicture: string | null;
-  bio: string | null;
-  location: string | null;
-  birthdate: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

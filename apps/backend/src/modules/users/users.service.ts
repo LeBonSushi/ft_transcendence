@@ -6,15 +6,6 @@ import { SearchUser, RoomWithLastMessage, NotificationType } from '@travel-plann
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationTemplates } from '../notifications/templates/templates';
 
-interface CreateUserDto {
-  id: string;
-  email: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
-}
-
 const SAFE_USER_SELECT = {
   id: true,
   username: true,
@@ -33,65 +24,6 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: { id: userId },
       include: { profile: true },
-    });
-  }
-
-  async createUser(data: CreateUserDto) {
-    this.logger.debug(`Creating user: ${data.id}`);
-
-    return this.prisma.user.create({
-      data: {
-        id: data.id,
-        email: data.email,
-        username: data.username,
-        profile: data.firstName && data.lastName ? {
-          create: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            profilePicture: data.profilePicture,
-          },
-        } : undefined,
-      },
-      select: {
-        ...SAFE_USER_SELECT,
-        profile: true,
-        
-      },
-    });
-  }
-
-  async updateUser(userId: string, data: UpdateUserDto) {
-    this.logger.debug(`Updating user: ${userId}`);
-
-    const user = await this.getUserById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        email: data.email,
-        username: data.username,
-        profile: data.firstName && data.lastName ? {
-          upsert: {
-            create: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              profilePicture: data.profilePicture,
-            },
-            update: {
-              firstName: data.firstName,
-              lastName: data.lastName,
-              profilePicture: data.profilePicture,
-            },
-          },
-        } : undefined,
-      },
-      select: {
-        ...SAFE_USER_SELECT,
-        profile: true,
-      },
     });
   }
 
@@ -122,21 +54,6 @@ export class UsersService {
 
     return this.prisma.user.delete({
       where: { id: userId },
-    });
-  }
-
-  async updateProfile(userId: string, data: any) {
-    const profile = await this.prisma.profile.findUnique({
-      where: { userId },
-    });
-
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
-
-    return this.prisma.profile.update({
-      where: { userId },
-      data,
     });
   }
 
@@ -195,16 +112,47 @@ export class UsersService {
       }
     }
 
-    await this.prisma.user.update({
-      where: { id },
-      data: userFields,
-    });
+    const hasUserFields = Object.keys(userFields).length > 0;
 
-    await this.prisma.profile.upsert({
-      where: { userId: id },
-      update: { firstName, lastName, profilePicture },
-      create: { userId: id, firstName, lastName, profilePicture },
-    });
+    const profileUpdateData: Record<string, unknown> = {};
+    if (firstName !== undefined)
+      profileUpdateData.firstName = firstName;
+    if (lastName !== undefined)
+      profileUpdateData.lastName = lastName;
+    if (profilePicture !== undefined)
+      profileUpdateData.profilePicture = profilePicture;
+    const hasProfileFields = Object.keys(profileUpdateData).length > 0;
+
+    if (hasUserFields) {
+      await this.prisma.user.update({
+        where: { id },
+        data: userFields,
+      });
+    }
+
+    if (hasProfileFields) {
+      const existingProfile = await this.prisma.profile.findUnique({
+        where: { userId: id },
+        select: { userId: true },
+      });
+
+      if (existingProfile) {
+        await this.prisma.profile.update({
+          where: { userId: id },
+          data: profileUpdateData,
+        });
+      }
+      else {
+        await this.prisma.profile.create({
+          data: {
+            userId: id,
+            firstName: firstName ?? '',
+            lastName: lastName ?? '',
+            ...(profilePicture !== undefined ? { profilePicture } : {}),
+          },
+        });
+      }
+    }
 
     const updatedUser = await this.prisma.user.findUnique({
       where: { id },
@@ -263,6 +211,7 @@ export class UsersService {
                           select: {
                             firstName: true,
                             lastName: true,
+                            profilePicture: true,
                           },
                         },
                       },
@@ -299,6 +248,7 @@ export class UsersService {
         lastMessageDate: lastMsg?.createdAt ?? null,
         senderUsername: lastMsg?.sender.username ?? null,
         senderPicture: lastMsg?.sender.profile?.profilePicture ?? null,
+        otherUserPicture: otherMember?.profile?.profilePicture ?? null,
       };
     });
   }

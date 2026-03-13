@@ -3,6 +3,7 @@
 import { apiClient } from "@/lib/api";
 import { API_ROUTES, SearchUser } from "@travel-planner/shared";
 import { useEffect, useState, useRef } from "react";
+import axios from "axios";
 import { UserRoundPlus } from "lucide-react";
 import { Avatar } from "./ui";
 import { motion } from "motion/react";
@@ -12,6 +13,7 @@ export function FriendSearchBar() {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(searchRef, () => setShowResults(false), showResults);
@@ -26,31 +28,62 @@ export function FriendSearchBar() {
     apiClient.get<SearchUser[]>(API_ROUTES.USERS.SEARCH(search)).then((res) => {
       setUsers(res);
       setShowResults(res.length > 0);
+      setErrorMessage(null);
     }).catch((err) => {
       console.error(err);
     })
   }, [search])
 
   const handleAddFriend = async (userId: string) => {
-    
     try {
-      const res = await apiClient.post(API_ROUTES.FRIENDS.SEND(userId))
+      setErrorMessage(null);
+      await apiClient.post(API_ROUTES.FRIENDS.SEND(userId))
     } catch (e) {
-      console.log("Error: ", e)
+      if (axios.isAxiosError(e)) {
+        const apiMessage = typeof e.response?.data?.message === 'string'
+          ? e.response.data.message
+          : null;
+
+        if (e.response?.status === 403 && apiMessage === 'Friend request already exists') {
+          setErrorMessage('A friend request has already been sent to this user.');
+          return;
+        }
+
+        if (e.response?.status === 404 && apiMessage === 'Already friends') {
+          setErrorMessage('You are already friends with this user.');
+          return;
+        }
+
+        if (apiMessage) {
+          setErrorMessage(apiMessage);
+          return;
+        }
+      }
+
+      setErrorMessage('Unable to send the friend request right now.');
     }
-    
   }
 
   return (
-    <div ref={searchRef} className="flex relative items-center bg-popover p-2 sm:p-4 pl-3 sm:pl-8 w-full border-2 border-border rounded-full text-sm sm:text-lg">
-      <span className="text-muted-foreground pr-1">@</span>
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        onFocus={() => users.length > 0 && setShowResults(true)}
-        placeholder="Username"
-        className="w-full bg-transparent outline-none placeholder:text-muted-foreground"
-      />
+    <div ref={searchRef} className="relative w-full">
+      <div className="flex items-center bg-popover p-2 sm:p-4 pl-3 sm:pl-8 w-full border-2 border-border rounded-full text-sm sm:text-lg">
+        <span className="text-muted-foreground pr-1">@</span>
+        <input
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            if (errorMessage) setErrorMessage(null)
+          }}
+          onFocus={() => users.length > 0 && setShowResults(true)}
+          placeholder="Username"
+          className="w-full bg-transparent outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+      {errorMessage && (
+        <div className="mt-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {errorMessage}
+        </div>
+      )}
       {showResults && users.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.95 }}

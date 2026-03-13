@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { useUserStore } from '@/stores/useUserStore';
 import { usersApi, roomsApi } from '@/lib/api';
-import type { User } from '@travel-planner/shared';
+import type { RoomMemberWithUser, RoomWithMembers, User } from '@travel-planner/shared';
 import { UserPlus, X, Check, Loader2 } from 'lucide-react';
 
 export function InviteToGroupModal({ roomId, onClose }: { roomId: string; onClose: () => void }) {
@@ -16,12 +16,38 @@ export function InviteToGroupModal({ roomId, onClose }: { roomId: string; onClos
   const [inviting, setInviting] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) return;
-    usersApi.getUserFriends(user.id)
-      .then(setFriends)
-      .catch(() => setFriends([]))
-      .finally(() => setLoading(false));
-  }, [user?.id]);
+    async function isInvitableFriend() {
+      if (!user?.id) {
+        setFriends([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const [ friendList, roomData] = await Promise.all([
+          usersApi.getUserFriends(user.id),
+          roomsApi.getRoom(roomId).getMembers(),
+        ]);
+
+        const roomUsers = roomData;
+        const memberId = new Set(roomUsers.map((u: RoomMemberWithUser) => u.userId));
+
+        const invitables = friendList.filter((f) => !memberId.has(f.id));
+
+        if(invitables)
+            setFriends(invitables);
+      } catch (error) {
+        setFriends([]);
+      }
+      finally {
+        setLoading(false);
+      }
+    }
+
+    isInvitableFriend();
+  }, [user?.id, roomId]);
 
   async function handleInvite(friendId: string) {
     setInviting(friendId);
@@ -62,14 +88,24 @@ export function InviteToGroupModal({ roomId, onClose }: { roomId: string; onClos
                 const name = f.profile?.firstName
                   ? `${f.profile.firstName} ${f.profile.lastName ?? ''}`.trim()
                   : f.username;
+                const avatarUrl = f.profile?.profilePicture ?? null;
                 const isInviting = inviting === f.id;
                 const isDone = invited[f.id];
                 return (
                   <li key={f.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-semibold text-primary">
-                        {(f.profile?.firstName?.[0] ?? f.username[0]).toUpperCase()}
-                      </span>
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={name}
+                          className="rounded-lg w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-xs font-semibold text-primary">
+                          {(f.profile?.firstName?.[0] ?? f.username[0]).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{name}</p>

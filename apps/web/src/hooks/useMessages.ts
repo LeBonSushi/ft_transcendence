@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChatSocket } from './useChatSocket';
 import type { Message } from '@travel-planner/shared';
 
@@ -8,7 +8,13 @@ export function useMessages(roomId: string | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(!!roomId);
 
-  const { sendMessage, deleteMessage, sendTypingStart, sendTypingStop, getMessages, isConnected } = useChatSocket(roomId, {
+  // Clear messages when switching rooms so stale content never lingers
+  useEffect(() => {
+    setMessages([]);
+    setLoading(!!roomId);
+  }, [roomId]);
+
+  const { sendMessage: _sendMessage, deleteMessage, sendTypingStart, sendTypingStop, getMessages, isConnected } = useChatSocket(roomId, {
     onMessageReceive: (message) => {
       setMessages(prev => [...prev, message]);
     },
@@ -18,6 +24,10 @@ export function useMessages(roomId: string | null) {
       setMessages(history);
     },
   });
+
+  const sendMessage = (content: string, options?: { type?: 'TEXT' | 'IMAGE' | 'SYSTEM'; attachmentUrl?: string }) => {
+    _sendMessage(content, options);
+  };
 
   return {
     messages,
