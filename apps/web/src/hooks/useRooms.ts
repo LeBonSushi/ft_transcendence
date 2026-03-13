@@ -50,9 +50,11 @@ export function useRooms() {
       setRooms(prev => prev.some(r => r.id === room.id) ? prev : [...prev, room]);
     };
 
-    const onMessageReceive = (message: { roomId: string; content: string; createdAt: Date }) => {
+    const onMessageReceive = (message: { roomId: string; content: string; createdAt: Date; type?: 'TEXT' | 'IMAGE' | 'SYSTEM'; attachmentUrl?: string | null }) => {
+      const isImageMessage = message.type === 'IMAGE' || !!message.attachmentUrl;
+
       setRooms(prev => prev.map(r => r.id === message.roomId
-        ? { ...r, lastMessage: message.content, lastMessageDate: message.createdAt }
+        ? { ...r, lastMessage: isImageMessage ? 'Image' : (message.content ?? ''), lastMessageDate: message.createdAt }
         : r
       ));
     };
@@ -79,14 +81,14 @@ export function useRooms() {
 
     socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
     socket.on(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
-    socket.on('message:receive', onMessageReceive);
+    socket.on(SOCKET_EVENTS.ROOM_LAST_MESSAGE_UPDATED, onMessageReceive);
     socket.on(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted);
     socket.on(SOCKET_EVENTS.MEMBER_KICKED, onMemberKicked);
     socket.on(SOCKET_EVENTS.MEMBER_LEFT, onMemberLeft);
     return () => {
       socket.off(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
       socket.off(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
-      socket.off('message:receive', onMessageReceive);
+      socket.off(SOCKET_EVENTS.ROOM_LAST_MESSAGE_UPDATED, onMessageReceive);
       socket.off(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted);
       socket.off(SOCKET_EVENTS.MEMBER_KICKED, onMemberKicked);
       socket.off(SOCKET_EVENTS.MEMBER_LEFT, onMemberLeft);

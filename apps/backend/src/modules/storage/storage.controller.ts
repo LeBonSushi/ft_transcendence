@@ -30,6 +30,13 @@ export class StorageController {
     return { url, key: `room-images/${file.originalname}` };
   }
 
+  @Post('upload/message-attachment')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMessageAttachment(@UploadedFile() file: Express.Multer.File) {
+    const url = await this.storageService.uploadImage(file, 'message-attachments');
+    return { url, key: `message-attachments/${file.originalname}` };
+  }
+
   @Delete('remove/profile-picture')
   async removeProfilePicture(@Req() req: any) {
     await this.storageService.removeImage(`profile-picture/${req.user.id}`);

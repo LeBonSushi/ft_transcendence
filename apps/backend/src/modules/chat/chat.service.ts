@@ -40,13 +40,14 @@ export class ChatService {
     });
   }
 
-  async createMessage(roomId: string, senderId: string, content: string, type: 'TEXT' | 'IMAGE' | 'SYSTEM' = 'TEXT') {
+  async createMessage(roomId: string, senderId: string, content: string, type: 'TEXT' | 'IMAGE' | 'SYSTEM' = 'TEXT', attachmentUrl?: string) {
     const message = await this.prisma.message.create({
       data: {
         roomId,
         senderId,
         content,
         type,
+        ...(attachmentUrl ? { attachmentUrl } : {}),
       },
       select: messagePayloadSelect,
     });
@@ -104,11 +105,11 @@ export class ChatService {
 
   async setTyping(roomId: string, userId: string, isTyping: boolean) {
     const key = `typing:${roomId}:${userId}`;
-    if (isTyping) {
+    if (isTyping)
       await this.redis.set(key, '1', 5); // 5 sec TTL
-    } else {
+
+    else
       await this.redis.del(key);
-    }
 
     await this.redis.publish(
       `room:${roomId}:typing`,

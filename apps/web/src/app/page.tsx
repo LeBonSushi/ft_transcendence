@@ -65,7 +65,7 @@ export default function Home() {
   const [availabilityForm, setAvailabilityForm] = useState({ startDate: '', endDate: '', notes: '' });
   const [showAvailabilityForm, setShowAvailabilityForm] = useState(false);
 
-  const imagesToUpload = useRef<Record<string, File[]>>({});
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const message = useRef<Record<string, string>>({});
   const [isMaxMessageSizeExceeded, setIsMaxMessageSizeExceeded] = useState(false);
@@ -76,12 +76,29 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  function handleSendMessage() {
+  async function handleSendMessage() {
     const content = message.current[selectedRoom?.id ?? '']?.trim();
-    if (!content || !selectedRoom) return;
-    sendMessage(content);
-    message.current[selectedRoom.id] = '';
-    if (textareaRef.current) textareaRef.current.value = '';
+    if (!selectedRoom) return;
+    if (!content && pendingFiles.length === 0) return;
+
+    // Upload and send each pending file as an IMAGE message
+    const filesToSend = [...pendingFiles];
+    setPendingFiles([]);
+    for (const file of filesToSend) {
+      try {
+        const { url } = await storageApi.uploadMessageAttachment(file);
+        sendMessage(url, { type: 'IMAGE', attachmentUrl: url });
+      } catch (err) {
+        console.error('Failed to upload attachment:', err);
+        setError('Failed to upload one or more attachments.');
+      }
+    }
+
+    if (content) {
+      sendMessage(content);
+      message.current[selectedRoom.id] = '';
+      if (textareaRef.current) textareaRef.current.value = '';
+    }
   }
 
   const MAX_ROOM_NAME_LENGTH = 30;
@@ -93,6 +110,7 @@ export default function Home() {
     setRoomName(selectedRoom?.name ?? '');
     setIsEditingName(false);
     setShowManagePanel(false);
+    setPendingFiles([]);
   }, [selectedRoom?.id]);
 
   const rawGroupRooms = useMemo(() => rooms.filter(r => r.type === 'GROUP'), [rooms]);
@@ -518,6 +536,25 @@ export default function Home() {
                     <p className="text-center text-muted-foreground py-4">No messages available</p>
                   )}
                 </div>
+                {pendingFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mx-5 mb-2">
+                    {pendingFiles.map((file, idx) => (
+                      <div key={idx} className="relative group">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={file.name}
+                          className="w-16 h-16 object-cover rounded-lg border border-border"
+                        />
+                        <button
+                          onClick={() => setPendingFiles(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <motion.div
                   animate={isMaxMessageSizeExceeded ? { x: [0, -4, 4, -4, 4, -2, 2, 0] } : { x: 0 }}
                   className="flex items-end gap-4 mx-5 mb-8 px-5 py-3 rounded-3xl bg-muted border border-border">
@@ -532,21 +569,17 @@ export default function Home() {
                       input.multiple = true;
                       input.onchange = (e) => {
                         const files = (e.target as HTMLInputElement).files;
-                        if (files) {
-                          if (files.length + (imagesToUpload.current[selectedRoom.id]?.length || 0) > MAX_IMAGES_PER_MESSAGE) {
-                            setError(`You cannot send more than ${MAX_IMAGES_PER_MESSAGE} images per message.`);
-                            return;
-                          }
-                          for (let i = 0; i < files.length; i++) {
-                            if (files[i].size > MAX_IMAGE_SIZE) {
-                              setError(`One or more files are too large.`);
-                              return;
-                            } else {
-                              imagesToUpload.current[selectedRoom.id] = imagesToUpload.current[selectedRoom.id] || [];
-                              imagesToUpload.current[selectedRoom.id].push(files[i]);
-                            }
-                          }
+                        if (!files) return;
+                        const newFiles = Array.from(files);
+                        if (newFiles.length + pendingFiles.length > MAX_IMAGES_PER_MESSAGE) {
+                          setError(`You cannot send more than ${MAX_IMAGES_PER_MESSAGE} images per message.`);
+                          return;
                         }
+                        if (newFiles.some(f => f.size > MAX_IMAGE_SIZE)) {
+                          setError('One or more files are too large.');
+                          return;
+                        }
+                        setPendingFiles(prev => [...prev, ...newFiles]);
                       };
                       input.click();
                     }}
@@ -571,7 +604,7 @@ export default function Home() {
                       }
                       message.current[selectedRoom.id] = e.target.value;
                     }}
-                    className="w-full max-h-40 outline-none bg-transparent resize-none field-sizing-content leading-relaxed text-sm placeholder:text-muted-foreground"
+                    className="flex-1 max-h-40 outline-none bg-transparent resize-none field-sizing-content leading-relaxed text-sm placeholder:text-muted-foreground"
                     placeholder="Write your message..."
                   />
                   <motion.button

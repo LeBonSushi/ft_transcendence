@@ -1,9 +1,10 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
-import { Injectable, NotFoundException, UnauthorizedException, Logger, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, Logger, forwardRef, Inject, ForbiddenException } from '@nestjs/common';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { NotificationTemplates } from '@/modules/notifications/templates/templates';
 import { NotificationType, SOCKET_EVENTS } from '@travel-planner/shared';
 import { RoomsGateway } from '@/modules/rooms/rooms.gateway';
+import { FORBIDDEN_MESSAGE } from '@nestjs/core/guards';
 
 @Injectable()
 export class FriendsService {
@@ -93,7 +94,7 @@ export class FriendsService {
     }
 
     if (existing)
-      throw new NotFoundException('Friend request already exists');
+      throw new ForbiddenException('Friend request already exists');
 
     const friendRequest = await this.prisma.friendship.create({
       data: {

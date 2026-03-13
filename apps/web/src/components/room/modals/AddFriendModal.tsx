@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import axios from 'axios';
 import { motion } from 'motion/react';
 import { friendsApi } from '@/lib/api';
 import { apiClient } from '@/lib/api/client';
@@ -17,6 +18,7 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
   const [results, setResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<Record<string, boolean>>({});
+  const [sendError, setSendError] = useState<string | null>(null);
   const [relations, setRelations] = useState<FriendshipRelation[]>([]);
   const [loadingRelations, setLoadingRelations] = useState(false);
   const [tab, setTab] = useState<'search' | 'requests' | 'friends'>('search');
@@ -53,6 +55,7 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
     if (!query.trim()) { setResults([]); return; }
     const timeout = setTimeout(async () => {
       setLoading(true);
+      setSendError(null);
       try {
         const data = await apiClient.get<User[]>(API_ROUTES.USERS.SEARCH(query.trim()));
         setResults(data);
@@ -64,10 +67,34 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
 
   async function handleSend(userId: string) {
     try {
+      setSendError(null);
       await friendsApi.sendRequest(userId);
       setSent(s => ({ ...s, [userId]: true }));
       await reloadRelations();
-    } catch {}
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiMessage = typeof error.response?.data?.message === 'string'
+          ? error.response.data.message
+          : null;
+
+        if (error.response?.status === 403 && apiMessage === 'Friend request already exists') {
+          setSendError('A friend request has already been sent to this user.');
+          return;
+        }
+
+        if (error.response?.status === 404 && apiMessage === 'Already friends') {
+          setSendError('You are already friends with this user.');
+          return;
+        }
+
+        if (apiMessage) {
+          setSendError(apiMessage);
+          return;
+        }
+      }
+
+      setSendError('Unable to send the friend request right now.');
+    }
   }
 
   const getPeer = (relation: FriendshipRelation) => {
@@ -150,12 +177,20 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
 
           {tab === 'search' && (
             <>
+          {sendError && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {sendError}
+            </div>
+          )}
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted border border-border focus-within:border-primary/50 transition-colors">
             {loading ? <Loader2 size={15} className="text-muted-foreground animate-spin shrink-0" /> : <Search size={15} className="text-muted-foreground shrink-0" />}
             <input
               ref={inputRef}
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={e => {
+                setQuery(e.target.value);
+                if (sendError) setSendError(null);
+              }}
               placeholder="Research by name or @username…"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />

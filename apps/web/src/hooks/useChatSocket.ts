@@ -48,9 +48,9 @@ export function useChatSocket(roomId: string | null, callbacks: ChatSocketCallba
     };
   }, [socket, isConnected, roomId]);
 
-  const sendMessage = (content: string) => {
+  const sendMessage = (content: string, options?: { type?: 'TEXT' | 'IMAGE' | 'SYSTEM'; attachmentUrl?: string }) => {
     if (!socket || !isConnected || !roomId) return;
-    socket.emit('message:send', { roomId, content });
+    socket.emit('message:send', { roomId, content, ...options });
   };
 
   const deleteMessage = (messageId: string) => {
