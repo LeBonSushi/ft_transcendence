@@ -168,7 +168,7 @@ Teamwork was organized in a structured way to ensure good project progress track
 Here is a list of features and the people who worked on them
 
 * Chat/Notifications (Njard / Nbrecque):
-	<p>Messagerie en temps réel via WebSocket (Socket.io). Création et gestion des rooms côté backend (service + controller). Communication instantanée entre clients grâce aux événements WebSocket.</p>
+	<p>Real-time messaging via WebSocket (Socket.io). Room creation and management on the backend (service + controller). Instant communication between clients through WebSocket events.</p>
 
 * Rooms (Njard / Nbrecque / Ggirault / Macorso):
 	<p>to be completed</p>
@@ -177,7 +177,7 @@ Here is a list of features and the people who worked on them
 	<p>to be completed</p>
 
 * 2-factor authentication (Macorso / Nbrecque)
-	<p>Activation/désactivation du 2FA depuis les paramètres du profil. Génération de QR code scannable avec Google Authenticator. Vérification TOTP au login avec écran intermédiaire. 8 backup codes à usage unique en cas de perte du téléphone.</p>
+	<p>2FA activation/deactivation from profile settings. Scannable QR code generation with Google Authenticator. TOTP verification at login with intermediate screen. 8 single-use backup codes in case of phone loss.</p>
 
 # Chosen modules
 
@@ -230,7 +230,7 @@ Below is a summary of the main project areas and contributions.
 - to be completed
 
 ## 2FA - Two Factor Authentication (Nbrecque)
-- Implémentation de l'A2F TOTP avec la lib otplib côté backend
-- Création du service (two-factor.services.ts) et du controller (two-factor.controller.ts) avec 4 routes API protégées par JWT
-- Modification du flux de login dans auth.service.ts pour gérer l'état intermédiaire "2FA requis"
-- Frontend : écran OTP au login, UI activation/désactivation dans les paramètres, QR code
+- TOTP 2FA implementation with the otplib library on the backend
+- Created the service (two-factor.services.ts) and controller (two-factor.controller.ts) with 4 JWT-protected API routes
+- Modified the login flow in auth.service.ts to handle the intermediate "2FA required" state
+- Frontend: OTP screen at login, activation/deactivation UI in settings, QR code

@@ -10,7 +10,7 @@ export class NotificationTemplates {
                 type: NotificationType.WELCOME_MSG,
                 message: `Hey ${data.firstName},thank you for signing up.`,
                 title:  "Welcome!",
-                toUserId:data.toUserId
+                toUserId: data.toUserId
 
             }),
             [NotificationType.NEW_MESSAGE]: (data: {
@@ -23,12 +23,12 @@ export class NotificationTemplates {
                 toUserId:data.toUserId
             }),
             [NotificationType.ROOM_INVITE]: (data: {
-                username:string,
-                toUserId:string
+                toUserId:string,
+                roomName : string
             }) => ({
                 type: NotificationType.ROOM_INVITE,
-                message: `You have an invitation from ${data.username}.`,
-                title: `New invitation`,
+                message: `You have been added to the room ${data.roomName}.`,
+                title: `New room!`,
                 toUserId:data.toUserId
             }),
             [NotificationType.FRIEND_REQUEST]: (data: {
@@ -47,7 +47,7 @@ export class NotificationTemplates {
                 roomName : string
                 toUserId:string
             }) => ({
-                type: NotificationType.FRIEND_REQUEST,
+                type: NotificationType.ROOM_DELETED,
                 message: `The ${data.roomName} has been deleted.`,
                 title: 'Room deleted :(',
                 toUserId:data.toUserId
@@ -65,13 +65,7 @@ export class NotificationTemplates {
         }
     static getTemplate(type: NotificationType, data: any): any {
         const notif = this.templates[type]
+        console.log("Welcome notif template done : ", notif)
         return (notif(data))
     }
 }
-
-
-//demande d ami
-//invitationn room
-//suppression room
-//nv message
-//message de bienvenue creation compte
