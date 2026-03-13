@@ -217,7 +217,11 @@ export function ProposalCard({
                             placeholder="Activity name"
                             value={row.title}
                             onChange={e => setPendingActivities(prev => prev.map(r => r.id === row.id ? { ...r, title: e.target.value } : r))}
-                            onBlur={() => {
+                            onBlur={e => {
+                              const nextTarget = e.relatedTarget as Node | null;
+                              if (nextTarget && e.currentTarget.closest('li')?.contains(nextTarget)) {
+                                return;
+                              }
                               if (row.title.trim()) {
                                 onAddActivity(proposal.id, row.title.trim(), row.category, row.link.trim() || undefined);
                                 setPendingActivities(prev => prev.filter(r => r.id !== row.id));

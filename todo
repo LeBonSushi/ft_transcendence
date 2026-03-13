@@ -8,9 +8,13 @@ DONE | enlever l'onglet proposal et availability dans les mp
 
 DONE | ajouter un moyen de supprimer une room
 
+DONE | l'envoie de document images ne fonctionne pas 
+
 FULLY DONE (i think) | mettre des message d'erreur pour le clients lors q'une actions n'est pas possible (envoyer une demande d'amis alors quon en a deja envoyer une renvoie 404 mais rien au user)
 
-CA N"EST PAS REVENU | petit probleme dans la requette mnatching date dans une room vide une seul user dedans ca note 4 personne
+DONE | sur l'ajout d'activite dans le submodule proposition le module se close tout seule si on quite la fenetre c'est super chiant
+
+CA N'EST PAS REVENU | petit probleme dans la requette mnatching date dans une room vide une seul user dedans ca note 4 personne
 et fais un match de date random // ok nan ca le refais plus a surveiller quand meme
 
 
@@ -19,10 +23,7 @@ et fais un match de date random // ok nan ca le refais plus a surveiller quand m
 
 
 
-sur l'ajout d'activite dans le submodule proposition le module se close tout seule si on quite la fenetre c'est super chiant
 
-l'envoie de document images ne fonctionne pas 
 
 les Oauth ne fonctionne pas 
-
 si on clique sur forgot password ca donne 404 pas de page
