@@ -32,6 +32,12 @@ export function useRooms() {
       .finally(() => setLoading(false));
   }, [user?.id]);
 
+  // Subscribe to all user rooms so we receive kicked/deleted events for non-selected rooms
+  useEffect(() => {
+    if (!socket || !isConnected || rooms.length === 0) return;
+    rooms.forEach(r => socket.emit(SOCKET_EVENTS.ROOM_SUBSCRIBE, { roomId: r.id }));
+  }, [socket, isConnected, rooms]);
+
   // Listen for new rooms created in real time
   useEffect(() => {
     if (!socket || !isConnected) return;
@@ -53,20 +59,39 @@ export function useRooms() {
 
     const onRoomDeleted = ({ roomId }: { roomId: string }) => {
       setRooms(prev => prev.filter(r => r.id !== roomId));
-      if (selectedRoomId === roomId) setSelectedRoomId(null);
+      if (selectedRoomId === roomId)
+        setSelectedRoomId(null);
+    };
+
+    const onMemberKicked = ({ userId, roomId }: { userId: string; roomId: string }) => {
+      if (userId === user?.id) {
+        setRooms(prev => prev.filter(r => r.id !== roomId));
+        if (selectedRoomId === roomId) setSelectedRoomId(null);
+      }
+    };
+
+    const onMemberLeft = ({ userId, roomId }: { userId: string; roomId: string }) => {
+      if (userId === user?.id) {
+        setRooms(prev => prev.filter(r => r.id !== roomId));
+        if (selectedRoomId === roomId) setSelectedRoomId(null);
+      }
     };
 
     socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
     socket.on(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
     socket.on('message:receive', onMessageReceive);
     socket.on(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted);
+    socket.on(SOCKET_EVENTS.MEMBER_KICKED, onMemberKicked);
+    socket.on(SOCKET_EVENTS.MEMBER_LEFT, onMemberLeft);
     return () => {
       socket.off(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
       socket.off(SOCKET_EVENTS.ROOM_INVITED, onRoomInvited);
       socket.off('message:receive', onMessageReceive);
       socket.off(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted);
+      socket.off(SOCKET_EVENTS.MEMBER_KICKED, onMemberKicked);
+      socket.off(SOCKET_EVENTS.MEMBER_LEFT, onMemberLeft);
     };
-  }, [socket, isConnected, selectedRoomId]);
+  }, [socket, isConnected, selectedRoomId, user?.id]);
 
   // Subscribe to socket events for the selected room
   useRoomSocket(selectedRoomId, {
@@ -77,10 +102,32 @@ export function useRooms() {
       setRooms(prev => prev.filter(r => r.id !== roomId));
       if (selectedRoomId === roomId) setSelectedRoomId(null);
     },
+    onMemberLeft: ({ userId }) => {
+      if (userId === user?.id) {
+        setRooms(prev => prev.filter(r => r.id !== selectedRoomId));
+        setSelectedRoomId(null);
+      }
+    },
+    onMemberKicked: ({ userId }) => {
+      if (userId === user?.id) {
+        setRooms(prev => prev.filter(r => r.id !== selectedRoomId));
+        setSelectedRoomId(null);
+      }
+    },
   });
 
   const updateRoom = async (roomId: string, data: UpdateRoomDto) => {
     return roomsApi.getRoom(roomId).update(data);
+  };
+
+  const deleteRoom = async (roomId: string) => {
+    return roomsApi.getRoom(roomId).delete();
+  };
+
+  const leaveRoom = async (roomId: string) => {
+    setRooms(prev => prev.filter(r => r.id !== roomId));
+    setSelectedRoomId(null);
+    return roomsApi.getRoom(roomId).leave();
   };
 
   const createRoom = async (name: string, type: 'DIRECT_MESSAGE' | 'GROUP') => {
@@ -95,5 +142,7 @@ export function useRooms() {
     selectRoom: setSelectedRoomId,
     createRoom,
     updateRoom,
+    deleteRoom,
+    leaveRoom,
   };
 }

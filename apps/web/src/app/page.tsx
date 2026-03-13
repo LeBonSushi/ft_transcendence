@@ -6,10 +6,11 @@ import { useRooms } from "@/hooks/useRooms";
 import { useMessages } from "@/hooks/useMessages";
 import { usePlanning } from "@/hooks/usePlanning";
 import { useUserStore } from "@/stores/useUserStore";
-import { storageApi } from "@/lib/api";
+import { storageApi, roomsApi } from "@/lib/api";
 import { scoreProposals } from "@/lib/proposalScoring";
 import type { Message, ActivityCategory } from "@travel-planner/shared";
-import { Camera, Paperclip, Send, LayoutPanelLeft, UserPlus } from "lucide-react";
+import { MemberRole } from "@travel-planner/shared";
+import { Camera, Paperclip, Send, LayoutPanelLeft, UserPlus, Settings2, LogOut } from "lucide-react";
 import { Avatar, getAvatarColor } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { arrayMove } from '@dnd-kit/sortable';
@@ -23,11 +24,13 @@ import { RoomListPanel } from "@/components/room/list";
 import { MessageItem } from "@/components/room/chat";
 // Planning components
 import { PlanningPanel } from "@/components/room/planning";
+// Manage panel
+import { RoomManagePanel } from "@/components/room/manage/RoomManagePanel";
 
 const GROUP_TIME_THRESHOLD_MS = 5 * 60 * 1000;
 
 export default function Home() {
-  const { rooms, selectedRoom, selectRoom, updateRoom } = useRooms();
+  const { rooms, selectedRoom, selectRoom, updateRoom, deleteRoom, leaveRoom } = useRooms();
   const { messages, sendMessage } = useMessages(selectedRoom?.id ?? null);
   const {
     proposals, availabilities, matchingDate, matchingDateMessage, members, loadingProposals,
@@ -53,6 +56,8 @@ export default function Home() {
     description: '',
     budgetEstimate: '',
   });
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showManagePanel, setShowManagePanel] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showNewDM, setShowNewDM] = useState(false);
   const [showNewGroup, setShowNewGroup] = useState(false);
@@ -87,6 +92,7 @@ export default function Home() {
   useEffect(() => {
     setRoomName(selectedRoom?.name ?? '');
     setIsEditingName(false);
+    setShowManagePanel(false);
   }, [selectedRoom?.id]);
 
   const rawGroupRooms = useMemo(() => rooms.filter(r => r.type === 'GROUP'), [rooms]);
@@ -157,7 +163,66 @@ export default function Home() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
+      {selectedRoom && (
+        <RoomManagePanel
+          show={showManagePanel}
+          roomName={selectedRoom.name}
+          members={members}
+          currentUserId={user?.id ?? ''}
+          onClose={() => setShowManagePanel(false)}
+          onKick={async (userId) => {
+            await roomsApi.getRoom(selectedRoom.id).kickMember(userId);
+          }}
+          onDeleteRoom={async () => {
+            setShowManagePanel(false);
+            await deleteRoom(selectedRoom.id);
+          }}
+        />
+      )}
       <AnimatePresence>
+        {showLeaveConfirm && selectedRoom && (
+          <motion.div
+            key="leave-confirm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-background border border-border rounded-xl p-6 shadow-xl max-w-sm w-full mx-4"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-full bg-destructive/10">
+                  <LogOut className="w-5 h-5 text-destructive" />
+                </div>
+                <h2 className="text-lg font-semibold">Leave room</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-6">
+                Are you sure you want to leave <span className="font-semibold text-foreground">{selectedRoom.name}</span>? You will no longer have access to this group.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowLeaveConfirm(false)}
+                  className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    await leaveRoom(selectedRoom.id);
+                    setShowLeaveConfirm(false);
+                  }}
+                  className="px-4 py-2 text-sm rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                >
+                  Leave
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
         {showAddFriend && <AddFriendModal onClose={() => setShowAddFriend(false)} />}
         {showNewDM && (
           <NewDMModal
@@ -228,40 +293,54 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <button
-                    className="relative shrink-0 group"
-                    onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = 'image/jpeg,image/png,image/webp';
-                      input.onchange = async (e) => {
-                        const file = (e.target as HTMLInputElement).files?.[0];
-                        if (!file) return;
-                        try {
-                          const { url } = await storageApi.uploadRoomImage(file);
-                          await updateRoom(selectedRoom.id, { imageUrl: url });
-                        } catch (err) {
-                          console.error('Failed to upload room image:', err);
-                        }
-                      };
-                      input.click();
-                    }}
-                  >
-                    <Avatar
-                      src={selectedRoom.imageUrl ?? ''}
-                      alt={selectedRoom.name}
-                      fallback={selectedRoom.name}
-                      size="md"
-                      pictureColor={getAvatarColor(selectedRoom.id)[0]}
-                      ringColor="ring-transparent"
-                    />
-                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Camera className="w-4 h-4 text-white" />
+                  {members.some(m => m.userId === user?.id && m.role === MemberRole.ADMIN) ? (
+                    <button
+                      className="relative shrink-0 group"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/jpeg,image/png,image/webp';
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (!file) return;
+                          try {
+                            const { url } = await storageApi.uploadRoomImage(file);
+                            await updateRoom(selectedRoom.id, { imageUrl: url });
+                          } catch (err) {
+                            console.error('Failed to upload room image:', err);
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      <Avatar
+                        src={selectedRoom.imageUrl ?? ''}
+                        alt={selectedRoom.name}
+                        fallback={selectedRoom.name}
+                        size="md"
+                        pictureColor={getAvatarColor(selectedRoom.id)[0]}
+                        ringColor="ring-transparent"
+                      />
+                      <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Camera className="w-4 h-4 text-white" />
+                      </div>
+                    </button>
+                  ) : (
+                    <div className="relative shrink-0">
+                      <Avatar
+                        src={selectedRoom.imageUrl ?? ''}
+                        alt={selectedRoom.name}
+                        fallback={selectedRoom.name}
+                        size="md"
+                        pictureColor={getAvatarColor(selectedRoom.id)[0]}
+                        ringColor="ring-transparent"
+                      />
                     </div>
-                  </button>
+                  )}
 
                   <AnimatePresence mode="wait" initial={false}>
-                    {isEditingName ? (
+                    {members.some(m => m.userId === user?.id && m.role === MemberRole.ADMIN) ? (
+                      isEditingName ? (
                       <motion.div
                         key="input"
                         initial={{ opacity: 0, y: 4 }}
@@ -349,6 +428,13 @@ export default function Home() {
                           Click to rename · Enter to save
                         </motion.span>
                       </motion.div>
+                    )
+                    ) : (
+                      <div className="flex flex-col items-start flex-1">
+                        <span style={{ fontFamily: 'var(--font-serif)' }} className="text-2xl font-semibold tracking-tight">
+                          {roomName}
+                        </span>
+                      </div>
                     )}
                   </AnimatePresence>
 
@@ -371,6 +457,27 @@ export default function Home() {
                     >
                       <LayoutPanelLeft className="w-4 h-4" />
                     </button>
+                    {members.some(m => m.userId === user?.id && m.role === MemberRole.ADMIN) ? (
+                      <button
+                        onClick={() => setShowManagePanel(p => !p)}
+                        title="Manage room"
+                        className={`shrink-0 p-2 rounded-lg transition-colors ${
+                          showManagePanel
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        <Settings2 className="w-4 h-4" />
+                      </button>
+                    ) : members.some(m => m.userId === user?.id) ? (
+                      <button
+                        onClick={() => setShowLeaveConfirm(true)}
+                        title="Leave room"
+                        className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               )}

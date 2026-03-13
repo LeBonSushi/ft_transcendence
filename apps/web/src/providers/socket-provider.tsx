@@ -34,12 +34,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     newSocket.on('connect', () => {
-      console.log("Socket Connected.");
       setIsConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      console.log("Socket Disconnected");
       setIsConnected(false);
     });
 

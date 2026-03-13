@@ -4,7 +4,7 @@
 # Lance l'infra (postgres, redis, minio) + init + app en local
 dev:
 	@echo "Starting dev infrastructure..."
-	pnpm i
+	@pnpm i
 	docker compose -f docker-compose.dev.yml up -d
 	@echo "Waiting for services to be healthy..."
 	@until docker compose -f docker-compose.dev.yml exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done

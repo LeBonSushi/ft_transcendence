@@ -132,11 +132,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   emitMemberLeft(roomId: string, userId: string) {
-    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_LEFT, { userId });
+    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_LEFT, { roomId, userId });
   }
 
   emitMemberKicked(roomId: string, userId: string) {
-    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_KICKED, { userId });
+    this.emitToRoom(roomId, SOCKET_EVENTS.MEMBER_KICKED, { roomId, userId });
   }
 
   emitMemberRoleUpdated(roomId: string, member: any) {

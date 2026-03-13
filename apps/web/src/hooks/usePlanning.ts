@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { roomsApi } from '@/lib/api';
+import { useRoomSocket } from './useRoomSocket';
 import type {
   TripProposalWithVotesAndActivities,
   UserAvailabilityWithUser,
@@ -107,6 +108,25 @@ export function usePlanning(roomId: string | null, roomType?: 'GROUP' | 'DIRECT_
     fetchAvailabilities();
     roomsApi.getRoom(roomId).getMembers().then(setMembers).catch(console.error);
   }, [roomId, isDirectMessage, fetchProposals, fetchAvailabilities]);
+
+  // Sync members list via socket events
+  useRoomSocket(roomId, {
+    onMemberJoined: ({ member }) => {
+      setMembers(prev => prev.some(m => m.id === member.id) ? prev : [...prev, member as RoomMemberWithUser]);
+    },
+    onMemberInvited: ({ member }) => {
+      setMembers(prev => prev.some(m => m.id === member.id) ? prev : [...prev, member as RoomMemberWithUser]);
+    },
+    onMemberLeft: ({ userId }) => {
+      setMembers(prev => prev.filter(m => m.userId !== userId));
+    },
+    onMemberKicked: ({ userId }) => {
+      setMembers(prev => prev.filter(m => m.userId !== userId));
+    },
+    onMemberRoleUpdated: ({ member }) => {
+      setMembers(prev => prev.map(m => m.id === member.id ? { ...m, ...member } : m));
+    },
+  });
 
   const createProposal = async (data: CreateProposalDto) => {
     if (!roomId || isDirectMessage) return;
