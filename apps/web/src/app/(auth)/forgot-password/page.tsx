@@ -1,8 +1,45 @@
 "use client";
 
+import { useState } from "react";
 import { AuthLayout } from "@/components/ui/auth/auth-layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { API_ROUTES } from "@travel-planner/shared";
 
 export default function ForgotPasswordPage() {
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}${API_ROUTES.AUTH.FORGOT_PASSWORD}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email }),
+                }
+            );
+
+            if (!response.ok) {
+                setError("An error has occurred");
+                return;
+            }
+
+            setSuccess(true);
+        } catch {
+            setError("An error has occurred");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <AuthLayout
             backgroundImage="/images/auth-bg.jpg"
@@ -21,14 +58,36 @@ export default function ForgotPasswordPage() {
             footerLinkText="Sign in"
             footerLinkHref="/signin"
         >
-            <div className="space-y-4 text-center">
-                <p className="test-sm text-muted-doreground">
-                    If you created your account with email and password, please contact an administrator to reset your password.
+            {success ? (
+                <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                    If this email is registered, you will receive a reset link shortly.
                 </p>
-                <p className="text-sem text-muted-doreground">
-                    If you signed up with Google or GitHub, use the same provider to sign in — no password needed.
-                </p>
-            </div>
+                </div>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                    <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                    {error}
+                    </div>
+                )}
+                <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium">Email</label>
+                    <Input
+                    id="email"
+                    type="email"
+                    placeholder="johndoe@exemple.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Sending..." : "Send reset link"}
+                </Button>
+                </form>
+            )}
         </AuthLayout>
     );
 }

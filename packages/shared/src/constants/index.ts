@@ -57,6 +57,8 @@ export const API_ROUTES = {
     ME: '/auth/me',
     GOOGLE: '/auth/google',
     GITHUB: '/auth/github',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
   },
 
   USERS: {

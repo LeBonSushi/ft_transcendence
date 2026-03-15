@@ -1,18 +1,21 @@
-import { Injectable, ConflictException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes, createHash } from 'crypto';
 import { verifySync } from 'otplib';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationTemplates } from '../notifications/templates/templates';
 import { NotificationType } from '@travel-planner/shared';
+import { EmailService } from '../email/email.service';
+import { isErrored } from 'stream';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     @Inject (forwardRef(() => NotificationsService))
-    private notificationsService : NotificationsService
+    private notificationsService : NotificationsService,
+    private emailService: EmailService,
   ) {}
 
   async register(data: {
@@ -123,8 +126,6 @@ export class AuthService {
         const result = verifySync({ token: totpCode, secret: user.twoFactorSecret! });
         isValidTotp = result.valid === true;
       }
-      // const result = verifySync({ token: totpCode, secret: user.twoFactorSecret! });
-      // const isValidTotp = result.valid === true;
 
       // Verifier aussi les backup codes
       if (!isValidTotp) {
@@ -156,5 +157,63 @@ export class AuthService {
         profilePicture: user.profile.profilePicture,
       } : null,
     };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email }});
+
+    if (!user) {
+      return { message: 'If this email exists, a reset link has been sent.'};
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const hasedToken = createHash('sha256').update(token).digest('hex');
+
+    // stock le hash et expire dans 1h
+    await this.prisma.user.update({
+      where: { id: user.id},
+      data: {
+        passwordResetToken: hasedToken,
+        passwordResetExpiry: new Date(Date.now() + 3600000)
+      },
+    });
+
+    await this.emailService.sendPasswordResetEmail(email, token);
+
+    return { message: 'If this email exists, a reset link has been sent.'};
+  }
+
+  async resetPassword(token: string, password: string) {
+    const hashedToken = createHash('sha256').update(token).digest('hex');
+
+    // Cherche un user avec ce token et s'il est non expiré
+    const user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    if (!password || password.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Met a jour le mdp et supprimme le token (usage unique)
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpiry: null,
+      },
+    });
+
+    return { message: 'Password has been reset successfully.' };
   }
 }

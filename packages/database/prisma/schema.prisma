@@ -16,6 +16,9 @@ model User {
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret String?
   twoFactorBackupCodes String[]
+  // Forgot Password
+  passwordResetToken String?
+  passwordResetExpiry DateTime?
 
   // Relations
   profile                Profile?
