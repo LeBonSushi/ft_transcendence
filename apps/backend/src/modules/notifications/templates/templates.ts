@@ -45,12 +45,14 @@ export class NotificationTemplates {
             }),
             [NotificationType.ROOM_DELETED]: (data: {
                 roomName : string
-                toUserId:string
+                toRoomId:string
+                toUserId?: string
             }) => ({
                 type: NotificationType.ROOM_DELETED,
                 message: `The ${data.roomName} has been deleted.`,
                 title: 'Room deleted :(',
-                toUserId:data.toUserId
+                toRoomId: data.toRoomId,
+                toUserId : data.toUserId
             }),
             [NotificationType.FRIEND_ACCEPTED]: (data: {
                 userName : string,

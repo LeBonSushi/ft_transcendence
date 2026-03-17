@@ -275,6 +275,11 @@ export class RoomsService {
       throw new ForbiddenException('Only the creator can delete the room');
     }
 
+    const roomName = await this.prisma.room.findUnique({where : {id : roomId}, select : {name : true}})
+
+    await this.notificationsService.sendNotificationToRoom(
+      NotificationTemplates.getTemplate(NotificationType.ROOM_DELETED, {toRoomId : roomId, roomName : room.name})
+    )
     this.roomsGateway.emitRoomDeleted(roomId);
 
     return this.prisma.room.delete({
