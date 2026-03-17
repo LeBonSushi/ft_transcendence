@@ -14,16 +14,12 @@ FULLY DONE (i think) | mettre des message d'erreur pour le clients lors q'une ac
 
 DONE | sur l'ajout d'activite dans le submodule proposition le module se close tout seule si on quite la fenetre c'est super chiant
 
+DONE | si on clique sur forgot password ca donne 404 pas de page
+
 CA N'EST PAS REVENU | petit probleme dans la requette mnatching date dans une room vide une seul user dedans ca note 4 personne
 et fais un match de date random // ok nan ca le refais plus a surveiller quand meme
 
 
 
 
-
-
-
-
-
-les Oauth ne fonctionne pas 
-si on clique sur forgot password ca donne 404 pas de page
+les Oauth ne fonctionne pas

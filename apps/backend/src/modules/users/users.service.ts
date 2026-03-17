@@ -28,6 +28,7 @@ export class UsersService {
   }
 
   async deleteUser(userId: string) {
+
     const roomsCreated = await this.prisma.room.findMany({
       where: { creatorId: userId },
       include: {
@@ -41,9 +42,19 @@ export class UsersService {
 
     for (const room of roomsCreated) {
       if (room.members.length > 0) {
+        const nextCreatorMembership = room.members[0];
+
         await this.prisma.room.update({
           where: { id: room.id },
-          data: { creatorId: room.members[0].userId },
+          data: {
+            creatorId: nextCreatorMembership.userId,
+            members: {
+              updateMany: {
+                where: { userId: nextCreatorMembership.userId },
+                data: { role: 'ADMIN' },
+              },
+            },
+          },
         });
       } else {
         await this.prisma.room.delete({

@@ -1,4 +1,7 @@
+import { signOut as nextAuthSignOut } from 'next-auth/react';
+import { apiClient } from '@/lib/api';
 import { useState } from 'react';
+import { useUserStore } from '@/stores/useUserStore';
 
 interface UseDeleteAccountOptions {
   expectedText?: string;
@@ -19,16 +22,16 @@ interface UseDeleteAccountReturn {
  * Gère la confirmation par texte et la suppression
  */
 export function useDeleteAccount({
-  expectedText = 'SUPPRIMER',
-  redirectUrl = '/',
+  expectedText = 'DELETE',
+  redirectUrl = '/signin?deleted=1',
 }: UseDeleteAccountOptions = {}): UseDeleteAccountReturn {
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const clearUser = useUserStore((state) => state.clearUser);
 
   const canDelete = confirmText === expectedText;
 
-  // TODO: Implement delete account logic with your auth system
   const handleDelete = async () => {
     if (!canDelete) return;
 
@@ -36,13 +39,17 @@ export function useDeleteAccount({
     setError(null);
 
     try {
-      // TODO: Call your API to delete the account
-      window.location.href = redirectUrl;
+      await apiClient.delete('/users/me');
+      apiClient.setToken(null);
+      clearUser();
+
+      await nextAuthSignOut({ redirect: false });
+      window.location.replace(redirectUrl);
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
         err?.message ||
-        'Erreur lors de la suppression du compte'
+        'Error while deleting your account'
       );
       setIsDeleting(false);
     }
