@@ -8,12 +8,12 @@ export enum NotificationType {
 }
 
 export interface CreateNotificationDto {
-  toUserId:string,
+  toUserId?:string,
   title: string;
   message: string;
   type: NotificationType;
   friendshipId?: string;
-  roomId?: string;
+  toRoomId?: string;
 }
 
 export interface Notification {
@@ -23,7 +23,6 @@ export interface Notification {
   title: string;
   message: string;
   friendshipId?: string | null;
-  roomId?: string | null;
   read: boolean;
   request_accepted: boolean;
   createdAt: Date;

@@ -99,7 +99,6 @@ model Room {
 	availabilities  UserAvailability[]
 	tripProposals   TripProposal[]
 	messages        Message[]
-	notifications        Notification[]
 
 	createdAt DateTime @default(now())
 	updatedAt DateTime @updatedAt
@@ -257,9 +256,6 @@ model Notification {
 
   friendshipId  String?
   friendship    Friendship?   @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
- 
-  roomId  String?
-  room    Room?   @relation(fields: [roomId], references: [id], onDelete: Cascade)
  
   read      Boolean   @default(false)
   request_accepted      Boolean   @default(false)
