@@ -58,6 +58,7 @@ export function Avatar({
         <img
           src={src}
           alt={alt}
+          referrerPolicy="no-referrer"
           className="h-full w-full object-cover block"
         />
       ) : (

@@ -7,15 +7,16 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationTemplates } from '../notifications/templates/templates';
 import { NotificationType } from '@travel-planner/shared';
 import { EmailService } from '../email/email.service';
-import { isErrored } from 'stream';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    @Inject (forwardRef(() => NotificationsService))
-    private notificationsService : NotificationsService,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService,
     private emailService: EmailService,
+    private storageService: StorageService,
   ) {}
 
   async register(data: {
@@ -156,6 +157,105 @@ export class AuthService {
         lastName: user.profile.lastName,
         profilePicture: user.profile.profilePicture,
       } : null,
+    };
+  }
+
+  async oauthSignIn(data: {
+    provider: string;
+    providerId: string;
+    email: string;
+    name?: string;
+    image?: string;
+  }) {
+    // Cherche un user existant par email
+    let user = await this.prisma.user.findUnique({
+      where: { email: data.email },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+        profile: true,
+      },
+    });
+
+    if (user) {
+      // Met à jour la photo de profil si elle vient d'OAuth et qu'il n'en a pas
+      if (data.image && user.profile && !user.profile.profilePicture) {
+        const storedUrl = await this.storageService.uploadFromUrl(data.image, 'profile-pictures');
+        const pictureUrl = storedUrl || data.image;
+        await this.prisma.profile.update({
+          where: { userId: user.id },
+          data: { profilePicture: pictureUrl },
+        });
+        user.profile.profilePicture = pictureUrl;
+      }
+    }
+
+    if (!user) {
+      // Télécharge et stocke la photo OAuth dans MinIO
+      let pictureUrl: string | null = null;
+      if (data.image) {
+        pictureUrl = await this.storageService.uploadFromUrl(data.image, 'profile-pictures');
+      }
+
+      // Génère un username unique depuis le name ou l'email
+      const baseName = (data.name || data.email.split('@')[0])
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .slice(0, 20);
+      let username = baseName;
+      let suffix = 1;
+      while (await this.prisma.user.findUnique({ where: { username } })) {
+        username = `${baseName}${suffix++}`;
+      }
+
+      const nameParts = (data.name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      user = await this.prisma.user.create({
+        data: {
+          id: randomUUID(),
+          email: data.email,
+          username,
+          profile: {
+            create: {
+              firstName,
+              lastName,
+              profilePicture: pictureUrl || null,
+            },
+          },
+        },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          createdAt: true,
+          profile: true,
+        },
+      });
+
+      await this.notificationsService.createNotification(
+        NotificationTemplates.getTemplate(NotificationType.WELCOME_MSG, {
+          toUserId: user.id,
+          firstName: user.profile?.firstName,
+        }),
+      );
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      createdAt: user.createdAt,
+      profile: user.profile
+        ? {
+            firstName: user.profile.firstName,
+            lastName: user.profile.lastName,
+            profilePicture: user.profile.profilePicture,
+          }
+        : null,
     };
   }
 

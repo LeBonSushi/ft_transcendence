@@ -39,6 +39,21 @@ export class AuthController {
   }
 
   @Public()
+  @Post('oauth')
+  async oauthSignIn(
+    @Body()
+    body: {
+      provider: string;
+      providerId: string;
+      email: string;
+      name?: string;
+      image?: string;
+    },
+  ) {
+    return this.authService.oauthSignIn(body);
+  }
+
+  @Public()
   @Post('forgot-password')
   async forgotPassword(@Body() body: { email: string }) {
     return this.authService.forgotPassword(body.email);

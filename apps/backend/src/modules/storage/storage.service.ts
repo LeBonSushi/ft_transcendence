@@ -133,6 +133,31 @@ export class StorageService {
     }
   }
 
+  async uploadFromUrl(url: string, folder: string): Promise<string | null> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return null;
+
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const key = `${folder}/${Date.now()}-oauth-avatar.jpg`;
+
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: buffer,
+          ContentType: contentType,
+        }),
+      );
+
+      return this.getPublicUrl(key);
+    } catch (error) {
+      this.logger.error(`Failed to upload from URL: ${error.message}`);
+      return null;
+    }
+  }
+
   async getSignedUploadUrl(key: string, contentType: string): Promise<string> {
     if (!ALLOWED_IMAGE_TYPES.includes(contentType) && !ALLOWED_DOCUMENT_TYPES.includes(contentType)) {
       throw new BadRequestException(`Invalid content type: ${contentType}`);

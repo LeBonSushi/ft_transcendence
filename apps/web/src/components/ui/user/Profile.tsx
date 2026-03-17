@@ -92,7 +92,7 @@ export function Profile() {
           className="flex items-center gap-2 p-1.5 rounded-full hover:bg-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           <Avatar
-            src={user.profile?.profilePicture || ''}
+            src={user.profile?.profilePicture || null}
             alt={displayName}
             fallback={user.profile?.firstName || user.email || 'U'}
             size="sm"
@@ -139,7 +139,7 @@ const ProfileDropdownMenu = forwardRef<HTMLDivElement, ProfileDropdownMenuProps>
         <div className="p-4 bg-linear-to-br from-primary/10 to-accent/10 border-b border-border">
           <div className="flex items-center gap-3">
             <Avatar
-              src={user.profile?.profilePicture || user.image || ''}
+              src={user.profile?.profilePicture || null}
               alt={user.name || 'Avatar'}
               fallback={user.profile?.firstName || user.name || user.email || 'U'}
               size="md"
@@ -301,7 +301,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
             onClick={() => setOpenChangeProfilePicture(!openChangeProfilePicture)}
           >
             <Avatar
-              src={user.profile?.profilePicture || ''}
+              src={user.profile?.profilePicture || null}
               alt={user.username || 'Avatar'}
               fallback={user.profile?.firstName || user.email || 'U'}
               size="md"
@@ -309,7 +309,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
               ringColor="ring-primary/20"
             />
             <Avatar
-              src={user.profile?.profilePicture || ''}
+              src={user.profile?.profilePicture || null}
               alt={user.username || 'Avatar'}
               fallback={user.profile?.firstName || user.email || 'U'}
               size="lg"
