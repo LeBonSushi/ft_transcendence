@@ -191,7 +191,7 @@ export function AddFriendModal({ onClose }: { onClose: () => void }) {
                 setQuery(e.target.value);
                 if (sendError) setSendError(null);
               }}
-              placeholder="Research by name or @username…"
+              placeholder="Research by @username…"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             {query && <button onClick={() => setQuery('')}><X size={13} className="text-muted-foreground hover:text-foreground" /></button>}

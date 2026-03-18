@@ -220,6 +220,7 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
 
   const [activeTab, setActiveTab] = useState<Tab>('account');
   const [showBackupCodes, setShowBackupCodes] = useState(false);
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [openChangeProfilePicture, setOpenChangeProfilePicture] = useState(false);
   const [profilePictureError, setProfilePictureError] = useState<string | null>(null);
   const [profilePictureSuccess, setProfilePictureSuccess] = useState<string | null>(null);
@@ -434,9 +435,14 @@ export function ProfilePage({ onClose }: { onClose: () => void }) {
             revokeSession={revokeSession}
             showBackupCodes={showBackupCodes}
             setShowBackupCodes={setShowBackupCodes}
+            onOpenDeleteModal={() => setIsDeleteAccountOpen(true)}
           />
         )}
       </div>
+
+      {isDeleteAccountOpen && (
+        <DeleteAccountModal onClose={() => setIsDeleteAccountOpen(false)} />
+      )}
     </Modal>
   );
 }
@@ -582,7 +588,8 @@ function AccountSection({ user, lastSignIn }: { user: any; lastSignIn: string | 
 function SecuritySection({
   user,
   showBackupCodes,
-  setShowBackupCodes
+  setShowBackupCodes,
+  onOpenDeleteModal,
 }: {
   user: any;
   session: any;
@@ -591,6 +598,7 @@ function SecuritySection({
   revokeSession: (sessionId: string) => Promise<void>;
   showBackupCodes: boolean;
   setShowBackupCodes: (b: boolean) => void;
+  onOpenDeleteModal: () => void;
 }) {
   const [isEnabling2FA, setIsEnabling2FA] = useState<boolean>(false);
   const [totpData, setTotpData] = useState<{ uri: string; secret: string } | null>(null);
@@ -643,7 +651,7 @@ function SecuritySection({
   };
 
   return (
-    <>
+    <div className="space-y-4 sm:space-y-6">
       <SectionCard title="Two-factor authentication (2FA)" icon={Smartphone}>
         <div className="space-y-3 sm:space-y-4">
 
@@ -770,14 +778,27 @@ function SecuritySection({
           </div>
         </div>
       )}
-    </>
+
+      <SectionCard title="Danger zone" icon={AlertTriangle}>
+        <ListItem
+          icon={<Trash2 className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />}
+          title="Delete account"
+          description="Permanently delete your account and all associated data"
+          action={
+            <Button size="sm" variant="destructive" onClick={onOpenDeleteModal}>
+              Delete
+            </Button>
+          }
+        />
+      </SectionCard>
+    </div>
   );
 }
 
 
 // ============ DELETE ACCOUNT MODAL ============
 function DeleteAccountModal({ onClose }: { onClose: () => void }) {
-  const expectedText = 'SUPPRIMER';
+  const expectedText = 'DELETE';
   const { canDelete, confirmText, setConfirmText, error, handleDelete, isDeleting } = useDeleteAccount({ expectedText });
 
   return (
