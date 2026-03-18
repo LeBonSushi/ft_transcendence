@@ -51,7 +51,7 @@ temp/
 # Database
 *.sqlite
 *.db
-# *.sql
+*.sql
 
 # Uploads
 uploads/
