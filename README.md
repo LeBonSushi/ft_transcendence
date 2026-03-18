@@ -111,11 +111,9 @@ Write code for assigned features. Participate in code reviews. Test their implem
 -
 
 ### njard [[ pm ](#project-manager-pm)][[ dev ](#developer)] :
-- organization setup
-- Backend notification
-- front
--
--
+- Task organization and project management
+- Developed the notification system and integrated it across all modules
+- Frontend implementation for notifications (UI/UX)
 
 ## Project Management
 
@@ -167,8 +165,11 @@ Teamwork was organized in a structured way to ensure good project progress track
 
 Here is a list of features and the people who worked on them
 
-* Chat/Notifications (Njard / Nbrecque):
-	<p>Real-time messaging via WebSocket (Socket.io). Room creation and management on the backend (service + controller). Instant communication between clients through WebSocket events.</p>
+* Chat (Nbrecque):
+    <p>Real-time messaging system via WebSocket (Socket.io). Features include room creation and management, instant communication between clients, and persistent message history. Supports private and group discussions with a dedicated backend service and controller.</p>
+
+* Notifications (Njard):
+    <p>Developed a centralized notification engine interconnected with all platform modules (Rooms, Friends, Auth). This system acts as a hub to deliver real-time user alerts via WebSockets. Implemented the complete backend logic (services & gateways) and the frontend notification center to ensure seamless event-driven feedback across the entire application.</p>
 
 * Rooms (Njard / Nbrecque / Ggirault / Macorso):
 	<p>to be completed</p>
