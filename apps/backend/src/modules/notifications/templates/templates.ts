@@ -13,15 +13,6 @@ export class NotificationTemplates {
                 toUserId: data.toUserId
 
             }),
-            [NotificationType.NEW_MESSAGE]: (data: {
-                room: string,
-                toUserId:string
-            }) => ({
-                type: NotificationType.NEW_MESSAGE,
-                message: `You have a new message from the ${data.room} room.`,
-                title: `Room messages`,
-                toUserId:data.toUserId
-            }),
             [NotificationType.ROOM_INVITE]: (data: {
                 toUserId:string,
                 roomName : string

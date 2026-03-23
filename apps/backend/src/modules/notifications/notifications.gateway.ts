@@ -10,14 +10,14 @@ import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { NotificationsService } from './notifications.service';
 import { Socket } from 'socket.io';
-import { CreateNotificationDto } from "@travel-planner/shared"
 import { WsAuthGuard } from '@/common/guards/ws-auth.guard';
 import { RedisService } from '@/common/redis/redis.service';
+import { SOCKET_EVENTS } from '@travel-planner/shared';
 
 @WebSocketGateway({
   cors: {
     origin: process.env.CORS_ORIGIN,
-    credentials: true,
+    credentials: true, // the url for origin must be specified, it can't be *
   },
 })
 
@@ -32,18 +32,18 @@ export class NotificationsGateway implements OnGatewayInit {
   ) {}
 
   afterInit() {
-    this.redis.subscriber.psubscribe('user:*:notifications');
-    this.redis.subscriber.on('pmessage', (_pattern, channel, message) => {
+    this.redis.subscriber.psubscribe('user:*:notifications'); // on va ecouter le canal des notifs
+    this.redis.subscriber.on('pmessage', (_pattern, channel, message) => { // pattern : user:*:notifications dans ce cas channel : user:454646:notifications, message : la data
       const roomName = channel;
       const notif = JSON.parse(message);
-      this.server.to(roomName).emit('newNotification', notif);
+      this.server.to(roomName).emit(SOCKET_EVENTS.NOTIFICATION_NEW, notif);
     });
     console.log('Notifications gateway subscribed to Redis');
   }
 
-  async handleConnection(client: Socket) {
+  async handleConnection(client: Socket) { // method called during each connection
     try {
-      await WsAuthGuard.validateToken(client);
+      await WsAuthGuard.validateToken(client); //verification of the JWT
       console.log(`Client connected: ${client.id} (user: ${client.data.user.id})`);
     } catch (error) {
       console.log(`Client rejected: ${client.id} - ${error.message}`);
@@ -55,7 +55,7 @@ export class NotificationsGateway implements OnGatewayInit {
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('subscribeToNotifications')
+  @SubscribeMessage(SOCKET_EVENTS.NOTIFICATION_SUBSCRIBE)
   async handleSubscribe(@ConnectedSocket() client: Socket) {
     const userId = client.data.user.id;
     const roomName = `user:${userId}:notifications`
@@ -64,24 +64,24 @@ export class NotificationsGateway implements OnGatewayInit {
   }
 
 
-  @SubscribeMessage('getUnreadNotifications')
+  @SubscribeMessage(SOCKET_EVENTS.NOTIFICATION_UNREAD)
   async handleGetUnreadNotifications(@ConnectedSocket() client: Socket) {
     try {
       const userId = client.data.user.id;
       const notifications = await this.notificationsService.getUnreadNotification(userId)
-      client.emit('notifications', notifications)
+      client.emit(SOCKET_EVENTS.NOTIFICATION_UNREAD, notifications)
     }
     catch (error) {
       console.error("Error getUnreadNotifications:", error)
     }
   }
 
-  @SubscribeMessage('readNotification')
+  @SubscribeMessage(SOCKET_EVENTS.NOTIFICATION_READ)
   async handleReadNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { notifId: string }) {
     try {
       const userId = client.data.user.id;
       if (!data.notifId) {
-        client.emit('error', { message: 'notifId manquant' });
+        console.log("Missing notifId")
         return;
       }
       await this.notificationsService.ChangeNotificationToRead(userId, data.notifId)
@@ -91,7 +91,7 @@ export class NotificationsGateway implements OnGatewayInit {
     }
   }
 
-  @SubscribeMessage('answerNotification')
+  @SubscribeMessage(SOCKET_EVENTS.NOTIFICATION_ANSWER)
   async handleAnsweredNotifications(@ConnectedSocket() client: Socket, @MessageBody() data: { notifId: string, answer: boolean }) {
     try {
       const userId = client.data.user.id;

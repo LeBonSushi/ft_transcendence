@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSocket } from './useSocket';
 import { useUserStore } from '@/stores/useUserStore';
-import { CreateNotificationDto, Notification } from '@travel-planner/shared';
+import { Notification } from '@travel-planner/shared';
+import {SOCKET_EVENTS} from '@travel-planner/shared';
 
 export function useNotification() {
     const { user } = useUserStore();
@@ -14,8 +15,8 @@ export function useNotification() {
     useEffect(() => {
         if (!user || !socket || !isConnected) return;
 
-        socket.emit('subscribeToNotifications');
-        socket.emit('getUnreadNotifications');
+        socket.emit(SOCKET_EVENTS.NOTIFICATION_SUBSCRIBE);
+        socket.emit(SOCKET_EVENTS.NOTIFICATION_UNREAD);
 
         const handleNotif = (notifs: Notification[]) => {
             setNotifications(notifs);
@@ -29,24 +30,22 @@ export function useNotification() {
             setLoading(false);
         };
 
-        socket.on('notifications', handleNotif);
-        socket.on('newNotification', handleNewNotif);
-        socket.on('error', handleError);
+        socket.on(SOCKET_EVENTS.NOTIFICATION_UNREAD, handleNotif);
+        socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotif);
         return () => {
-            socket.off('notifications', handleNotif);
-            socket.off('newNotification', handleNewNotif);
-            socket.off('error', handleError);
+            socket.off(SOCKET_EVENTS.NOTIFICATION_UNREAD, handleNotif);
+            socket.off(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotif);
         };
     }, [user?.id, socket, isConnected]);
 
     const setReadNotification = (notifId: string) => {
         if (socket && isConnected && user?.id) {
-            socket.emit('readNotification', { notifId });
+            socket.emit(SOCKET_EVENTS.NOTIFICATION_READ, { notifId });
         }
     };
     const answerNotification = (notifId: string, answer: boolean) => {
         if (socket && isConnected && user?.id) {
-            socket.emit('answerNotification', { notifId, answer });
+            socket.emit(SOCKET_EVENTS.NOTIFICATION_ANSWER, { notifId, answer });
         }
     };
 

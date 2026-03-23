@@ -224,8 +224,9 @@ Below is a summary of the main project areas and contributions.
 - Then each member added/modified the schema to match our new features or needs.
 - We had some implementation issues at the beginning, struggling to use it properly, and also some problems during schema migrations or seeding for tests.
 
-## WebSocket
-- to be completed
+## WebSocket (Njard / Nbrecque)
+- **Real-time Infrastructure**: Implementation of a robust architecture based on Socket.io and NestJS Gateways to ensure seamless bidirectional communication between the server and clients.
+- **Redis Synchronization**: Integration of Redis Pub/Sub as a shared communication bus to ensure scalability. This layer allows message and notification distribution across multiple server instances, ensuring consistency regardless of which instance a user is connected to.
 
 ## Other Features
 - to be completed

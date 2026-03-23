@@ -30,7 +30,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:4000";
 
     const newSocket = io(wsUrl, {
-      auth: { token }, // Use JWT token from session
+      auth: { token }, // JWT token from Next auth
     });
 
     newSocket.on('connect', () => {

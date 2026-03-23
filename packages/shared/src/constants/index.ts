@@ -11,6 +11,14 @@ export const SOCKET_EVENTS = {
   ROOM_LEAVE: 'room:leave',
   ROOM_UPDATE: 'room:update',
 
+  // Notification gateway events
+
+  NOTIFICATION_NEW : 'notification:new',
+  NOTIFICATION_UNREAD : 'notification:unread',
+  NOTIFICATION_SUBSCRIBE : 'notification:subscribe',
+  NOTIFICATION_ANSWER : 'notification:answer',
+  NOTIFICATION_READ: 'notification:read',
+
   // Room gateway events
   ROOM_SUBSCRIBE: 'room:subscribe',
   ROOM_UNSUBSCRIBE: 'room:unsubscribe',

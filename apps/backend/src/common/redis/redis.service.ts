@@ -54,7 +54,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   // Pub/Sub methods
   async publish(channel: string, message: string): Promise<void> {
-    await this.publisher.publish(channel, message);
+    await this.publisher.publish(channel, message); // it sends the data to the Redis server, publish is a native method of redis
   }
 
   async subscribe(channel: string, callback: (message: string) => void): Promise<void> {

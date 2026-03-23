@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Check, X, UserPlus, Users, Trash2, MessageSquare, Mail, Star } from 'lucide-react';
+import { Bell, Check, X, UserPlus, Users, Trash2, Mail, Star } from 'lucide-react';
 import { NotificationType } from '@travel-planner/shared';
 import type { Notification } from '@travel-planner/shared';
 import { useNotification } from '../hooks/useNotification';
@@ -13,7 +13,6 @@ const NOTIF_CONFIG: Record<NotificationType, { icon: React.ElementType; color: s
   [NotificationType.FRIEND_ACCEPTED]: { icon: Users,         color: 'text-green-500',  bg: 'bg-green-500/10' },
   [NotificationType.ROOM_INVITE]:     { icon: Mail,          color: 'text-violet-500', bg: 'bg-violet-500/10' },
   [NotificationType.ROOM_DELETED]:    { icon: Trash2,        color: 'text-red-500',    bg: 'bg-red-500/10' },
-  [NotificationType.NEW_MESSAGE]:     { icon: MessageSquare, color: 'text-amber-500',  bg: 'bg-amber-500/10' },
   [NotificationType.WELCOME_MSG]:     { icon: Star,          color: 'text-pink-500',   bg: 'bg-pink-500/10' },
 };
 
@@ -30,7 +29,7 @@ function NotificationItem({
   onRead: (id: string, index: number) => void;
   onAnswer: (id: string, index: number, accept: boolean) => void;
 }) {
-  const config = NOTIF_CONFIG[item.type] ?? NOTIF_CONFIG.WELCOME_MSG;
+  const config = NOTIF_CONFIG[item.type];
   const Icon = config.icon;
   const hasActions = ACTION_TYPES.includes(item.type);
 
@@ -153,7 +152,7 @@ export function NotificationPannel() {
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-2 text-muted-foreground">
                   <Bell size={20} className="opacity-30" />
-                  <p className="text-xs">Aucune notification</p>
+                  <p className="text-xs">No notifications</p>
                 </div>
               ) : (
                 notifications.map((item, index) => (
