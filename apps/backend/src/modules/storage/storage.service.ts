@@ -175,7 +175,7 @@ export class StorageService {
   }
 
   private getPublicUrl(key: string): string {
-    const endpoint = this.config.get('S3_ENDPOINT');
+    const endpoint = this.config.get('S3_PUBLIC_URL') || this.config.get('S3_ENDPOINT');
     return `${endpoint}/${this.bucket}/${key}`;
   }
 }

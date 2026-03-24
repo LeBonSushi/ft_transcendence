@@ -37,10 +37,10 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const jwtSecret = this.config.get<string>('NEXTAUTH_SECRET');
+      const jwtSecret = this.config.get<string>('NEXTAUTH_SECRET') ?? this.config.get<string>('AUTH_SECRET');
       
       if (!jwtSecret) {
-        this.logger.error('NEXTAUTH_SECRET is not configured');
+        this.logger.error('NEXTAUTH_SECRET/AUTH_SECRET is not configured');
         throw new UnauthorizedException('Server configuration error');
       }
 

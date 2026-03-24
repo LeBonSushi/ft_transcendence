@@ -32,10 +32,10 @@ export class GatewayGuard implements CanActivate {
     }
 
     try {
-      const jwtSecret = process.env.NEXTAUTH_SECRET;
+      const jwtSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
 
       if (!jwtSecret) {
-        this.logger.error('NEXTAUTH_SECRET is not configured');
+        this.logger.error('NEXTAUTH_SECRET/AUTH_SECRET is not configured');
         throw new UnauthorizedException('Server configuration error');
       }
 

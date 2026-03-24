@@ -4,7 +4,19 @@ import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import jwt from "jsonwebtoken";
 
+const BACKEND_API_URL =
+  process.env.BACKEND_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://backend:4000/api";
+
+const AUTH_SECRET = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+
+if (!AUTH_SECRET) {
+  throw new Error("Missing AUTH secret: set AUTH_SECRET or NEXTAUTH_SECRET");
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -20,7 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         try {
           // Call your backend API to verify credentials
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          const response = await fetch(`${BACKEND_API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -69,7 +81,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === "google" || account?.provider === "github") {
         try {
           // Sync OAuth user with your backend
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/oauth`, {
+          const response = await fetch(`${BACKEND_API_URL}/auth/oauth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -117,7 +129,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.profile = user.profile;
         token.socketToken = jwt.sign(
           { sub: user.id, email: user.email, username: user.username },
-          process.env.NEXTAUTH_SECRET!,
+          AUTH_SECRET,
           { expiresIn: "30d" }
         );
       }
@@ -145,5 +157,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: AUTH_SECRET,
 });

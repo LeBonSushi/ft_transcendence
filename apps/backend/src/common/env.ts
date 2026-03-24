@@ -32,6 +32,7 @@ export const env = {
 
   // S3
   S3_ENDPOINT: optionalEnv('S3_ENDPOINT', 'http://localhost:9000'),
+  S3_PUBLIC_URL: optionalEnv('S3_PUBLIC_URL', 'http://localhost:9000'),
   S3_ACCESS_KEY: optionalEnv('S3_ACCESS_KEY', 'minioadmin'),
   S3_SECRET_KEY: optionalEnv('S3_SECRET_KEY', 'minioadmin'),
   S3_BUCKET: optionalEnv('S3_BUCKET', 'travel-planner'),

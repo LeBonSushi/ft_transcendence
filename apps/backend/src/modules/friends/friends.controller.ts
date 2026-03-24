@@ -52,9 +52,4 @@ export class FriendsController {
   async deleteRequest(@GetUser('id') id: string, @Param('friendId') friendId: string) {
     return await this.friendsService.deleteFriend(id, friendId);
   }
-
-  @Post('test/:userId/:friendId')
-  async addrequest(@Param('userId') userId: string, @Param('friendId') friendId: string) {
-    return await this.friendsService.addRequest(userId, friendId);
-  }
 }

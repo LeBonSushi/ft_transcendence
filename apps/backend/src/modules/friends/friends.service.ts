@@ -284,24 +284,4 @@ export class FriendsService {
       },
     });
   }
-
-  // Endpoint de test pour créer des demandes d'amis vers mon current user
-  async addRequest(userId: string, friendId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    const friend = await this.prisma.user.findUnique({ where: { id: friendId } });
-
-    if (!user || !friend) {
-      throw new NotFoundException('User not found');
-    }
-
-    const friendRequest = await this.prisma.friendship.create({
-      data: {
-        userId: friendId,
-        friendId: userId,
-        status: 'PENDING',
-      }
-    });
-
-    return { success: true, friendRequest };
-  }
 }

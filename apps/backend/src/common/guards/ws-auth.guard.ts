@@ -8,7 +8,7 @@ export class WsAuthGuard implements CanActivate {
   constructor(private configService: ConfigService) {}
 
   static async validateToken(client: Socket): Promise<void> {
-    const jwtSecret = process.env.NEXTAUTH_SECRET;
+    const jwtSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
 
     // Mode dev sans auth
     if (!jwtSecret) {

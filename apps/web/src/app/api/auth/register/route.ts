@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const BACKEND_API_URL =
+  process.env.BACKEND_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://backend:4000/api";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -14,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Appel au backend pour créer l'utilisateur
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+    const response = await fetch(`${BACKEND_API_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
