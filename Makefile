@@ -1,4 +1,6 @@
-.PHONY: dev prod stop clean logs db-seed db-reset db-migrate db-studio
+.PHONY: all dev prod stop clean logs db-seed db-reset db-migrate db-studio
+
+all: prod
 
 # ============ DEV ============
 # Lance l'infra (postgres, redis, minio) + init + app en local
@@ -33,7 +35,7 @@ prod:
 	@docker compose exec -T minio mc alias set local http://localhost:9000 minioadmin minioadmin > /dev/null 2>&1
 	@docker compose exec -T minio mc mb --ignore-existing local/travel-planner
 	@echo "Running migrations..."
-	docker compose exec -T backend npx prisma migrate deploy --schema=./packages/database/prisma/schema.prisma
+	@docker compose exec -T backend npx prisma migrate deploy --schema=./packages/database/prisma/schema.prisma --config=./packages/database/prisma.config.ts
 	@echo "Production is up!"
 
 # ============ UTILITIES ============

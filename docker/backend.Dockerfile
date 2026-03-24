@@ -3,6 +3,9 @@ FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
+
+
+
 # Dependencies stage
 FROM base AS dependencies
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
@@ -10,6 +13,10 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/database/package.json ./packages/database/
 COPY apps/backend/package.json ./apps/backend/
 RUN pnpm install --frozen-lockfile
+
+
+
+
 
 # Builder stage
 FROM base AS builder
@@ -22,6 +29,11 @@ RUN cd packages/database && pnpm prisma generate
 
 # Build backend
 RUN pnpm --filter backend build
+
+
+
+
+
 
 # Production stage
 FROM node:22-alpine AS production
@@ -50,4 +62,4 @@ RUN cd packages/database && pnpm prisma generate
 
 EXPOSE 4000
 
-CMD ["node", "apps/backend/dist/apps/backend/src/main.js"]
+CMD ["node", "apps/backend/dist/main.js"]

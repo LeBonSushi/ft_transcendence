@@ -42,6 +42,13 @@ export class UsersService {
 
     for (const room of roomsCreated) {
       if (room.members.length > 0) {
+        if (room.type === 'DIRECT_MESSAGE') {
+          await this.prisma.room.delete({
+            where: { id: room.id }
+          });
+          continue; 
+        }
+
         const nextCreatorMembership = room.members[0];
 
         await this.prisma.room.update({
@@ -56,7 +63,8 @@ export class UsersService {
             },
           },
         });
-      } else {
+      }
+      else {
         await this.prisma.room.delete({
           where: { id: room.id },
         });
