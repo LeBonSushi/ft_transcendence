@@ -32,8 +32,8 @@ export class NotificationsGateway implements OnGatewayInit {
   ) {}
 
   afterInit() {
-    this.redis.subscriber.psubscribe('user:*:notifications'); // on va ecouter le canal des notifs
-    this.redis.subscriber.on('pmessage', (_pattern, channel, message) => { // pattern : user:*:notifications dans ce cas channel : user:454646:notifications, message : la data
+    this.redis.subscriber.psubscribe('user:*:notifications'); // we listen to the notif channel, every notif
+    this.redis.subscriber.on('pmessage', (_pattern, channel, message) => { // pattern : user:*:notifications in thsi case : user:454646:notifications, message : the data
       const roomName = channel;
       const notif = JSON.parse(message);
       this.server.to(roomName).emit(SOCKET_EVENTS.NOTIFICATION_NEW, notif);
@@ -44,7 +44,7 @@ export class NotificationsGateway implements OnGatewayInit {
   async handleConnection(client: Socket) { // method called during each connection
     try {
       await WsAuthGuard.validateToken(client); //verification of the JWT
-      console.log(`Client connected: ${client.id} (user: ${client.data.user.id})`);
+      console.log(`Client connected: ${client.id} (user: ${client.data.user.id})`); // the client id is set from the JWT in the ws-auth file
     } catch (error) {
       console.log(`Client rejected: ${client.id} - ${error.message}`);
       client.disconnect();

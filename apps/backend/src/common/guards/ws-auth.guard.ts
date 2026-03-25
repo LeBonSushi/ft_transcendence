@@ -35,7 +35,7 @@ export class WsAuthGuard implements CanActivate {
       client.data.user = { 
         id: decoded.sub || decoded.id, 
         email: decoded.email, 
-        username: decoded.username 
+        username: decoded.username
       };
     } catch (error) {
       throw new Error('Invalid token');
@@ -52,12 +52,12 @@ export class WsAuthGuard implements CanActivate {
   }
 
   private static extractTokenFromSocket(client: Socket): string | undefined {
-    const authHeader = client.handshake.headers.authorization;
+    const authHeader = client.handshake.headers.authorization; // we look for the JWT in the header (for POSTMAN)
     if (authHeader?.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
 
-    const tokenFromQuery = client.handshake.auth?.token || client.handshake.query?.token;
+    const tokenFromQuery = client.handshake.auth?.token || client.handshake.query?.token; //we look for the JWT in the auth attribute
     if (typeof tokenFromQuery === 'string') {
       return tokenFromQuery;
     }
