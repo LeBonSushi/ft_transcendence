@@ -30,31 +30,30 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      // Si on n'est pas encore à l'étape 2FA, on vérifie d'abord les credentials directement
+      // If not yet at 2FA stage, try initial login to check if 2FA is needed
       if (!requires2FA) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
+        try {
+          const response = await fetch("/api/account/check-2fa", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
 
-        if (!response.ok) {
-          setError("Email or password invalid");
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-
-        // Le backend demande un code 2FA
-        if (data.requiresTwoFactor) {
-          setRequires2FA(true);
-          setLoading(false);
-          return;
+          if (response.ok) {
+            const data = await response.json();
+            // Backend requires 2FA
+            if (data.requiresTwoFactor) {
+              setRequires2FA(true);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          // Fall through to signIn() which will handle the error
         }
       }
 
-      // Login complet via NextAuth (avec ou sans TOTP)
+      // Complete login via NextAuth (with or without TOTP)
       const result = await signIn("credentials", {
         email,
         password,

@@ -4,8 +4,9 @@ import { auth } from "@/auth";
 export async function GET() {
   try {
     const session = await auth();
+    const accessToken = session?.accessToken;
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !accessToken) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -15,7 +16,7 @@ export async function GET() {
     // Récupérer le profil complet depuis le backend
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${session.user.id}`, {
       headers: {
-        "Authorization": `Bearer ${session.user.id}`, // Token JWT si nécessaire
+        "Authorization": `Bearer ${accessToken}`,
       },
     });
 
@@ -41,8 +42,9 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();
+    const accessToken = session?.accessToken;
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !accessToken) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -56,7 +58,7 @@ export async function PATCH(req: NextRequest) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.user.id}`,
+        "Authorization": `Bearer ${accessToken}`,
       },
       body: JSON.stringify(body),
     });
@@ -84,8 +86,9 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE() {
   try {
     const session = await auth();
+    const accessToken = session?.accessToken;
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !accessToken) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -96,7 +99,7 @@ export async function DELETE() {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${session.user.id}`, {
       method: "DELETE",
       headers: {
-        "Authorization": `Bearer ${session.user.id}`,
+        "Authorization": `Bearer ${accessToken}`,
       },
     });
 

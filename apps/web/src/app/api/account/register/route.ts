@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password, username, firstName, lastName } = body;
 
-    // Validation
     if (!email || !password || !username) {
       return NextResponse.json(
         { error: "Email, password, and username are required" },
@@ -18,7 +17,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Appel au backend pour créer l'utilisateur
     const response = await fetch(`${BACKEND_API_URL}/auth/register`, {
       method: "POST",
       headers: {
@@ -44,13 +42,13 @@ export async function POST(req: NextRequest) {
     const user = await response.json();
 
     return NextResponse.json(
-      { 
+      {
         message: "User created successfully",
         user: {
           id: user.id,
           email: user.email,
           username: user.username,
-        }
+        },
       },
       { status: 201 }
     );

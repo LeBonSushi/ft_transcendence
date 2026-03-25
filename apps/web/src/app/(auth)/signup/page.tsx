@@ -49,7 +49,7 @@ export default function SignUpPage() {
 
     try {
       // Appel à l'API de registration
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/account/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export default function SignUpPage() {
         router.refresh();
       }
     } catch (err) {
-      setError("An error as occurred");
+      setError("An error has occurred");
     } finally {
       setLoading(false);
     }

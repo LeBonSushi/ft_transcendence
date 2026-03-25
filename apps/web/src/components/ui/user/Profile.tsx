@@ -612,7 +612,7 @@ function SecuritySection({
   const handleGenerate = async () => {
     try {
       setError('');
-      const data = await apiClient.post<{ secret: string; uri: string }>('/auth/2fa/generate');
+      const data = await apiClient.post<{ secret: string; uri: string }>('/account/2fa/generate');
       setTotpData(data);
       setIsEnabling2FA(true);
     } catch (err) {
@@ -624,7 +624,7 @@ function SecuritySection({
   const handleEnable = async () => {
     try {
       setError('');
-      const data = await apiClient.post<{ backupCodes: string[] }>('/auth/2fa/enable', { code: otpCode });
+      const data = await apiClient.post<{ backupCodes: string[] }>('/account/2fa/enable', { code: otpCode });
       setBackupCodes(data.backupCodes);
       setIsEnabling2FA(false);
       setTotpData(null);
@@ -640,7 +640,7 @@ function SecuritySection({
   const handleDisable = async () => {
     try {
       setError('');
-      await apiClient.post('/auth/2fa/disable', { code: otpCode });
+      await apiClient.post('/account/2fa/disable', { code: otpCode });
       setIsDisabling2FA(false);
       setOtpCode('');
       setBackupCodes([]);

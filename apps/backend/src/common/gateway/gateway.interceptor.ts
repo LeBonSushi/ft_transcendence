@@ -16,7 +16,7 @@ export class GatewayInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const { method, url, ip } = request;
     const userAgent = request.get('user-agent') || '';
-    const userId = request.user?.sub || 'anonymous';
+    const userId = request.user?.id || 'anonymous';
 
     const now = Date.now();
 

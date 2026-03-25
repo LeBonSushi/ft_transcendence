@@ -5,6 +5,12 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isAuthenticated = !!req.auth;
 
+  // Les routes API ne doivent jamais être redirigées par le middleware.
+  // Chaque handler API gère sa propre auth (401/403) si nécessaire.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   // Routes publiques (accessibles sans connexion)
   const publicRoutes = [
     "/signin",
@@ -19,11 +25,6 @@ export default auth((req) => {
 
   // Vérifier si c'est une route publique
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-
-  // Routes API NextAuth (toujours publiques)
-  if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
-  }
 
   // Permettre l'accès aux routes publiques
   if (isPublicRoute) {

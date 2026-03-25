@@ -11,6 +11,7 @@ import {
   Logger,
   HttpException,
   NotFoundException,
+  UnauthorizedException,
   Query,
 } from '@nestjs/common';
 import { UpdateUserDto, PublicUserResponse } from './dto/user.dto';
@@ -28,7 +29,7 @@ export class UsersController {
     const user = await this.usersService.getUserById(userId);
 
     if (!user)
-      throw new NotFoundException('User not found');
+      throw new UnauthorizedException('Invalid user session');
 
     return {
       id: user.id,

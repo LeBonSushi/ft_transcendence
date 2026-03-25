@@ -4,8 +4,9 @@ import { auth } from "@/auth";
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
+    const accessToken = session?.accessToken;
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !accessToken) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${session.user.id}`,
+          "Authorization": `Bearer ${accessToken}`,
         },
         body: backendFormData,
       }
