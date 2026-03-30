@@ -703,16 +703,48 @@ export class RoomsService {
     if (!segments.length)
       throw new ConflictException('Not matching date find');
 
+    const hasSameUsers = (firstUsers: Set<string>, secondUsers: Set<string>) => {
+      if (firstUsers.size !== secondUsers.size)
+        return false;
+
+      for (const userId of firstUsers) {
+        if (!secondUsers.has(userId))
+          return false;
+      }
+
+      return true;
+    };
+
+    const mergedSegments: Segment[] = [];
+    for (const segment of segments) {
+      const previous = mergedSegments[mergedSegments.length - 1];
+
+      if (
+        previous &&
+        previous.end === segment.start &&
+        hasSameUsers(previous.users, segment.users)
+      ) {
+        previous.end = segment.end;
+      }
+      else {
+        mergedSegments.push({
+          start: segment.start,
+          end: segment.end,
+          users: new Set(segment.users),
+        });
+      }
+    }
+
     const totalUsers = userAvailable.size;
     const fallback70 = Math.max(2, Math.ceil(totalUsers * 0.7)); //2: min users matching | 0.7: percentage of user in the match
     const fallback50 = Math.max(2, Math.ceil(totalUsers * 0.5)); //2: min users matching | 0.5: percentage of user in the match
     const fallback30 = Math.max(2, Math.ceil(totalUsers * 0.3)); //2: min users matching | 0.3: percentage of user in the match
 
     // 3 fallback (70 percent of the user or 50 or 30)
-    const segment100 = segments.filter((s) => s.users.size === totalUsers);
-    const segment70 = segments.filter((s) => s.users.size >= fallback70);
-    const segment50 = segments.filter((s) => s.users.size >= fallback50);
-    const segment30 = segments.filter((s) => s.users.size >= fallback30);
+    const segment100 = mergedSegments.filter((s) => s.users.size === totalUsers);
+    const segment70 = mergedSegments.filter((s) => s.users.size >= fallback70);
+    const segment50 = mergedSegments.filter((s) => s.users.size >= fallback50);
+    const segment30 = mergedSegments.filter((s) => s.users.size >= fallback30);
     
     let finalSegment: Segment[];
 
