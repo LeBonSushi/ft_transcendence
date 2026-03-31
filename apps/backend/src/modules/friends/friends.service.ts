@@ -248,6 +248,26 @@ export class FriendsService {
 
     const friendId = friendship.userId === id ? friendship.friendId : friendship.userId;
 
+     const dmRoom = await this.prisma.room.findFirst({
+      where: {
+        type: 'DIRECT_MESSAGE',
+        AND: [
+          { members: { some: { userId: id } } },
+          { members: { some: { userId: friendId } } },
+          { members: { every: { userId: { in: [id, friendId] } } } },
+        ],
+      },
+    });
+
+    if (dmRoom) {
+      this.roomsGateway.emitToUser(id, SOCKET_EVENTS.ROOM_DELETED, { roomId: dmRoom.id });
+      this.roomsGateway.emitToUser(friendId, SOCKET_EVENTS.ROOM_DELETED, { roomId: dmRoom.id });
+      
+      await this.prisma.room.delete({
+        where: { id: dmRoom.id },
+      });
+    }
+
     const deleteFriend = await this.prisma.friendship.deleteMany({
         where: {
             OR: [
