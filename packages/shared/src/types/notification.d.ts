@@ -1,0 +1,27 @@
+export declare enum NotificationType {
+    WELCOME_MSG = "WELCOME_MSG",
+    ROOM_INVITE = "ROOM_INVITE",
+    ROOM_DELETED = "ROOM_DELETED",
+    FRIEND_REQUEST = "FRIEND_REQUEST",
+    FRIEND_ACCEPTED = "FRIEND_ACCEPTED"
+}
+export interface CreateNotificationDto {
+    toUserId?: string;
+    title: string;
+    message: string;
+    type: NotificationType;
+    friendshipId?: string;
+    toRoomId?: string;
+}
+export interface Notification {
+    id: string;
+    userId: string;
+    type: NotificationType;
+    title: string;
+    message: string;
+    friendshipId?: string | null;
+    read: boolean;
+    request_accepted: boolean;
+    createdAt: Date;
+}
+//# sourceMappingURL=notification.d.ts.map
