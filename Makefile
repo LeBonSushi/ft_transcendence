@@ -27,6 +27,8 @@ dev:
 prod:
 	@echo "Building and starting production..."
 	docker compose up -d --build
+	@pnpm i
+	@pnpm build
 	@echo "Waiting for services to be healthy..."
 	@until docker compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@until docker compose exec -T redis redis-cli ping > /dev/null 2>&1; do sleep 1; done

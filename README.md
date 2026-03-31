@@ -5,8 +5,8 @@
 The direction of our transcendence was to make it a group travel planning site (friends, family, work, etc.)
 For this, we imagined our site as a messaging platform centralizing several tools that are usually separate:
  - availability management
+ - destination proposal
  - voting/polling
- - (optional) budgeting
  - group messaging
  - private messaging
 
@@ -36,7 +36,7 @@ cp .env.example .env
 ```
 ```bash
 # Launch the app
-pnpm start
+make
 ```
 
 # Useful Resources
@@ -188,7 +188,7 @@ Here is a list of features and the people who worked on them
 | Frameworks (NestJS, Next.js)           | Major  |   2    | All team               | Robust, scalable, productive fullstack foundation                    | Main project architecture and dev              |
 | Users interactions                     | Major  |   2    | All team               | Social features (friends, chat, blocking) are core to the app        | Add/remove/block friends, private/group chat   |
 | User authentication and management     | Major  |   2    | Macorso, Ggirault      | Security and user management for persistence and compliance          | Next auth, GDPR management, admin interface   |
-| Public API                             | Major  |   2    | Macorso                | Allows external integrations and extensibility                       | Secure REST endpoints, documentation           |
+| Public API                             | Major  |   2    | Macorso                | integrations and extensibility                       | Secure REST endpoints           |
 | ORM (Prisma)                           | Minor  |   1    | Macorso, Ggirault      | Simplifies and secures database access                               | Schema modeling, type-safe queries             |
 | Notifications system                   | Minor  |   1    | Njard                  | Completes the user interaction experience                            | Real-time notification system                  |
 | OAuth 2.0                              | Minor  |   1    | Macorso                | Simplifies login via external providers                              | Next OAuth integration                        |
