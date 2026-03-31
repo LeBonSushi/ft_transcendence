@@ -46,7 +46,6 @@ Here is a list of all the resources that helped us build our app
   * Database:
 	- Use Prisma in NextJS [here](https://codelynx.dev/posts/guide-prisma)
 	- Official Prisma docs [here](https://www.prisma.io/docs/getting-started/prisma-postgres/quickstart/prisma-orm)
-	- etc
 
   * Framework/languages:
 	- Official NestJs docs [here](https://docs.nestjs.com/)
@@ -55,7 +54,6 @@ Here is a list of all the resources that helped us build our app
 	- Official Tailwind docs [here](https://tailwindcss.com/docs/installation/using-vite)
 	- Official NextAuth docs [here](https://next-auth.js.org/)
 	- OpenClassroom Js tutorial [here](https://openclassrooms.com/fr/courses/6390246-passez-au-full-stack-avec-node-js-express-et-mongodb)
-	- etc
 
   * WebSocket/Chat:
 	- Official Socket.io docs [here](https://socket.io/docs/v4/)
@@ -101,14 +99,11 @@ Write code for assigned features. Participate in code reviews. Test their implem
 - auth
 - choice of language/framework
 - front
-- 
 
 ### nbrecque [[ dev ](#developer)]:
 - Backend chat
 - WebSocket
 - 2FA
--
--
 
 ### njard [[ pm ](#project-manager-pm)][[ dev ](#developer)] :
 - Task organization and project management
@@ -140,10 +135,8 @@ Teamwork was organized in a structured way to ensure good project progress track
 [![Pnpm](https://img.shields.io/badge/Pnpm-222?logo=pnpm&logoColor=F69220&style=for-the-badge)](https://pnpm.io/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=for-the-badge)](https://www.docker.com/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white&style=for-the-badge)](https://kubernetes.io/)
 [![TS](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
 [![JS](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=222&style=for-the-badge)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
-[![ngrok](https://img.shields.io/badge/ngrok-1F1F1F?logo=ngrok&logoColor=white&style=for-the-badge)](https://ngrok.com/)
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -153,9 +146,9 @@ Teamwork was organized in a structured way to ensure good project progress track
 | **Database** | PostgreSQL + Prisma | Relational data with type-safe ORM |
 | **Cache** | Redis | Session store, caching|
 | **Real-time** | Socket.io | WebSocket connections |
-| **Deployment** | Docker + Kubernetes | Containerization & orchestration |
+| **Deployment** | Docker / Docker compose | Containerization & orchestration |
 | **Package Manager** | pnpm | Fast, efficient, lightweight|
-<!-- | **Storage** | S3-compatible (MinIO/AWS S3) | File uploads | -->
+| **Storage** | S3-compatible MinIO | File uploads |
 
 ## Database scheme
 
@@ -172,12 +165,12 @@ Here is a list of features and the people who worked on them
     <p>Developed a centralized notification engine interconnected with all platform modules (Rooms, Friends, Auth). This system acts as a hub to deliver real-time user alerts via WebSockets. Implemented the complete backend logic (services & gateways) and the frontend notification center to ensure seamless event-driven feedback across the entire application.</p>
 
 * Rooms (Njard / Nbrecque / Ggirault / Macorso):
-	<p>to be completed</p>
+	<p>Discussion room by group message or dm, a room is a discussion room with an admin who has the rights to this room (kick, invitation, delete), the room has functionalities for adding activity, proposing information date and date matching to find the optimal date, dm are a type of room with only the possibility of sending messages</p>
 
 * Profile (Macorso / Ggirault):
-	<p>to be completed</p>
+	<p>Porfile page, summary of profile information, modification of the theme system, activation of 2FA, deletion of the account and modification of fields (last name, first name, password, email, username)</p>
 
-* 2-factor authentication (Macorso / Nbrecque)
+* 2-factor authentication (Nbrecque)
 	<p>2FA activation/deactivation from profile settings. Scannable QR code generation with Google Authenticator. TOTP verification at login with intermediate screen. 8 single-use backup codes in case of phone loss.</p>
 
 # Chosen modules
@@ -187,16 +180,16 @@ Here is a list of features and the people who worked on them
 | Realtime feature (WebSocket)           | Major  |   2    | Njard, Nbrecque        | Enables instant notifications and messaging for real-time UX         | Used socket.io, managed events and templates   |
 | Frameworks (NestJS, Next.js)           | Major  |   2    | All team               | Robust, scalable, productive fullstack foundation                    | Main project architecture and dev              |
 | Users interactions                     | Major  |   2    | All team               | Social features (friends, chat, blocking) are core to the app        | Add/remove/block friends, private/group chat   |
-| User authentication and management     | Major  |   2    | Macorso, Ggirault      | Security and user management for persistence and compliance          | Next auth, GDPR management, admin interface   |
-| Public API                             | Major  |   2    | Macorso                | integrations and extensibility                       | Secure REST endpoints           |
+| User authentication and management     | Major  |   2    | Macorso, Ggirault      | Security and user management for persistence and compliance          | Next auth, GDPR management, admin interface    |
 | ORM (Prisma)                           | Minor  |   1    | Macorso, Ggirault      | Simplifies and secures database access                               | Schema modeling, type-safe queries             |
 | Notifications system                   | Minor  |   1    | Njard                  | Completes the user interaction experience                            | Real-time notification system                  |
-| OAuth 2.0                              | Minor  |   1    | Macorso                | Simplifies login via external providers                              | Next OAuth integration                        |
-| 2FA                                    | Minor  |   1    | Macorso                | Enhances account security                                            | 2FA via Next                                  |
+| OAuth 2.0                              | Minor  |   1    | Macorso                | Simplifies login via external providers                              | Next OAuth integration                         |
+| 2FA                                    | Minor  |   1    | Macorso                | Enhances account security                                            | 2FA via Next                                   |
 | Custom design (min 10 components)      | Minor  |   1    | All team               | Improves user experience and visual identity                         | Reusable UI components (shadcn/ui, Tailwind)   |
 | Advanced chat features                 | Minor  |   1    | All team               | Improves user experience with richer chat                            | Support for images, audio, user blocking       |
 | GDPR compliance                        | Minor  |   1    | Ggirault, Macorso      | Legal compliance and data security                                   | Terms page, GDPR management in profile         |
-| **TOTAL**                              |        | **17** 
+| Additionnal browser					 | Minor  |   1    |     					| work on different browser 										   | no specific implementation						|
+| **TOTAL**                              |        | **16** 
 
 # Individual Contributions
 
@@ -206,7 +199,7 @@ Below is a summary of the main project areas and contributions.
 - Led the initial design and technical decisions for the project architecture.
 - Organized service structure, Dockerization, and overall infrastructure.
 - Migrated from the old subject constraints to a more flexible architecture after the new requirements were announced.
-- Switched from npm to pnpm for efficiency, introduced Kubernetes for scalability, and reused existing code where possible.
+- Switched from npm to pnpm for efficiency, and reused existing code where possible.
 - Faced challenges adapting to new technologies and requirements, but overcame them through research and team collaboration.
 
 ## Backend Services (All team)
@@ -227,9 +220,6 @@ Below is a summary of the main project areas and contributions.
 ## WebSocket (Njard / Nbrecque)
 - **Real-time Infrastructure**: Implementation of a robust architecture based on Socket.io and NestJS Gateways to ensure seamless bidirectional communication between the server and clients.
 - **Redis Synchronization**: Integration of Redis Pub/Sub as a shared communication bus to ensure scalability. This layer allows message and notification distribution across multiple server instances, ensuring consistency regardless of which instance a user is connected to.
-
-## Other Features
-- to be completed
 
 ## 2FA - Two Factor Authentication (Nbrecque)
 - TOTP 2FA implementation with the otplib library on the backend
