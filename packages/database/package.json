@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^25.0.1",
-    "@types/pg": "^8.11.10",
+    "@types/pg": "^8.16.0",
     "bcrypt": "^6.0.0",
     "prisma": "^7.2.0",
     "prisma-markdown": "^4.0.0",

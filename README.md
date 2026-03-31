@@ -173,6 +173,9 @@ Here is a list of features and the people who worked on them
 * 2-factor authentication (Nbrecque)
 	<p>2FA activation/deactivation from profile settings. Scannable QR code generation with Google Authenticator. TOTP verification at login with intermediate screen. 8 single-use backup codes in case of phone loss.</p>
 
+* Auth (Macorso)
+	<p>OAuth 2.0 integration with external providers for seamless login. Implemented authentication middleware for protecting routes and endpoints. Complete login and logout flow with session management via NextAuth, ensuring secure user authentication and session handling across the application.</p>
+
 # Chosen modules
 
 | Module                                | Type   | Points | Members  | Justification | Implementation |
